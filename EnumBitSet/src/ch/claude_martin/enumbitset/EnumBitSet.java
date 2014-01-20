@@ -69,7 +69,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 */
 	public synchronized int getEnumTypeSize() {
 		if (this.enumTypeSize == -1)
-			this.enumTypeSize = EnumSet.allOf(this.enumType).size();
+			this.enumTypeSize = this.enumType.getEnumConstants().length;
 		return this.enumTypeSize;
 	}
 
