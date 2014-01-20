@@ -1,6 +1,12 @@
 /**
  * Copyright (c) 2014 Claude Martin
  * 
+ * <p>{@link ch.claude_martin.enumbitset.EnumBitSetHelper} allows to extend any
+ * enum type with methods to work with sets and bit fields, while the class 
+ * {@link ch.claude_martin.enumbitset.EnumBitSet} is an alternative for 
+ * {@link java.util.EnumSet}, also containing more methods for set operations
+ * and to work with bit fields.
+ * 
  * <p>
  * Bit sets are by default of type {@link EnumBitSet}, but {@link BigInteger},
  * {@link BitSet}, and {@link Long long} can be used as well. Bit masks should
