@@ -12,7 +12,7 @@ public class MoreThan64ElementsException extends RuntimeException {
 	private static final long serialVersionUID = -3153017224720289309L;
 	private final Class<? extends EnumBitSetHelper<?>> enumType;
 
-	public MoreThan64ElementsException(final Class<? extends EnumBitSetHelper<?>> type) {
+	MoreThan64ElementsException(final Class<? extends EnumBitSetHelper<?>> type) {
 		super("MoreThan64ElementsException for Enum " + type.getSimpleName());
 		this.enumType = type;
 	}
