@@ -1,6 +1,4 @@
 /**
- * Copyright (c) 2014 Claude Martin
- * 
  * <p>{@link ch.claude_martin.enumbitset.EnumBitSetHelper} allows to extend any
  * enum type with methods to work with sets and bit fields, while the class 
  * {@link ch.claude_martin.enumbitset.EnumBitSet} is an alternative for 
@@ -131,7 +129,7 @@
  * Invoking a method that uses 64 bit on an enum type with more than 64 elements 
  * will throw a {@link ch.claude_martin.enumbitset.MoreThan64ElementsException}.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Claude Martin</a>
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a>
  */
 package ch.claude_martin.enumbitset;
 
