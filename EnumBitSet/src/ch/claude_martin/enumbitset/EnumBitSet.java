@@ -62,6 +62,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Amount of enum elements. This is relevant to know how large the bit field
 	 * must be to holt a bit set of this type.
+	 * 
+	 * @return Number of constants of the enum type.
 	 */
 	public synchronized int getEnumTypeSize() {
 		if (this.enumTypeSize == -1)
@@ -74,10 +76,15 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	}
 
 	/**
-	 * Returns a new EnumBitSet containing just one enum value.<br/>
+	 * Returns a new EnumBitSet containing just one enum value.<br>
 	 * Note: <code>EnumBitSet.just(X)</code> is equal to
 	 * <code>X.asEnumBitSet()</code>
 	 * 
+	 * @param <X>
+	 *          The enum type of the value.
+	 * @param value
+	 *          The single value that will be contained in the result.
+	 * @return New EnumBitSet containing nothing but <code>value</code>.
 	 * */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> just(final X value) {
 		final EnumBitSet<X> result = noneOf(requireNonNull(value).getDeclaringClass());
@@ -87,6 +94,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	/**
 	 * @see #of(Enum, Enum...)
+	 * @param <X>
+	 *          The enum type.
 	 * @param type
 	 *          Enum type.
 	 * @return EnumBitSet containing all elements.
@@ -115,7 +124,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * defined by the two specified endpoints. The returned set will contain the
 	 * endpoints themselves, which may be identical but must not be out of order.
 	 * 
-	 * @param <E>
+	 * @param <X>
 	 *          The class of the parameter elements and of the set
 	 * @param from
 	 *          the first element in the range
@@ -135,6 +144,13 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Creates a new EnumBitSet containing at least one value.
 	 * 
+	 * @param <X>
+	 *          The enum type of all elements.
+	 * @param first
+	 *          The first element (must not be null).
+	 * @param more
+	 *          More elements to add.
+	 * @return New EnumBitSet containing all given elements.
 	 * @see #noneOf(Class)
 	 */
 	@SafeVarargs
@@ -160,6 +176,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * Returns a BigInteger that represents this set.
 	 * 
 	 * @see #toBinaryString()
+	 * @return A representation of this {@link EnumBitSet} as a {@link BigInteger}
+	 *         .
 	 */
 	public BigInteger toBigInteger() {
 		if (getEnumTypeSize() <= 64)
@@ -177,6 +195,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * 
 	 * @throws MoreThan64ElementsException
 	 *           This fails if any element in this set has a higher index than 63.
+	 * @return A representation of this {@link EnumBitSet} as a {@link Long long}.
 	 */
 	public long toLong() throws MoreThan64ElementsException {
 		long result = 0L;
@@ -194,7 +213,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return this.bitset.clone();
 	}
 
-	/** Returns a new BitSet that represents this set. */
+	/**
+	 * Returns a new BitSet that represents this set.
+	 * 
+	 * @return A representation of this {@link EnumBitSet} as a {@link BitSet};
+	 */
 	public BitSet toBitSet() {
 		final BitSet result = new BitSet(this.getEnumTypeSize());
 		for (final E e : this.bitset)
@@ -212,6 +235,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <p>
 	 * The length of the returned string is the same as the amount of enum
 	 * elements in the enum type.
+	 * 
+	 * @return A representation of this {@link EnumBitSet} as a String of 0s and
+	 *         1s.
 	 */
 	public String toBinaryString() {
 		return toBinaryString(getEnumTypeSize());
@@ -226,6 +252,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * you want to use a bit field with 64 bits.
 	 * <code>this.toBinaryString(64)</code> will already have the appropriate
 	 * length.
+	 * 
+	 * @param width
+	 *          The minimal width of the returned String.
+	 * @return A representation of this {@link EnumBitSet} as a String of 0s and
+	 *         1s. The length is at least <i>width</i>.
 	 */
 	public String toBinaryString(final int width) {
 		final String binary = this.toBigInteger().toString(2);
@@ -239,6 +270,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * The enum type class that defines the available enum elements. This is the
 	 * class returned by {@link Enum#getDeclaringClass()}.
+	 * 
+	 * @return The declaring class of all elements in this set.
 	 */
 	public Class<E> getEnumType() {
 		return this.enumType;
@@ -248,7 +281,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> and the given <code>set</code>.
 	 * 
+	 * @param set
+	 *          Another set.
 	 * @see #complement()
+	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(final EnumBitSet<E> set) {
 		return intersect(set.toEnumSet());
@@ -259,6 +295,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code> and the given <code>set</code>.
 	 * 
 	 * @see #complement()
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(@SuppressWarnings("unchecked") final E... set) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -271,6 +310,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code> and the given <code>set</code>.
 	 * 
 	 * @see #complement()
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(final EnumSet<E> set) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -283,6 +325,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code> and the given <code>set</code>.
 	 * 
 	 * @see #complement()
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(final BitSet set) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -295,6 +340,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code> and the given <code>mask</code>.
 	 * 
 	 * @see #complement()
+	 * @param mask
+	 *          Another set, represented by a bit mask.
+	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(final BigInteger mask) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -307,6 +355,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code> and the given <code>mask</code>.
 	 * 
 	 * @see #complement()
+	 * @param mask
+	 *          Another set, represented by a bit mask.
+	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(final long mask) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -317,6 +368,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> or the given <code>set</code>.
+	 * 
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(@SuppressWarnings("unchecked") final E... set) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -327,6 +382,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> or the given <code>set</code>.
+	 * 
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(final EnumBitSet<E> set) {
 		return union(set.bitset);
@@ -335,6 +394,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> or the given <code>set</code>.
+	 * 
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(final BitSet set) {
 		// return union(asEnumSet(set, this.enumType));
@@ -348,6 +411,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> or the given <code>set</code>.
+	 * 
+	 * @param set
+	 *          Another set.
+	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(final EnumSet<E> set) {
 		final EnumSet<E> clone = this.bitset.clone();
@@ -358,6 +425,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> or the given <code>mask</code>.
+	 * 
+	 * @param mask
+	 *          Bit mask of another set.
+	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(final BigInteger mask) {
 		return union(asEnumSet(mask, this.enumType));
@@ -366,6 +437,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Returns a new EnumBitSet containing all elements that are in
 	 * <code>this</code> or the given <code>mask</code>.
+	 * 
+	 * @param mask
+	 *          Bit mask of another set.
+	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(final long mask) {
 		return union(asEnumSet(mask, this.enumType));
@@ -376,6 +451,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code>, but not in the given <code>set</code>.
 	 * 
 	 * @see #removeAll(Collection)
+	 * @param set
+	 *          Another set.
+	 * @return <code>this &#x2216; set</code>
 	 */
 	public EnumBitSet<E> minus(final EnumBitSet<E> set) {
 		final EnumBitSet<E> result = this.clone();
@@ -390,6 +468,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code>, but not in the given <code>set</code>.
 	 * 
 	 * @see #removeAll(Collection)
+	 * @param set
+	 *          Another set.
+	 * @return <code>this &#x2216; set</code>
 	 */
 	public EnumBitSet<E> minus(final EnumSet<E> set) {
 		final EnumBitSet<E> result = this.clone();
@@ -404,6 +485,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code>, but not in the given <code>bit set</code>.
 	 * 
 	 * @see #removeAll(Collection)
+	 * @param set
+	 *          Another set.
+	 * @return <code>this &#x2216; set</code>
 	 */
 	public EnumBitSet<E> minus(final BitSet set) {
 		final EnumBitSet<E> result = this.clone();
@@ -418,6 +502,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code>, but not in the given <code>set</code>.
 	 * 
 	 * @see #removeAll(Collection)
+	 * @param set
+	 *          Another set.
+	 * @return <code>this &#x2216; set</code>
 	 */
 	@SuppressWarnings("unchecked")
 	public EnumBitSet<E> minus(final E... set) {
@@ -433,6 +520,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code>, but not in the given <code>mask</code>.
 	 * 
 	 * @see #removeAll(Collection)
+	 * @param mask
+	 *          Another set, represented by a bit mask.
+	 * @return <code>this &#x2216; mask</code>
 	 */
 	public EnumBitSet<E> minus(final BigInteger mask) {
 		// A\B = A & ~B
@@ -460,6 +550,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <code>this</code>, but not in the given <code>mask</code>.
 	 * 
 	 * @see #removeAll(Collection)
+	 * @param mask
+	 *          Another set, represented by a bit mask.
+	 * @return <code>this &#x2216; mask</code>
 	 */
 	public EnumBitSet<E> minus(final long mask) {
 		if (mask == 0)
@@ -471,11 +564,18 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * Returns the Cartesian Product.
 	 * 
 	 * <p>
-	 * Cartesian product of A and B, denoted <code>A × B</code>, is the set whose
+	 * Cartesian product of A and B, denoted <code>A Ã— B</code>, is the set whose
 	 * members are all possible ordered pairs <code>(a,b)</code> where a is a
 	 * member of A and b is a member of B. The Cartesian product of
 	 * <code>{1, 2}</code> and <code>{red, white}</code> is {(1, red), (1, white),
 	 * (2, red), (2, white)}.
+	 * 
+	 * @param set
+	 *          Another set.
+	 * @param <Y>
+	 *          Enum type of the elements.
+	 * @return The Cartesian Product of <code>this</code> and <code>set</code>.
+	 * 
 	 * */
 	public <Y extends Enum<Y> & EnumBitSetHelper<Y>> List<Pair<E, Y>> cross(final EnumBitSet<Y> set) {
 		final List<Pair<E, Y>> result = new ArrayList<>(this.size() * set.size());
@@ -485,7 +585,14 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return result;
 	}
 
-	/** An immutable ordered pair. This can be used in a Cartesian product. */
+	/**
+	 * An immutable ordered pair. This can be used in a Cartesian product.
+	 * 
+	 * @param <X>
+	 *          The enum type of the first element.
+	 * @param <X>
+	 *          The enum type of the second element.
+	 */
 	public static class Pair<X extends Enum<X> & EnumBitSetHelper<X>, Y extends Enum<Y> & EnumBitSetHelper<Y>> {
 		/** The first value of this pair. Not null. */
 		public final X first;
@@ -525,6 +632,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		 * Creates an inverted pair.
 		 * <p>
 		 * <code>(a, b) &rarr; (b, a)</code>
+		 * 
+		 * @return <code>new Pair<>(this.second, this.first)</code>
 		 */
 		public Pair<Y, X> swap() {
 			return new Pair<>(this.second, this.first);
@@ -536,8 +645,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Creates a 64 bit bitmask of a given set of enums.
 	 * 
+	 * @param <X>
+	 *          Enum type of the elements.
 	 * @throws MoreThan64ElementsException
 	 *           This fails if any element in the set has a higher index than 63.
+	 * @return A long value that represents the given set as a bit mask.
 	 * */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> long toBitmask64(final EnumSet<X> set) throws MoreThan64ElementsException {
 		long result = 0;
@@ -549,8 +661,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	/**
 	 * Creates a 64 bit bit set of a given set of enums.
 	 * 
+	 * @param <X>
+	 *          Enum type of the elements.
 	 * @throws MoreThan64ElementsException
 	 *           This fails if any element in the set has a higher index than 63.
+	 * @return A long value that represents the given set as a bit mask.
 	 */
 	@SafeVarargs
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> long asLong(final X... set) throws MoreThan64ElementsException {
@@ -560,7 +675,15 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return result;
 	}
 
-	/** Convert EnumSet to BitInteger. */
+	/**
+	 * Convert EnumSet to BitInteger.
+	 * 
+	 * @param <X>
+	 *          Enum type of the elements.
+	 * @param set
+	 *          A set of enum constants.
+	 * @return A BigInteger that represents the given set as a bit mask.
+	 */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> BigInteger asBigInteger(final EnumSet<X> set) {
 		BigInteger result = BigInteger.ZERO;
 		for (final X e : requireNonNull(set))
@@ -568,7 +691,15 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return result;
 	}
 
-	/** Convert VarArg/Array of enums to BitInteger. */
+	/**
+	 * Convert VarArg/Array of enums to BitInteger.
+	 * 
+	 * @param <X>
+	 *          Enum type of the elements.
+	 * @param set
+	 *          A set of enum constants.
+	 * @return A BigInteger that represents the given set as a bit mask.
+	 * */
 	@SafeVarargs
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> BigInteger asBigInteger(final X... set) {
 		BigInteger result = BigInteger.ZERO;
@@ -579,6 +710,12 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	/**
 	 * Creates a BitSet of a given set of enums.
+	 * 
+	 * @param <X>
+	 *          Enum type of the elements.
+	 * @param set
+	 *          A set of enum constants.
+	 * @return A BitSet that represents the given set.
 	 * */
 	@SafeVarargs
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> BitSet asBitSet(final X... set) {
@@ -594,7 +731,13 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * <p>
 	 * This method can not check if there are more than 64 elements on the enum
 	 * type, as the enum type is not known. It simply converts a long to a bitset.
-	 * */
+	 * 
+	 * @param <X>
+	 *          Enum type of the elements.
+	 * @param mask
+	 *          A bit mask.
+	 * @return A BitSet that represents the given set.
+	 */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> BitSet asBitSet(final long mask) {
 		return BitSet.valueOf(new long[] { mask });
 	}
