@@ -22,23 +22,23 @@
  * <p>
  * Nomenclature:
  * <dl>
- * <dt>enum type</dt>
+ * <dt><b>enum type</b></dt>
  * <dd>Any type that is an enum. I.e. it uses "enum" instead of "class" in its
  * declaration. <br/>
  * Example: <code>Planet.class</code></dd>
- * <dt>enum</dt>
+ * <dt><b>enum</b></dt>
  * <dd>A field of an enum type. This is one single value of any enum type. 
  * To make a distinction <between enum and enum type other terms such as 
  * enum element or enum constant are used.<br/>
  * Example: Planet.VENUS</dd>
- * <dt>bit field</dt>
+ * <dt><b>bit field</b></dt>
  * <dd>A field whose value represents a set of values. A database may contain a
  * single integer type field, which is used as a bit field.</dd>
  * </dl>
- * <dt>bit set</dt>
+ * <dt><b>bit set</b></dt>
  * <dd>An integer value that represents a set of values. For each containing
  * value a bit is set to 1.</dd>
- * <dt>bit mask</dt>
+ * <dt><b>bit mask</b></dt>
  * <dd>A value like a bit set. The mask is used for bitwise operations on a bit
  * set.</dd> </dl>
  * <p>
