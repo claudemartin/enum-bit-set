@@ -10,6 +10,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /**
+ * Copyright (c) 2014 Claude Martin
+ * 
  * This adds support to use bit fields and bit masks for the enym type. The set
  * of enum values is interpreted as an {@link EnumBitSet enum bit set}, which
  * can be stored to a bit field (i.e. an integer field in a database).
