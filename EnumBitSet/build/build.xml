@@ -9,14 +9,17 @@
 	<property name="bin" location="bin" />
 
 	<target name="init">
-		<tstamp />
+		<tstamp>
+			 <format property="TIME" pattern="yyyy-MM-dd-HH-mm-ss" locale="en,GB"/>
+		</tstamp>
+			
 	</target>
 	<target name="compile" depends="init" description="compile the source code">
 		<javac srcdir="${src}" destdir="${bin}" debug="off" />
 	</target>
 
 	<target name="mkjar" depends="compile" description="generate the distribution">
-		<jar jarfile="${build}/${projectName}-${DSTAMP}.jar" basedir="${bin}">
+		<jar jarfile="${build}/${projectName}-${TIME}.jar" basedir="${bin}">
 			<exclude name="**Test.class" />
 		</jar>
 	</target>
