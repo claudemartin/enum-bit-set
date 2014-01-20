@@ -1,0 +1,28 @@
+<project name="EnumBitSet" default="mkjar" basedir="..">
+	<description>
+        This project only consists of few java files that can just be added to any project. If you want a jar-file then you can use this build file to generate it.
+    </description>
+
+	<property name="projectName" value="EnumBitSet" />
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="bin" location="bin" />
+
+	<target name="init">
+		<tstamp />
+	</target>
+	<target name="compile" depends="init" description="compile the source code">
+		<javac srcdir="${src}" destdir="${bin}" debug="off" />
+	</target>
+
+	<target name="mkjar" depends="compile" description="generate the distribution">
+		<jar jarfile="${build}/${projectName}-${DSTAMP}.jar" basedir="${bin}">
+			<exclude name="**Test.class" />
+		</jar>
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build}" includes="${projectName}-*.jar" />
+	</target>
+</project>
