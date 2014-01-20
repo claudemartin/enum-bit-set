@@ -346,6 +346,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * @return <code> this &#x2229; set</code>
 	 */
 	public EnumBitSet<E> intersect(final BigInteger mask) {
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
 		final EnumSet<E> clone = this.bitset.clone();
 		clone.removeIf(e -> !mask.testBit(e.ordinal()));
 		return new EnumBitSet<>(this.enumType, clone);
@@ -432,6 +434,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * @return <code> this &#x222a; set</code>
 	 */
 	public EnumBitSet<E> union(final BigInteger mask) {
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
 		return union(asEnumSet(mask, this.enumType));
 	}
 
@@ -757,16 +761,16 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	/** Creates a BitSet of a given mask. */
 	public static BitSet asBitSet(final BigInteger mask) {
-		if (mask.signum() == -1)
+		if (requireNonNull(mask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return BitSet.valueOf(requireNonNull(mask).toByteArray());
+		return BitSet.valueOf(mask.toByteArray());
 	}
 
 	/** Creates a BigInteger of a given mask. */
 	public static BigInteger asBigInteger(final BitSet bitset) {
-		if (bitset.isEmpty())
+		if (requireNonNull(bitset).isEmpty())
 			return BigInteger.ZERO;
-		return new BigInteger(requireNonNull(bitset).toByteArray());
+		return new BigInteger(bitset.toByteArray());
 	}
 
 	/**
@@ -795,7 +799,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	/** Creates set of enums from a bit set. */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(final BigInteger mask, final Class<X> type) {
-		requireNonNull(mask);
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
 		final EnumSet<X> result = EnumSet.allOf(requireNonNull(type));
 		result.removeIf(e -> e.intersect(mask).equals(BigInteger.ZERO));
 		return result;
@@ -816,6 +821,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	/** Creates set of enums from a bit set. */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> asEnumBitSet(final BigInteger mask, final Class<X> type) {
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
 		return new EnumBitSet<>(type, asEnumSet(mask, type));
 	}
 
