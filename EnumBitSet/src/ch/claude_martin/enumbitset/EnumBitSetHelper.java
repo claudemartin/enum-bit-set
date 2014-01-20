@@ -279,9 +279,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return (this.bitmask() & bitmask) != 0
 	 */
 	public default boolean elementOf(final BigInteger bitmask) {
-		if (bitmask.signum() == -1)
+		if (requireNonNull(bitmask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return !this.bitmask().and(requireNonNull(bitmask)).equals(BigInteger.ZERO);
+		return !this.bitmask().and(bitmask).equals(BigInteger.ZERO);
 	}
 
 	/**
@@ -306,16 +306,16 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 
 	/**
 	 * 
-	 * Note that there is a much simpler way using {@link EnumSet#of(Enum)
-	 * of(...)}. The following expressions define the same set: <br>
+	 * Note that there is another way using {@link EnumSet#of(Enum) of(...)}. The
+	 * following expressions define the same set: <br>
 	 * <code>Planet.<b>EARTH</b>.or(Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)<br/>
 	 * Planet.of(Planet.<b>EARTH</b>, Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)</code>
-	 * <br/>
-	 * However, this method returns a bitmask of type BigInteger.
 	 * 
 	 * @see EnumSet#of(Enum)
-	 * @see #union(BigInteger)
-	 * @return <code>this.bitmask() | arg<sub>0</sub>.bitmask() | ... | arg<sub>N</sub>.bitmask()</code>
+	 * @param set
+	 *          A list of elements to add.
+	 * @return Returns a new set containing <code>this</code> and all given
+	 *         elements.
 	 */
 	@SuppressWarnings("unchecked")
 	public default EnumBitSet<E> union(final E... set) {
@@ -335,9 +335,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>mask.or(this.bitmask())</code>
 	 */
 	public default BigInteger union(final BigInteger mask) {
-		if (mask.signum() == -1)
+		if (requireNonNull(mask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return requireNonNull(mask).or(this.bitmask());
+		return mask.or(this.bitmask());
 	}
 
 	/**
@@ -365,9 +365,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>mask.and(this.bitmask())</code>
 	 */
 	public default BigInteger intersect(final BigInteger mask) {
-		if (mask.signum() == -1)
+		if (requireNonNull(mask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return requireNonNull(mask).and(this.bitmask());
+		return mask.and(this.bitmask());
 	}
 
 	/**
@@ -449,9 +449,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>mask.xor(this.bitmask())</code>
 	 */
 	public default BigInteger xor(final BigInteger mask) {
-		if (mask.signum() == -1)
+		if (requireNonNull(mask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return requireNonNull(mask).xor(this.bitmask());
+		return mask.xor(this.bitmask());
 	}
 
 	/**
@@ -477,9 +477,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>mask.andNot(this.bitmask())</code>
 	 */
 	public default BigInteger removedFrom(final BigInteger mask) {
-		if (mask.signum() == -1)
+		if (requireNonNull(mask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return requireNonNull(mask).andNot(this.bitmask());
+		return mask.andNot(this.bitmask());
 	}
 
 }
