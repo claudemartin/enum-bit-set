@@ -1,12 +1,12 @@
 package ch.claude_martin.enumbitset;
 
 /**
- * Copyright (c) 2014 Claude Martin
  * 
  * Unchecked exception for any method that uses a bit set of type long (64 bits)
  * even though the enum type contains more than 64 elements.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Claude Martin</a>
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014
+ *         Claude Martin</a>
  */
 public class MoreThan64ElementsException extends RuntimeException {
 	private static final long serialVersionUID = -3153017224720289309L;

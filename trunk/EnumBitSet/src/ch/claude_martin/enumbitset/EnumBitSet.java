@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.Spliterator;
 
 /**
- * Copyright (c) 2014 Claude Martin
- * 
  * EnumSet and BitSet in one mutable object. This holds a regular EnumSet, but
  * adds more functions to use it as a BitSet. Note that the implementation of
  * EnumSet works like a bit set but the interface doesn't allow to use it as
@@ -50,7 +48,8 @@ import java.util.Spliterator;
  * See the <a href="./package-info.html">package-info</a> for naming
  * conventions.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Claude Martin</a>
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014
+ *         Claude Martin</a>
  * 
  * @param <E>
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt;
