@@ -36,13 +36,8 @@ import java.util.Set;
  * public enum Element { H, He, Li, Be, B, C, N, ... }
  * 
  * final Map&lt;Planet, EnumBitSet&lt;Element&gt;&gt; composition = new HashMap<>();
- * final toBigInteger&lt;Planet&gt; mercury = Element.O.union(Element.Na, Element.H, Element.He, Element.K);
+ * final EnumBitSet&lt;Element&gt; mercury = Element.O.union(Element.Na, Element.H, Element.He, Element.K);
  * composition.put(Planet.MERCURY, mercury);
- * </code>
- * 
- * BigInteger permissions = MyDBAccess.getUserPermissions(currentUser);
- * permissions = Role.READ.removedFrom(permissions);
- * MyDBAccess.setUserPermissions(currentUser, permissions);
  * </code></pre>
  * 
  * <pre>Counterexample:
@@ -52,10 +47,8 @@ import java.util.Set;
  * (e.g. <code>REVIEWED.ordinal()</code>). 
  * </pre>
  * <p>
- * Java 8 Beta has still a bug that does not allow assert statements in
- * interfaces: <a
- * href="https://bugs.openjdk.java.net/browse/JDK-8025141">https:/
- * /bugs.openjdk.java.net/browse/JDK-8025141</a>
+ * Java 8 Beta has still some bugs. It does not allow assert statements and
+ * <code>&#64;SafeVarargs</code> in interfaces.
  * 
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014
