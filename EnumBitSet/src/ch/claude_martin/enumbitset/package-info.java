@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2014 Claude Martin
  * 
  * <p>
  * Bit sets are by default of type {@link EnumBitSet}, but {@link BigInteger},

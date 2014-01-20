@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.Spliterator;
 
 /**
+ * Copyright (c) 2014 Claude Martin
+ * 
  * EnumSet and BitSet in one mutable object. This holds a regular EnumSet, but
  * adds more functions to use it as a BitSet. Note that the implementation of
  * EnumSet works like a bit set but the interface doesn't allow to use it as

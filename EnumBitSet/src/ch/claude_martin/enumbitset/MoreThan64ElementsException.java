@@ -1,6 +1,8 @@
 package ch.claude_martin.enumbitset;
 
 /**
+ * Copyright (c) 2014 Claude Martin
+ * 
  * Unchecked exception for any method that uses a bit set of type long (64 bits)
  * even though the enum type contains more than 64 elements.
  * 
