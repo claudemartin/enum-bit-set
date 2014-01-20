@@ -591,7 +591,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * 
 	 * @param <X>
 	 *          The enum type of the first element.
-	 * @param <X>
+	 * @param <Y>
 	 *          The enum type of the second element.
 	 */
 	public static class Pair<X extends Enum<X> & EnumBitSetHelper<X>, Y extends Enum<Y> & EnumBitSetHelper<Y>> {
