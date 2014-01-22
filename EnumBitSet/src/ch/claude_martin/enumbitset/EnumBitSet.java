@@ -82,6 +82,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 			return this;
 		}
 
+		/** {@inheritDoc} */
 		@Override
 		public boolean equals(final Object obj) {
 			return obj instanceof Pair //
@@ -89,6 +90,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 			    && Objects.equals(this.second, ((Pair<?, ?>) obj).second);
 		}
 
+		/** {@inheritDoc} */
 		@Override
 		public int hashCode() {
 			return Objects.hash(this.first, this.second);
@@ -118,12 +120,17 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 			return (E[]) new Enum[] { this.first, this.second };
 		}
 
+		/** {@inheritDoc} */
 		@Override
 		public String toString() {
 			return "Pair(" + this.first + ", " + this.second + ")";
 		}
 	}
+
 	/**
+	 * Creates an EnumBitSet containing all of the elements in the specified
+	 * element type.
+	 * 
 	 * @see #of(Enum, Enum...)
 	 * @param <X>
 	 *          The enum type.
@@ -134,6 +141,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> allOf(final Class<X> type) {
 		return new EnumBitSet<>(type, EnumSet.allOf(type));
 	}
+
 	/**
 	 * Creates a BigInteger of a given mask.
 	 * 
@@ -552,19 +560,19 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		this.bitset = requireNonNull(set);
 	}
 
-	/*************** Set operations: ********************/
-	// Note : Some of these operations modify the underlying set.
-
+	/** {@inheritDoc} */
 	@Override
 	public boolean add(final E e) {
 		return this.bitset.add(e);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean addAll(final Collection<? extends E> c) {
 		return this.bitset.addAll(c);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		this.bitset.clear();
@@ -587,11 +595,13 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return new EnumBitSet<>(this.enumType, EnumSet.complementOf(this.bitset));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean contains(final Object o) {
 		return this.bitset.contains(o);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean containsAll(final Collection<?> c) {
 		return this.bitset.containsAll(c);
@@ -622,6 +632,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see EnumSet#equals(Object)
+	 */
 	@Override
 	public boolean equals(final Object obj) {
 		return this.bitset.equals(obj);
@@ -649,8 +664,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return this.enumTypeSize;
 	}
 
-	/******* Static methods for conversions: ********/
-
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return this.bitset.hashCode();
@@ -746,11 +760,13 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return new EnumBitSet<>(this.enumType, clone);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return this.bitset.isEmpty();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Iterator<E> iterator() {
 		return this.bitset.iterator();
@@ -870,6 +886,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return asEnumBitSet(this.toLong() & ~mask, this.enumType);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean remove(final Object o) {
 		return this.bitset.remove(o);
@@ -888,26 +905,44 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return this.bitset.removeAll(c);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @see #intersect(BigInteger)
+	 * @see #intersect(BitSet)
+	 * @see #intersect(Enum...)
+	 * @see #intersect(EnumBitSet)
+	 * @see #intersect(EnumSet)
+	 * @see #intersect(long)
+	 * */
 	@Override
 	public boolean retainAll(final Collection<?> c) {
 		return this.bitset.retainAll(c);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * <p>
+	 * Not to be confused with {@link #getEnumTypeSize()}.
+	 */
 	@Override
 	public int size() {
 		return this.bitset.size();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Spliterator<E> spliterator() {
 		return this.bitset.spliterator();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Object[] toArray() {
 		return this.bitset.toArray();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public <T> T[] toArray(final T[] a) {
 		return this.bitset.toArray(a);
@@ -1003,6 +1038,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		return result;
 	}
 
+	/**
+	 * Returns a string representation of this set.
+	 * 
+	 * @see EnumSet#toString()
+	 */
 	@Override
 	public String toString() {
 		return this.bitset.toString();
