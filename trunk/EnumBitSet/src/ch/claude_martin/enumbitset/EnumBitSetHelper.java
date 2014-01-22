@@ -35,7 +35,7 @@ import java.util.Set;
  * <code>public enum Planet { MERCURY, VENUS, EARTH, ... }
  * public enum Element { H, He, Li, Be, B, C, N, ... }
  * 
- * final Map&lt;Planet, EnumBitSet&lt;Element&gt;&gt; composition = new HashMap<>();
+ * final Map&lt;Planet, EnumBitSet&lt;Element&gt;&gt; composition = new HashMap&gt;&gt;();
  * final EnumBitSet&lt;Element&gt; mercury = Element.O.union(Element.Na, Element.H, Element.He, Element.K);
  * composition.put(Planet.MERCURY, mercury);
  * </code></pre>
@@ -60,178 +60,16 @@ import java.util.Set;
 public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 
 	/**
-	 * Returns whether this enum can be found in the list of enums of the same
-	 * type.
+	 * Bitmask for <code>this</code>. The value is based on the ordinal.
 	 * 
-	 * @returns <code>true</code>, if <code>this</code> can be found.
-	 */
-	// @SafeVarargs
-	@SuppressWarnings("unchecked")
-	// TODO add @SafeVarargs as soon as java 8 allows it here.
-	public default boolean elementOf(final Enum<E>... set) {
-		for (final Enum<?> e : requireNonNull(set))
-			if (e == this)
-				return true;
-		return false;
-	}
-
-	/**
-	 * Returns whether this enum can be found in the set of enums of the same
-	 * type.
-	 * <p>
-	 * This is equivalent to: <code>
-	 * set.contains(this);
-	 * </code>
-	 * 
-	 * @returns <code>true</code>, if <code>this</code> can be found in
-	 *          <code>set</code>.
-	 */
-	public default boolean elementOf(final Set<E> set) {
-		return requireNonNull(set).contains(this);
-	}
-
-	/**
-	 * Creates a new EnumSet with <code>this</code> added.
-	 * 
-	 * @returns A new {@link EnumSet} including all elements of the set and also
-	 *          <code>this</code>.
+	 * @see #toEnumBitSet()
+	 * @see #toBitSet()
+	 * @see #toEnumSet()
+	 * @return <code>1&lt;&lt;this.ordinal()</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public default EnumSet<E> union(final EnumSet<E> set) {
-		final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
-		result.add((E) this);
-		return result;
-	}
-
-	/**
-	 * Creates a new EnumSet with <code>this</code> added.
-	 * 
-	 * @returns A new {@link EnumSet} including all elements of the set and also
-	 *          <code>this</code>.
-	 */
-	@SuppressWarnings("unchecked")
-	public default BitSet union(final BitSet set) {
-		final BitSet result = (BitSet) set.clone();
-		result.set(((E) this).ordinal(), true);
-		return result;
-	}
-
-	/**
-	 * Creates a new EnumSet with <code>this</code> removed.
-	 * 
-	 * @returns A new {@link EnumSet} with all given enums, except
-	 *          <code>this</code>. A copy of the set is returned if
-	 *          <code>this</code> is not present.
-	 */
-	@SuppressWarnings("unchecked")
-	public default EnumSet<E> removedFrom(final E... set) {
-		if (set.length == 0)
-			return EnumSet.noneOf(((Enum<E>) this).getDeclaringClass());
-		final EnumSet<E> result = EnumSet.copyOf(Arrays.asList(requireNonNull(set)));
-		result.remove(this);
-		return result;
-	}
-
-	/**
-	 * Creates a new EnumSet with <code>this</code> removed.
-	 * 
-	 * @returns A new {@link EnumSet} with all elements of the set, except
-	 *          <code>this</code>. A copy of the set is returned if
-	 *          <code>this</code> is not present.
-	 */
-	public default EnumSet<E> removedFrom(final EnumSet<E> set) {
-		final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
-		result.remove(this);
-		return result;
-	}
-
-	/**
-	 * Creates a new EnumBitSet with <code>this</code> removed.
-	 * 
-	 * @returns A new {@link EnumBitSet} with all elements of the set, except
-	 *          <code>this</code>. A copy of the set is returned if
-	 *          <code>this</code> is not present.
-	 */
-	public default EnumBitSet<E> removedFrom(final EnumBitSet<E> set) {
-		final EnumBitSet<E> result = requireNonNull(set).clone();
-		result.remove(this);
-		return result;
-	}
-
-	/**
-	 * Returns a set of all enums except <code>this</code>.
-	 * 
-	 * <p>
-	 * This is equivalent to: <code>EnumBitSet.just(this).complement()</code>
-	 * 
-	 * @returns A new {@link EnumSet} with all elements except <code>this</code>.
-	 */
-	@SuppressWarnings("unchecked")
-	public default EnumBitSet<E> others() {
-		return EnumBitSet.just((E) this).complement();
-	}
-
-	/**
-	 * Returns a set containing nothing but <code>this</code>. <br/>
-	 * Note: <code>EnumBitSet.just(X)</code> is equal to
-	 * <code>X.asEnumBitSet()</code>
-	 * 
-	 * @returns A new {@link EnumSet} containing <code>this</code>.
-	 */
-	@SuppressWarnings("unchecked")
-	public default EnumBitSet<E> toEnumBitSet() {
-		return EnumBitSet.just((E) this);
-	}
-
-	/**
-	 * Returns a set containing nothing but <code>this</code>.
-	 * 
-	 * @returns A new {@link EnumSet} containing <code>this</code>.
-	 */
-	@SuppressWarnings("unchecked")
-	public default EnumSet<E> toEnumSet() {
-		final E e = (E) this;
-		final EnumSet<E> result = EnumSet.noneOf(e.getDeclaringClass());
-		result.add(e);
-		return result;
-	}
-
-	/**
-	 * Returns a BitSet with all bits set to 0, except the bit representing
-	 * <code>this</code>.
-	 * 
-	 * @returns A new {@link EnumSet} containing <code>this</code>.
-	 */
-	@SuppressWarnings("unchecked")
-	public default BitSet toBitSet() {
-		final E e = (E) this;
-		final BitSet result = new BitSet();
-		result.set(e.ordinal());
-		return result;
-	}
-
-	/**
-	 * Bitmask for <code>this</code>. The value is based on the ordinal. This is
-	 * actually the same as {@link #bitmask()}.
-	 * 
-	 * @return <code>this.bitmask()</code>
-	 */
-	public default BigInteger toBigInteger() {
-		return this.bitmask();
-	}
-
-	/**
-	 * Bitmask for <code>this</code>. The value is based on the ordinal. This is
-	 * actually the same as {@link #bitmask64()}.
-	 * 
-	 * @see #bitmask64()
-	 * @return <code>this.bitmask64()</code>
-	 * @throws MoreThan64ElementsException
-	 *           If more than 64 constants are in the enum type then a
-	 *           <code>long</code> is not enough.
-	 */
-	public default long toLong() throws MoreThan64ElementsException {
-		return this.bitmask64();
+	public default BigInteger bitmask() {
+		return BigInteger.ONE.shiftLeft(((E) this).ordinal());
 	}
 
 	/**
@@ -255,35 +93,11 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * Bitmask for <code>this</code>. The value is based on the ordinal.
-	 * 
-	 * @see #toEnumBitSet()
-	 * @see #toBitSet()
-	 * @see #toEnumSet()
-	 * @return <code>1&lt;&lt;this.ordinal()</code>
-	 */
-	@SuppressWarnings("unchecked")
-	public default BigInteger bitmask() {
-		return BigInteger.ONE.shiftLeft(((E) this).ordinal());
-	}
-
-	/**
-	 * Returns whether this value is set in the given bitmask.
-	 * 
-	 * @param bitmask64
-	 *          A bitmask.
-	 * @return (this.bitmask64() & bitmask8) != 0;
-	 */
-	public default boolean elementOf(final long bitmask64) throws MoreThan64ElementsException {
-		return (this.bitmask64() & bitmask64) != 0;
-	}
-
-	/**
 	 * Returns whether this value is set in the given bitmask.
 	 * 
 	 * @param bitmask
 	 *          A bitmask.
-	 * @return (this.bitmask() & bitmask) != 0
+	 * @return (this.bitmask() &amp; bitmask) != 0
 	 */
 	public default boolean elementOf(final BigInteger bitmask) {
 		if (requireNonNull(bitmask).signum() == -1)
@@ -295,6 +109,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * Returns whether this value is set in the given bitset.
 	 * 
 	 * @param bitset
+	 *          A bit set.
 	 * @return bitset.get(this.ordinal());
 	 */
 	@SuppressWarnings("unchecked")
@@ -303,19 +118,327 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
+	 * Returns whether this enum can be found in the list of enums of the same
+	 * type.
+	 * 
+	 * @param set
+	 *          A set of enum elements, all non-null and of the same enum type.
+	 * @return <code>true</code>, if <code>this</code> can be found.
+	 */
+	// @SafeVarargs
+	@SuppressWarnings("unchecked")
+	// TODO add @SafeVarargs as soon as java 8 allows it here.
+	public default boolean elementOf(final Enum<E>... set) {
+		for (final Enum<?> e : requireNonNull(set))
+			if (e == this)
+				return true;
+		return false;
+	}
+
+	/**
+	 * Returns whether this value is set in the given bitmask.
+	 * 
+	 * @param bitmask64
+	 *          A bitmask.
+	 * @return (this.bitmask64() &amp; bitmask8) != 0;
+	 */
+	public default boolean elementOf(final long bitmask64) throws MoreThan64ElementsException {
+		return (this.bitmask64() & bitmask64) != 0;
+	}
+
+	/**
+	 * Returns whether this enum can be found in the set of enums of the same
+	 * type.
+	 * <p>
+	 * This is equivalent to: <code>set.contains(this);</code>
+	 * 
+	 * @param set
+	 *          A set of enum elements, all non-null and of the same enum type.
+	 * 
+	 * @return <code>true</code>, if <code>this</code> can be found in
+	 *         <code>set</code>.
+	 */
+	public default boolean elementOf(final Set<E> set) {
+		return requireNonNull(set).contains(this);
+	}
+
+	/**
+	 * This removes all other bits. The resulting bit mask will have just one or
+	 * zero bits set to 1.
+	 * 
+	 * @see #elementOf(BigInteger)
+	 * @param mask
+	 *          A bit mask, must be positive.
+	 * @return <code>mask.and(this.bitmask())</code>
+	 */
+	public default BigInteger intersect(final BigInteger mask) {
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
+		return mask.and(this.bitmask());
+	}
+
+	/**
+	 * This removes all other bits. The resulting BitSet will have just one or
+	 * zero bits set to true.
+	 * 
+	 * @see #elementOf(BitSet)
+	 * @param set
+	 *          A bit set.
+	 * @return <code>mask &amp; this</code>
+	 */
+	public default BitSet intersect(final BitSet set) {
+		final BitSet result = new BitSet();
+		@SuppressWarnings("unchecked")
+		final int ord = ((E) this).ordinal();
+		result.set(ord, requireNonNull(set).get(ord));
+		return result;
+	}
+
+	/**
+	 * This removes all other bits. The resulting bit mask will have just one or
+	 * zero bits set to 1.
+	 * 
+	 * @see #elementOf(BitSet)
+	 * @param set
+	 *          A set.
+	 * @return <code>mask &amp; this.ordinal()</code>
+	 */
+	@SuppressWarnings({ "unchecked" })
+	public default EnumBitSet<E> intersect(final E... set) {
+		if (Arrays.asList(set).contains(this))
+			return EnumBitSet.just((E) this);
+		else
+			return EnumBitSet.noneOf(((Enum<E>) this).getDeclaringClass());
+	}
+
+	/**
+	 * This removes all other bits. The resulting bit mask will have just one or
+	 * zero bits set to 1.
+	 * 
+	 * @see #elementOf(BigInteger)
+	 * @param set
+	 *          A set.
+	 * @return <code>set.clone() &amp; this</code>
+	 */
+	public default EnumBitSet<E> intersect(final EnumBitSet<E> set) {
+		requireNonNull(set);
+		@SuppressWarnings("unchecked")
+		final E e = (E) this;
+		final EnumBitSet<E> result = EnumBitSet.noneOf(e.getDeclaringClass());
+		if (set.contains(this))
+			result.add(e);
+		return result;
+	}
+
+	/**
+	 * This removes all other bits. The resulting bit mask will have just one or
+	 * zero bits set to 1.
+	 * 
+	 * @see #elementOf(BigInteger)
+	 * @param set
+	 *          A set.
+	 * @return <code>mask.clone() &amp; this</code>
+	 */
+	public default EnumSet<E> intersect(final EnumSet<E> set) {
+		@SuppressWarnings("unchecked")
+		final E e = (E) this;
+		final EnumSet<E> result = EnumSet.noneOf(e.getDeclaringClass());
+		if (set.contains(this))
+			result.add(e);
+		return result;
+	}
+
+	/**
+	 * This removes all other bits. The resulting bit mask will have just one or
+	 * zero bits set to 1.
+	 * 
+	 * @see #elementOf(long)
 	 * @param mask
 	 *          A bit mask.
-	 * @return this.bitmask64() | mask;
+	 * @throws MoreThan64ElementsException
+	 *           The enum type must not contain more than 64 elements.
+	 * @return <code>mask &amp; this.bitmask64()</code>
 	 */
-	public default long union(final long mask) {
-		return this.bitmask64() | mask;
+	public default long intersect(final long mask) throws MoreThan64ElementsException {
+		return mask & this.bitmask64();
+	}
+
+	/**
+	 * Returns a set of all elements except <code>this</code>.
+	 * 
+	 * <p>
+	 * This is equivalent to: <code>EnumBitSet.just(this).complement()</code>
+	 * 
+	 * @return A new {@link EnumSet} with all elements except <code>this</code>.
+	 */
+	@SuppressWarnings("unchecked")
+	public default EnumBitSet<E> others() {
+		return EnumBitSet.just((E) this).complement();
+	}
+
+	/**
+	 * Removes this from the given mask, but only if its bit is set in the given
+	 * mask.
+	 * 
+	 * @param mask
+	 *          A bit mask, must be positive.
+	 * @return <code>mask.andNot(this.bitmask())</code>
+	 */
+	public default BigInteger removedFrom(final BigInteger mask) {
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
+		return mask.andNot(this.bitmask());
+	}
+
+	/**
+	 * Creates a new EnumSet with <code>this</code> removed.
+	 * 
+	 * @param set
+	 *          A set that may contain <code>this</code>.
+	 * @return A new {@link EnumSet} with all given enums, except
+	 *         <code>this</code>. A copy of the set is returned even if
+	 *         <code>this</code> is not present.
+	 */
+	@SuppressWarnings("unchecked")
+	public default EnumSet<E> removedFrom(final E... set) {
+		if (set.length == 0)
+			return EnumSet.noneOf(((Enum<E>) this).getDeclaringClass());
+		final EnumSet<E> result = EnumSet.copyOf(Arrays.asList(requireNonNull(set)));
+		result.remove(this);
+		return result;
+	}
+
+	/**
+	 * Creates a new EnumBitSet with <code>this</code> removed.
+	 * 
+	 * @param set
+	 *          A set that may contain <code>this</code>.
+	 * @return A new {@link EnumBitSet} with all elements of the set, except
+	 *         <code>this</code>. A copy of the set is returned even if
+	 *         <code>this</code> is not present.
+	 */
+	public default EnumBitSet<E> removedFrom(final EnumBitSet<E> set) {
+		final EnumBitSet<E> result = requireNonNull(set).clone();
+		result.remove(this);
+		return result;
+	}
+
+	/**
+	 * Creates a new EnumSet with <code>this</code> removed.
+	 * 
+	 * @param set
+	 *          A set that may contain <code>this</code>.
+	 * @return A new {@link EnumSet} with all elements of the set, except
+	 *         <code>this</code>. A copy of the set is returned even if
+	 *         <code>this</code> is not present.
+	 */
+	public default EnumSet<E> removedFrom(final EnumSet<E> set) {
+		final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
+		result.remove(this);
+		return result;
+	}
+
+	/**
+	 * Bitmask for <code>this</code>. The value is based on the ordinal. This is
+	 * actually the same as {@link #bitmask()}.
+	 * 
+	 * @return <code>this.bitmask()</code>
+	 */
+	public default BigInteger toBigInteger() {
+		return this.bitmask();
+	}
+
+	/**
+	 * Returns a BitSet with all bits set to 0, except the bit representing
+	 * <code>this</code>.
+	 * 
+	 * @return A new {@link EnumSet} containing <code>this</code>.
+	 */
+	@SuppressWarnings("unchecked")
+	public default BitSet toBitSet() {
+		final E e = (E) this;
+		final BitSet result = new BitSet();
+		result.set(e.ordinal());
+		return result;
+	}
+
+	/**
+	 * Returns a set containing nothing but <code>this</code>. <br>
+	 * Note: <code>EnumBitSet.just(X)</code> is equal to
+	 * <code>X.asEnumBitSet()</code>
+	 * 
+	 * @return A new {@link EnumSet} containing <code>this</code>.
+	 */
+	@SuppressWarnings("unchecked")
+	public default EnumBitSet<E> toEnumBitSet() {
+		return EnumBitSet.just((E) this);
+	}
+
+	/**
+	 * Returns a set containing nothing but <code>this</code>.
+	 * 
+	 * @return A new {@link EnumSet} containing <code>this</code>.
+	 */
+	@SuppressWarnings("unchecked")
+	public default EnumSet<E> toEnumSet() {
+		final E e = (E) this;
+		final EnumSet<E> result = EnumSet.noneOf(e.getDeclaringClass());
+		result.add(e);
+		return result;
+	}
+
+	/**
+	 * Bitmask for <code>this</code>. The value is based on the ordinal. This is
+	 * actually the same as {@link #bitmask64()}.
+	 * 
+	 * @see #bitmask64()
+	 * @return <code>this.bitmask64()</code>
+	 * @throws MoreThan64ElementsException
+	 *           If more than 64 constants are in the enum type then a
+	 *           <code>long</code> is not enough.
+	 */
+	public default long toLong() throws MoreThan64ElementsException {
+		return this.bitmask64();
+	}
+
+	/**
+	 * Takes the bitmasks of <code>this</code> and <code>mask</code>, then applies
+	 * logical OR. This results in a new bit mask that also includes
+	 * <code>this</code>.
+	 * 
+	 * @see #union(BigInteger)
+	 * @see #union(EnumSet)
+	 * @see #union(Enum...)
+	 * @param mask
+	 *          A bit mask, must be positive.
+	 * @return <code>mask.or(this.bitmask())</code>
+	 */
+	public default BigInteger union(final BigInteger mask) {
+		if (requireNonNull(mask).signum() == -1)
+			throw new IllegalArgumentException("The mask must not be negative!");
+		return mask.or(this.bitmask());
+	}
+
+	/**
+	 * Creates a new EnumSet with <code>this</code> added.
+	 * 
+	 * @param set
+	 *          A set of enum elements.
+	 * @return A new {@link EnumSet} including all elements of the set and also
+	 *         <code>this</code>.
+	 */
+	@SuppressWarnings("unchecked")
+	public default BitSet union(final BitSet set) {
+		final BitSet result = (BitSet) set.clone();
+		result.set(((E) this).ordinal(), true);
+		return result;
 	}
 
 	/**
 	 * 
 	 * Note that there is another way using {@link EnumSet#of(Enum) of(...)}. The
 	 * following expressions define the same set: <br>
-	 * <code>Planet.<b>EARTH</b>.or(Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)<br/>
+	 * <code>Planet.<b>EARTH</b>.or(Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)<br>
 	 * Planet.of(Planet.<b>EARTH</b>, Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)</code>
 	 * 
 	 * @see EnumSet#of(Enum)
@@ -332,22 +455,6 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * Takes the bitmasks of <code>this</code> and <code>mask</code>, then applies
-	 * logical OR. This results in a new bit mask that also includes
-	 * <code>this</code>.
-	 * 
-	 * @see #union(BigInteger)
-	 * @see #union(EnumSet)
-	 * @see #union(Enum...)
-	 * @return <code>mask.or(this.bitmask())</code>
-	 */
-	public default BigInteger union(final BigInteger mask) {
-		if (requireNonNull(mask).signum() == -1)
-			throw new IllegalArgumentException("The mask must not be negative!");
-		return mask.or(this.bitmask());
-	}
-
-	/**
 	 * Takes the bitmasks of <code>this</code> and a clone of <code>mask</code>,
 	 * then applies logical OR. This results in a new bit set that also includes
 	 * <code>this</code>.
@@ -355,104 +462,46 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @see #union(BigInteger)
 	 * @see #union(EnumSet)
 	 * @see #union(Enum...)
+	 * @param set
+	 *          A set of enum elements.
 	 * @return <code>mask.clone() | this</code>
 	 */
 	@SuppressWarnings("unchecked")
-	public default EnumBitSet<E> union(final EnumBitSet<E> mask) {
-		final EnumBitSet<E> clone = mask.clone();
+	public default EnumBitSet<E> union(final EnumBitSet<E> set) {
+		final EnumBitSet<E> clone = requireNonNull(set).clone();
 		clone.add((E) this);
 		return clone;
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
+	 * Creates a new EnumSet with <code>this</code> added.
 	 * 
-	 * @see #elementOf(BigInteger)
-	 * @return <code>mask.and(this.bitmask())</code>
+	 * @param set
+	 *          A set of enum elements.
+	 * @return A new {@link EnumSet} including all elements of the set and also
+	 *         <code>this</code>.
 	 */
-	public default BigInteger intersect(final BigInteger mask) {
-		if (requireNonNull(mask).signum() == -1)
-			throw new IllegalArgumentException("The mask must not be negative!");
-		return mask.and(this.bitmask());
-	}
-
-	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
-	 * 
-	 * @see #elementOf(BitSet)
-	 * @return <code>mask & this</code>
-	 */
-	public default BitSet intersect(final BitSet mask) {
-		final BitSet result = new BitSet();
-		@SuppressWarnings("unchecked")
-		final int ord = ((E) this).ordinal();
-		result.set(ord, mask.get(ord));
+	@SuppressWarnings("unchecked")
+	public default EnumSet<E> union(final EnumSet<E> set) {
+		final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
+		result.add((E) this);
 		return result;
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
-	 * 
-	 * @see #elementOf(BitSet)
-	 * @return <code>mask & this.ordinal()</code>
+	 * @param mask
+	 *          A bit mask.
+	 * @return this.bitmask64() | mask;
 	 */
-	@SuppressWarnings({ "unchecked" })
-	public default EnumBitSet<E> intersect(final E... set) {
-		if (Arrays.asList(set).contains(this))
-			return EnumBitSet.just((E) this);
-		else
-			return EnumBitSet.noneOf(((Enum<E>) this).getDeclaringClass());
-	}
-
-	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
-	 * 
-	 * @see #elementOf(long)
-	 * @return <code>mask & this.ordinal()</code>
-	 */
-	public default long intersect(final long mask) {
-		return mask & this.bitmask64();
-	}
-
-	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
-	 * 
-	 * @see #elementOf(BigInteger)
-	 * @return <code>mask.clone() & this</code>
-	 */
-	public default EnumSet<E> intersect(final EnumSet<E> set) {
-		@SuppressWarnings("unchecked")
-		final E e = (E) this;
-		final EnumSet<E> result = EnumSet.noneOf(e.getDeclaringClass());
-		if (set.contains(this))
-			result.add(e);
-		return result;
-	}
-
-	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
-	 * 
-	 * @see #elementOf(BigInteger)
-	 * @return <code>mask.clone() & this</code>
-	 */
-	public default EnumBitSet<E> intersect(final EnumBitSet<E> set) {
-		@SuppressWarnings("unchecked")
-		final E e = (E) this;
-		final EnumBitSet<E> result = EnumBitSet.noneOf(e.getDeclaringClass());
-		if (set.contains(this))
-			result.add(e);
-		return result;
+	public default long union(final long mask) {
+		return this.bitmask64() | mask;
 	}
 
 	/**
 	 * This can be used to switch one bit in a bit mask.
 	 * 
+	 * @param mask
+	 *          A bit mask, must be positive.
 	 * @return <code>mask.xor(this.bitmask())</code>
 	 */
 	public default BigInteger xor(final BigInteger mask) {
@@ -464,6 +513,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	/**
 	 * This can be used to switch one bit in a bit mask.
 	 * 
+	 * @param set
+	 *          A set of enum elements.
 	 * @return <code>mask.clone() XOR this</code>
 	 */
 	public default EnumBitSet<E> xor(final EnumBitSet<E> set) {
@@ -475,18 +526,6 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 		else
 			result.add(e);
 		return result;
-	}
-
-	/**
-	 * Removes this from the given mask, but only if its bit is set in the given
-	 * mask.
-	 * 
-	 * @return <code>mask.andNot(this.bitmask())</code>
-	 */
-	public default BigInteger removedFrom(final BigInteger mask) {
-		if (requireNonNull(mask).signum() == -1)
-			throw new IllegalArgumentException("The mask must not be negative!");
-		return mask.andNot(this.bitmask());
 	}
 
 }
