@@ -35,6 +35,9 @@
       	destdir="${doc}" 
       	nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" 
       	packagenames="ch.claude_martin.enumbitset" source="1.8" 
-      	sourcepath="${src}" splitindex="true" use="true" version="true" />
+      	sourcepath="${src}" splitindex="true" use="true" version="true" >
+      	 <!-- <link href="http://download.oracle.com/javase/8/docs/api/"/> -->
+      	 <link href="http://download.java.net/jdk8/docs/api/"/>
+      </javadoc>
   </target>
 </project>
