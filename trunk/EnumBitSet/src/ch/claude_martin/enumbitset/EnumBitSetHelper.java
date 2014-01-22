@@ -224,9 +224,13 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * Bitmask for <code>this</code>. The value is based on the ordinal. This is
 	 * actually the same as {@link #bitmask64()}.
 	 * 
+	 * @see #bitmask64()
 	 * @return <code>this.bitmask64()</code>
+	 * @throws MoreThan64ElementsException
+	 *           If more than 64 constants are in the enum type then a
+	 *           <code>long</code> is not enough.
 	 */
-	public default long toLong() {
+	public default long toLong() throws MoreThan64ElementsException {
 		return this.bitmask64();
 	}
 
@@ -238,6 +242,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @see #toBitSet()
 	 * @see #toEnumSet()
 	 * @return <code>1&lt;&lt;this.ordinal()</code>
+	 * @throws MoreThan64ElementsException
+	 *           If more than 64 constants are in the enum type then a
+	 *           <code>long</code> is not enough.
 	 */
 	@SuppressWarnings("unchecked")
 	public default long bitmask64() throws MoreThan64ElementsException {
