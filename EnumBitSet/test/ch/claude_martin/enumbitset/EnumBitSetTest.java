@@ -287,7 +287,7 @@ public class EnumBitSetTest {
 	@Test
 	public void testToBitmask64EnumSet() {
 		final EnumSet<Alphabet> set = Alphabet.A.toEnumSet();
-		final long bitmask64 = EnumBitSet.toBitmask64(set);
+		final long bitmask64 = EnumBitSet.asLong(set);
 		assertEquals(1, bitmask64);
 	}
 
