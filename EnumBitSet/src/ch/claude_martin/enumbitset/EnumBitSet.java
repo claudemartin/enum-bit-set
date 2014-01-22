@@ -107,7 +107,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	/** Returns a copy of this set. */
 	@Override
-	protected EnumBitSet<E> clone() {
+	public EnumBitSet<E> clone() {
 		return new EnumBitSet<>(this.enumType, this.bitset.clone());
 	}
 
@@ -116,7 +116,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * initially containing all the elements of this type that are not contained
 	 * in the specified set.
 	 */
-	protected EnumBitSet<E> complement() {
+	public EnumBitSet<E> complement() {
 		return new EnumBitSet<>(this.enumType, EnumSet.complementOf(this.bitset));
 	}
 
@@ -624,13 +624,24 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 		/** @return <code>this</code> */
 		@Override
-		protected Pair<X, Y> clone() {
+		public Pair<X, Y> clone() {
 			return this;
 		}
 
 		@Override
 		public String toString() {
 			return "Pair(" + this.first + ", " + this.second + ")";
+		}
+
+		/**
+		 * This Pair as an array so that first is on index 0 and second is on index
+		 * 1.
+		 * 
+		 * @returns <code>new Object[] { this.first, this.second };</code>
+		 */
+		@SuppressWarnings("unchecked")
+		public <E extends Enum<?>> E[] toArray() {
+			return (E[]) new Enum[] { this.first, this.second };
 		}
 
 		/**

@@ -460,6 +460,9 @@ public class EnumBitSetTest {
 		    .<Pair<Planet, Element>> map(Pair<Element, Planet>::swap)//
 		    .collect(Collectors.<Pair<Planet, Element>> toList());
 		assertEquals(cross2, cross3);
+		final Pair<Planet, Element> firstPair = cross2.get(0);
+		assertEquals(firstPair.toArray()[0], firstPair.first);
+		assertEquals(firstPair.toArray()[1], firstPair.second);
 	}
 
 	@Test
