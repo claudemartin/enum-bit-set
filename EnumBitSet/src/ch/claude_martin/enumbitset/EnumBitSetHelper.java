@@ -163,8 +163,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
+	 * Bit mask with all other bits removed. The resulting bit mask will have just
+	 * one or zero bits set to 1.
 	 * 
 	 * @see #elementOf(BigInteger)
 	 * @param mask
@@ -178,8 +178,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * This removes all other bits. The resulting BitSet will have just one or
-	 * zero bits set to true.
+	 * Bit mask with all other bits removed. The resulting BitSet will have just
+	 * one or zero bits set to true.
 	 * 
 	 * @see #elementOf(BitSet)
 	 * @param set
@@ -195,8 +195,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
+	 * Bit mask with all other bits removed. The resulting bit mask will have just
+	 * one or zero bits set to 1.
 	 * 
 	 * @see #elementOf(BitSet)
 	 * @param set
@@ -212,8 +212,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
+	 * Bit mask with all other bits removed. The resulting bit mask will have just
+	 * one or zero bits set to 1.
 	 * 
 	 * @see #elementOf(BigInteger)
 	 * @param set
@@ -231,8 +231,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
+	 * Bit mask with all other bits removed. The resulting bit mask will have just
+	 * one or zero bits set to 1.
 	 * 
 	 * @see #elementOf(BigInteger)
 	 * @param set
@@ -249,8 +249,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * This removes all other bits. The resulting bit mask will have just one or
-	 * zero bits set to 1.
+	 * Bit mask with all other bits removed. The resulting bit mask will have just
+	 * one or zero bits set to 1.
 	 * 
 	 * @see #elementOf(long)
 	 * @param mask
@@ -339,7 +339,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * Bitmask for <code>this</code>. The value is based on the ordinal. This is
+	 * Bit mask for <code>this</code>. The value is based on the ordinal. This is
 	 * actually the same as {@link #bitmask()}.
 	 * 
 	 * @return <code>this.bitmask()</code>
@@ -489,11 +489,15 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
+	 * Creates a bit mask with <code>this</code> included.
+	 * 
 	 * @param mask
 	 *          A bit mask.
+	 * @throws MoreThan64ElementsException
+	 *           Thrown if the enum type contains more than 64 elements.
 	 * @return this.bitmask64() | mask;
 	 */
-	public default long union(final long mask) {
+	public default long union(final long mask) throws MoreThan64ElementsException {
 		return this.bitmask64() | mask;
 	}
 
