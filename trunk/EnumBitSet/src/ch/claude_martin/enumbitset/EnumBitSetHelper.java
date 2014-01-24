@@ -204,6 +204,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>mask &amp; this.ordinal()</code>
 	 */
 	@SuppressWarnings({ "unchecked" })
+	// @SafeVarargs
 	public default EnumBitSet<E> intersect(final E... set) {
 		if (Arrays.asList(set).contains(this))
 			return EnumBitSet.just((E) this);
@@ -277,8 +278,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
-	 * Removes this from the given mask, but only if its bit is set in the given
-	 * mask.
+	 * Removes this from the given mask.
 	 * 
 	 * @param mask
 	 *          A bit mask, must be positive.
@@ -291,6 +291,22 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	}
 
 	/**
+	 * Removes this from the BitSet and returns the new BitSet.
+	 * 
+	 * @param set
+	 *          A set that may contain <code>this</code>.
+	 * @return <code>set \ this</code>
+	 */
+	@SuppressWarnings("unchecked")
+	public default BitSet removedFrom(final BitSet set) {
+		if (requireNonNull(set).isEmpty())
+			return new BitSet();
+		final BitSet result = (BitSet) set.clone();
+		result.set(((E) this).ordinal(), false);
+		return result;
+	}
+
+	/**
 	 * Creates a new EnumSet with <code>this</code> removed.
 	 * 
 	 * @param set
@@ -300,10 +316,11 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 *         <code>this</code> is not present.
 	 */
 	@SuppressWarnings("unchecked")
-	public default EnumSet<E> removedFrom(final E... set) {
+	// @SafeVarargs
+	public default EnumBitSet<E> removedFrom(final E... set) {
 		if (set.length == 0)
-			return EnumSet.noneOf(((Enum<E>) this).getDeclaringClass());
-		final EnumSet<E> result = EnumSet.copyOf(Arrays.asList(requireNonNull(set)));
+			return EnumBitSet.noneOf(((Enum<E>) this).getDeclaringClass());
+		final EnumBitSet<E> result = EnumBitSet.of((E) this, requireNonNull(set));
 		result.remove(this);
 		return result;
 	}
@@ -336,6 +353,24 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 		final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
 		result.remove(this);
 		return result;
+	}
+
+	/**
+	 * Removes this from the given mask.
+	 * <p>
+	 * Note: This does not check if the given mask is valid for the enum type of
+	 * this element. It may have more bits set than this enum type has constants.
+	 * The result is simply the value with one bit set to 0.
+	 * 
+	 * @param mask
+	 *          A bit mask.
+	 * @throws MoreThan64ElementsException
+	 *           If more than 64 constants are in the enum type then a
+	 *           <code>long</code> is not enough.
+	 * @return <code>mask &amp; ~this.bitmask64()</code>
+	 */
+	public default long removedFrom(final long mask) throws MoreThan64ElementsException {
+		return mask & ~this.bitmask64();
 	}
 
 	/**
@@ -448,6 +483,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 *         elements.
 	 */
 	@SuppressWarnings("unchecked")
+	// @SafeVarargs
 	public default EnumBitSet<E> union(final E... set) {
 		final EnumBitSet<E> result = EnumBitSet.just((E) this);
 		result.addAll(asList(set));
