@@ -285,14 +285,14 @@ public class EnumBitSetTest {
 	}
 
 	@Test
-	public void testToBitmask64EnumSet() {
+	public void testAsLongEnumSet() {
 		final EnumSet<Alphabet> set = Alphabet.A.toEnumSet();
 		final long bitmask64 = EnumBitSet.asLong(set);
 		assertEquals(1, bitmask64);
 	}
 
 	@Test
-	public void testToBitmask64Array() {
+	public void testAsLongArray() {
 		long bitmask64 = EnumBitSet.asLong(Alphabet.A);
 		assertEquals(1, bitmask64);
 
@@ -301,18 +301,41 @@ public class EnumBitSetTest {
 	}
 
 	@Test
-	public void testAsBitmaskEnumSet() {
+	public void testAsBigIntegerEnumSet() {
 		final EnumSet<Alphabet> set = Alphabet.A.toEnumSet();
 		final BigInteger bitmask = EnumBitSet.asBigInteger(set);
 		assertEquals(BigInteger.ONE, bitmask);
 	}
 
 	@Test
-	public void testAsBitmaskArray() {
+	public void testAsBigIntegerBitSet() {
+		BitSet set = Alphabet.A.toBitSet();
+		BigInteger bitmask = EnumBitSet.asBigInteger(set);
+		assertEquals(BigInteger.ONE, bitmask);
+
+		set = Element.H.others().toBitSet(); // They go from H ro R.
+		bitmask = EnumBitSet.asBigInteger(set);
+		assertEquals(BigInteger.ZERO, bitmask.and(BigInteger.ONE));
+		for (int i = Alphabet.C.ordinal(); i <= Alphabet.R.ordinal(); i++) {
+			final BigInteger m = BigInteger.ONE.shiftLeft(i);
+			assertEquals(m, bitmask.and(m));
+		}
+	}
+
+	@Test
+	public void testAsBigIntegerArray() {
 		BigInteger bitmask = EnumBitSet.asBigInteger(Alphabet.A, Alphabet.B);
 		assertEquals(BigInteger.valueOf(1 + 2), bitmask);
+
 		bitmask = EnumBitSet.asBigInteger();
 		assertEquals(BigInteger.ZERO, bitmask);
+
+		bitmask = Alphabet.A.others().toBigInteger();
+		assertEquals(BigInteger.ZERO, bitmask.and(BigInteger.ONE));
+		for (int i = Alphabet.B.ordinal(); i <= Alphabet.Z.ordinal(); i++) {
+			final BigInteger m = BigInteger.ONE.shiftLeft(i);
+			assertEquals(m, bitmask.and(m));
+		}
 	}
 
 	@Test
@@ -370,6 +393,11 @@ public class EnumBitSetTest {
 			// OK
 		}
 
+		final BigInteger mask = Element.H.others().toBigInteger();
+		bitset = EnumBitSet.asBitSet(mask);
+		assertFalse(bitset.get(Element.H.ordinal()));
+		for (int index = Element.H.ordinal() + 1; index <= Element.R.ordinal(); index++)
+			assertTrue(bitset.get(index));
 	}
 
 	@Test
