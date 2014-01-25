@@ -143,7 +143,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	}
 
 	/**
-	 * Creates a BigInteger of a given mask.
+	 * Creates a BigInteger of a given bit set.
 	 * 
 	 * @param bitset
 	 *          A bit set.
@@ -152,7 +152,25 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	public static BigInteger asBigInteger(final BitSet bitset) {
 		if (requireNonNull(bitset).isEmpty())
 			return BigInteger.ZERO;
-		return new BigInteger(bitset.toByteArray());
+		return new BigInteger(reverse(bitset.toByteArray()));
+	}
+
+	/**
+	 * Convert little-endian to big-endian and vice versa.
+	 * 
+	 * @return The same array, with its contents reversed.
+	 */
+	private static byte[] reverse(final byte[] array) {
+		int i = 0, j = array.length - 1;
+		if (j <= 0)
+			return array;
+		byte tmp;
+		while (j > i) {
+			tmp = array[j];
+			array[j--] = array[i];
+			array[i++] = tmp;
+		}
+		return array;
 	}
 
 	/**
@@ -165,10 +183,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * @return A BigInteger that represents the given set as a bit mask.
 	 */
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> BigInteger asBigInteger(final EnumSet<X> set) {
-		BigInteger result = BigInteger.ZERO;
-		for (final X e : requireNonNull(set))
-			result = result.or(e.bitmask());
-		return result;
+		return asBigInteger(asBitSet(set));
 	}
 
 	/**
@@ -182,10 +197,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * */
 	@SafeVarargs
 	public static <X extends Enum<X> & EnumBitSetHelper<X>> BigInteger asBigInteger(final X... set) {
-		BigInteger result = BigInteger.ZERO;
-		for (final X e : requireNonNull(set))
-			result = result.or(e.bitmask());
-		return result;
+		return asBigInteger(asBitSet(set));
 	}
 
 	/**
@@ -198,7 +210,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	public static BitSet asBitSet(final BigInteger mask) {
 		if (requireNonNull(mask).signum() == -1)
 			throw new IllegalArgumentException("The mask must not be negative!");
-		return BitSet.valueOf(mask.toByteArray());
+		return BitSet.valueOf(reverse(mask.toByteArray()));
 	}
 
 	/**
@@ -549,7 +561,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
 	private final Class<E> enumType;
 
-	private int enumTypeSize = -1;
+	private volatile int enumTypeSize = -1;
 
 	private EnumBitSet(final Class<E> type) {
 		this(type, EnumSet.noneOf(type));
@@ -658,7 +670,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * 
 	 * @return Number of constants of the enum type.
 	 */
-	public synchronized int getEnumTypeSize() {
+	public int getEnumTypeSize() {
 		if (this.enumTypeSize == -1)
 			this.enumTypeSize = this.enumType.getEnumConstants().length;
 		return this.enumTypeSize;
@@ -958,12 +970,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	public BigInteger toBigInteger() {
 		if (getEnumTypeSize() <= 64)
 			return BigInteger.valueOf(toLong());
-		else {
-			BigInteger result = BigInteger.ZERO;
-			for (final E e : this.bitset)
-				result = result.or(e.bitmask());
-			return result;
-		}
+		else
+			return asBigInteger(toBitSet());
 	}
 
 	/**
