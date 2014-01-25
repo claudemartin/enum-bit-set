@@ -82,7 +82,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>1&lt;&lt;this.ordinal()</code>
 	 * @throws MoreThan64ElementsException
 	 *           If more than 64 constants are in the enum type then a
-	 *           <code>long</code> is not enough.
+	 *           <code>long</code> is not enough. The exception is only thrown if
+	 *           this element is not one of the first 64 elements.
 	 */
 	@SuppressWarnings("unchecked")
 	public default long bitmask64() throws MoreThan64ElementsException {
@@ -365,8 +366,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @param mask
 	 *          A bit mask.
 	 * @throws MoreThan64ElementsException
-	 *           If more than 64 constants are in the enum type then a
-	 *           <code>long</code> is not enough.
+	 *           Thrown if any of the contained enum constants can't be
+	 *           represented with 64 bits.
 	 * @return <code>mask &amp; ~this.bitmask64()</code>
 	 */
 	public default long removedFrom(final long mask) throws MoreThan64ElementsException {
@@ -430,7 +431,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> {
 	 * @return <code>this.bitmask64()</code>
 	 * @throws MoreThan64ElementsException
 	 *           If more than 64 constants are in the enum type then a
-	 *           <code>long</code> is not enough.
+	 *           <code>long</code> is not enough. The exception is only thrown if
+	 *           this element is not one of the first 64 elements.
 	 */
 	public default long toLong() throws MoreThan64ElementsException {
 		return this.bitmask64();

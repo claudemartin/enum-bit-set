@@ -27,8 +27,9 @@ import java.util.Spliterator;
  * set operations are much simpler to perform with the given methods.
  * 
  * <p>
- * Methods such as {@link #toEnumSet()} and {@link #complement()} return a new
- * and independent set. This allows a functional style of programming.
+ * Methods such as {@link #union(EnumBitSet)}, {@link #toEnumSet()}, and
+ * {@link #complement()} return a new and independent set. This allows a
+ * functional style of programming.
  * 
  * However, this set is mutable. It can be altered using the interface of
  * {@link Set} ({@link #add(Enum)}, {@link #remove(Object)} etc.). This allows
@@ -764,9 +765,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * @see #complement()
 	 * @param mask
 	 *          Another set, represented by a bit mask.
+	 * @throws MoreThan64ElementsException
+	 *           This fails if any element in the set has a higher index than 63.
 	 * @return <code> this &#x2229; set</code>
 	 */
-	public EnumBitSet<E> intersect(final long mask) {
+	public EnumBitSet<E> intersect(final long mask) throws MoreThan64ElementsException {
 		final EnumSet<E> clone = this.bitset.clone();
 		clone.removeIf(e -> (e.bitmask64() & mask) == 0);
 		return new EnumBitSet<>(this.enumType, clone);
@@ -801,10 +804,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 		// type (the "universe").
 
 		// Solution using BigInteger:
-		final BigInteger a = this.toBigInteger();
-		final BigInteger all = BigInteger.ONE.shiftLeft(this.getEnumTypeSize()).subtract(BigInteger.ONE);
-		final BigInteger notb = mask.xor(all);
-		return asEnumBitSet(a.and(notb), this.enumType);
+		final BigInteger self = this.toBigInteger();
+		final BigInteger universe = BigInteger.ONE.shiftLeft(this.getEnumTypeSize()).subtract(BigInteger.ONE);
+		final BigInteger notb = mask.xor(universe);
+		return asEnumBitSet(self.and(notb), this.enumType);
 
 		// Solution using EnumSet:
 		// final EnumBitSet<E> result = this.clone();

@@ -1,8 +1,8 @@
 /**
- * <p>{@link ch.claude_martin.enumbitset.EnumBitSetHelper} allows to extend any
- * enum type with methods to work with sets and bit fields, while the class 
- * {@link ch.claude_martin.enumbitset.EnumBitSet} is an alternative for 
- * {@link java.util.EnumSet}, also containing more methods for set operations
+ * <p>{@link ch.claude_martin.enumbitset.EnumBitSetHelper EnumBitSetHelper} allows 
+ * to extend any enum type with methods to work with sets and bit fields, while the class 
+ * {@link ch.claude_martin.enumbitset.EnumBitSet EnumBitSet} is an alternative for 
+ * {@link java.util.EnumSet EnumSet}, also containing more methods for set operations
  * and to work with bit fields.
  * 
  * <p>
@@ -31,22 +31,27 @@
  * <dt><b>enum</b></dt>
  * <dd>A field of an enum type. This is one single value of any enum type. 
  * To make a distinction between enum and enum type other terms such as 
- * enum element or enum constant are used.<br>
- * Example: Planet.VENUS</dd>
+ * <i>enum element</i> or <i>enum constant</i> are used.<br>
+ * Example: <code>Planet.VENUS</code></dd>
  * <dt><b>bit field</b></dt>
- * <dd>A field whose value represents a set of values. A database may contain a
- * single integer type field, which is used as a bit field.</dd>
+ * <dd>A field whose value represents a set. A database may contain a
+ * single integer type field, which is used as a bit field. A bit set 
+ * can be stored to such a bit field.</dd>
  * <dt><b>bit set</b></dt>
- * <dd>An integer value that represents a set of values. For each containing
- * value a bit is set to 1.</dd>
+ * <dd>An binary number that represents a set of values. For each containing
+ * value a bit is set to 1. 
+ * This can be a {@link java.util.BitSet BitSet}, 
+ * a {@link java.math.BigInteger BigInteger}, 
+ * or a {@link java.lang.Long long value}.</dd>
  * <dt><b>bit mask</b></dt>
- * <dd>A value like a bit set. The mask is used for bitwise operations on a bit
- * set.</dd> </dl>
+ * <dd>A binary number that is used for bitwise operations on a bit set. 
+ * It's basically a bit set that is applied to another set. </dd> 
+ * </dl>
  * <p>
- * The goal of this interface is to allow the use of existing types. Since all
- * primitive types are limited this uses {@link java.math.BigInteger BigInteger} 
- * instead. The type {@link ch.claude_martin.enumbitset.EnumBitSet EnumBitSet} 
- * combines the features of such types and can be used instead.
+ * The goal of this interface is to allow the use of existing date types. 
+ * The type {@link ch.claude_martin.enumbitset.EnumBitSet EnumBitSet} 
+ * combines the features of such types and can be used instead, as it can
+ * be converted to all other types.
  * 
  * <p>
  * Naming conventions: <br>
@@ -110,21 +115,24 @@
  * new set. 
  * Many methods of EnumBitSetHelper treat an enum constant as if it were a set 
  * with just its own value set. Conversion to a set will return a new set 
- * containing just one single value.
- * In stead of <i>toBigInteger</i> there is 
+ * containing just one single value (also called <i>singleton</i> or 
+ * <i>unit set</i>).
+ * {@link ch.claude_martin.enumbitset.EnumBitSetHelper#toBigInteger() toBigInteger()} 
+ * is an alias for
  * {@link ch.claude_martin.enumbitset.EnumBitSetHelper#bitmask() bitmask()}.
  * <br>
  * All these methods create a new data structure. Only the methods of 
- * {@link java.util.Set} allow modification of the EnumBitSet. Enum elements can 
- * not be modified by the methods of {@link ch.claude_martin.enumbitset.EnumBitSetHelper}.   
+ * {@link java.util.Set Set} allow modification of the EnumBitSet. 
+ * Enum elements can not be modified by the methods of 
+ * {@link ch.claude_martin.enumbitset.EnumBitSetHelper EnumBitSetHelper}.   
  * 
  * <p>
  * You can use database fields with less than 64 bits. Just make sure you use an
  * unsigned type (if your database supports this, note that standard-SQL does
  * not). Your DB Access Library (e.g. JDBC) should handle the type conversions
  * correctly for you. I do recommend using 64 bits in the first place as you
- * don't have much benefit from saving some bits. To use fewer bits you can it 
- * convert like this:<br>
+ * don't have much benefit from saving some bits. To use fewer bits you can  
+ * convert the value like this:<br>
  * <code>byte b = (byte) (myEnumBitSet.toLong() &amp; 0xFF);</code> 
  * <br>
  * Invoking a method that uses 64 bit on an enum type with more than 64 elements 

@@ -18,7 +18,10 @@ import ch.claude_martin.enumbitset.EnumBitSet.Pair;
 @SuppressWarnings("static-method")
 public class EnumBitSetTest {
 	public static enum Suit implements EnumBitSetHelper<Suit> {
-		CLUBS, DIAMONDS, HEARTS, SPADES
+		CLUBS, DIAMONDS, HEARTS, SPADES;
+		static {
+			assert values().length <= 64 : "This enum type is not indented do contain more than 64 constants.";
+		}
 	}
 
 	private static enum Planet implements EnumBitSetHelper<Planet> {
@@ -37,7 +40,7 @@ public class EnumBitSetTest {
 	@Test
 	public void testGetEnumTypeSize() throws Exception {
 		assertEquals(26, EnumBitSet.noneOf(Alphabet.class).getEnumTypeSize());
-		assertEquals(8, EnumBitSet.noneOf(Planet.class).getEnumTypeSize());
+		assertEquals(8, EnumBitSet.allOf(Planet.class).getEnumTypeSize());
 	}
 
 	@Test
