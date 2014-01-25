@@ -893,9 +893,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * @see #removeAll(Collection)
 	 * @param mask
 	 *          Another set, represented by a bit mask.
+	 * @throws MoreThan64ElementsException
+	 *           This fails if any element in this set has a higher index than 63.
 	 * @return <code>this &#x2216; mask</code>
 	 */
-	public EnumBitSet<E> minus(final long mask) {
+	public EnumBitSet<E> minus(final long mask) throws MoreThan64ElementsException {
 		if (mask == 0)
 			return this.clone();
 		return asEnumBitSet(this.toLong() & ~mask, this.enumType);
@@ -1154,9 +1156,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 	 * 
 	 * @param mask
 	 *          Bit mask of another set.
+	 * @throws MoreThan64ElementsException
+	 *           This fails if any element in this set has a higher index than 63.
 	 * @return <code> this &#x222a; set</code>
 	 */
-	public EnumBitSet<E> union(final long mask) {
+	public EnumBitSet<E> union(final long mask) throws MoreThan64ElementsException {
 		return union(asEnumSet(mask, this.enumType));
 	}
 
