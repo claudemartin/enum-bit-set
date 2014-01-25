@@ -149,7 +149,7 @@ public class EnumBitSetTest {
 
 	@Test
 	public void testRemovedFromArray() {
-		EnumSet<Element> set;
+		EnumBitSet<Element> set;
 		set = Element.C.removedFrom(Element.C, Element.D, Element.Eu);
 		assertEquals(2, set.size());
 
