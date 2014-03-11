@@ -97,8 +97,8 @@
  * <td>complement</td>
  * <td>A<sup>C</sup></td>
  * <td>&#x00AC;A</td>
- * <td><span title="U = Mask for set with all elements.">U</span> &amp; ~A</td>
- * <td>A<sup>C</sup> = <span title="Universe = All elements of the enum type.">Universe</span> &#x2216; A</td>
+ * <td><span title="D = Mask for set with all elements.">D</span> &amp; ~A</td>
+ * <td>A<sup>C</sup> = <span title="Domain = All elements of the domain.">Domain</span> &#x2216; A</td>
  * <td>All elements that are not in A.</td>
  * </tr>
  * </table>

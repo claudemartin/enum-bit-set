@@ -1,0 +1,64 @@
+package ch.claude_martin.enumbitset;
+
+import static java.util.Arrays.asList;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+public class Examples {
+
+	private static enum Permission implements EnumBitSetHelper<Permission> {
+		READ, WRITE, EXECUTE, DELETE;
+	}
+
+	public static void main(final String[] args) throws IOException {
+		final Path path = null;
+		final byte[] bytes = null;
+		final User bob = getUser("Bob");
+
+		final EnumBitSet<Permission> permissions = bob.getPermissions();
+		// Add element to EnumBitSet:
+		permissions.add(Permission.READ);
+		// Check EnumBitSet:
+		if (Permission.WRITE.elementOf(permissions))
+			Files.write(path, bytes);
+		// Functional Programming:
+		final List<User> users = getAllUsers();
+		// Get users with permission to DELETE:
+		final Stream<User> canDelete = users.stream().filter(u -> u.getPermissions().contains(Permission.DELETE));
+		// See what the group can do:
+		final Optional<EnumBitSet<Permission>> union = canDelete.<EnumBitSet<Permission>> map(u -> u.getPermissions()).reduce(EnumBitSet<Permission>::union);
+		union.ifPresent(System.out::println); // [READ, WRITE, DELETE]
+	}
+
+	private static User getUser(final String string) {
+		return new User();
+	}
+
+	private static List<User> getAllUsers() {
+		final User u1 = new User();
+		u1.getPermissions().add(Permission.DELETE);
+		u1.getPermissions().add(Permission.READ);
+		u1.getPermissions().add(Permission.WRITE);
+		final User u2 = new User();
+		u2.getPermissions().add(Permission.DELETE);
+		final User u3 = new User();
+		return asList(u1, u2, u3);
+	}
+
+	private static class User {
+		private final EnumBitSet<Permission> permissions = EnumBitSet.noneOf(Permission.class);
+
+		public User() {
+		}
+
+		EnumBitSet<Permission> getPermissions() {
+			return this.permissions;
+		}
+
+	}
+}
