@@ -21,11 +21,11 @@ import java.util.stream.StreamSupport;
  * both elements. As a Cartesian product often uses two related types this can make it easier to
  * worth with such a pair.
  * 
- * @param <TT>
+ * @param <T>
  *          A common type of both elements. <code>Object.class</code> always works.
- * @param <TX>
+ * @param <X>
  *          The type of the first element.
- * @param <TY>
+ * @param <Y>
  *          The type of the second element. */
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
@@ -47,7 +47,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
    *          The first element.
    * @param second
    *          The second element. */
-  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<?> commonType,
+  // TODO : Write test for this method.
+  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<TT> commonType,
       final TX first, final TY second) {
     if (!commonType.isAssignableFrom(first.getClass())
         || !commonType.isAssignableFrom(second.getClass()))
@@ -155,7 +156,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     return new Object[] { this.first, this.second };
   }
 
-  /** {@inheritDoc} */
+  /** Returns a string representation of this Pair.
+   * 
+   * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
   public String toString() {
     return "Pair(" + this.first + ", " + this.second + ")";
