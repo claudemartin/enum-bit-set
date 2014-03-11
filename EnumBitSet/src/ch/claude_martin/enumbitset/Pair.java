@@ -24,9 +24,9 @@ import java.util.stream.StreamSupport;
  * @param <T>
  *          A common type of both elements. <code>Object.class</code> always works.
  * @param <X>
- *          The type of the first element.
+ *          The type of the first element. Extends &lt;T&gt;.
  * @param <Y>
- *          The type of the second element. */
+ *          The type of the second element. Extends &lt;T&gt;. */
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
@@ -40,13 +40,20 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   }
 
   /** This creates the Pair and checks the types of both values.
+   * <p>
+   * The common type is checked at construction, but not available later.
    * 
    * @param commonType
    *          The type that both elements implement.
    * @param first
    *          The first element.
    * @param second
-   *          The second element. */
+   *          The second element.
+   * @throws ClassCastException
+   *           If and of the two elements is not assignable to <tt>commonType</tt>.
+   * @throws NullPointerException
+   *           If any of the elements is <tt>null</tt>.
+   * @return A new pair of the given elements. */
   // TODO : Write test for this method.
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<TT> commonType,
       final TX first, final TY second) {
@@ -56,6 +63,15 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     return new Pair<>(first, second);
   }
 
+  /** Creates a new pair.
+   * 
+   * @param first
+   *          The first element.
+   * @param second
+   *          The second element.
+   * @throws NullPointerException
+   *           If any of the elements is <tt>null</tt>.
+   * @return A new pair of the given elements. */
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final TX first,
       final TY second) {
     return new Pair<>(first, second);
@@ -78,7 +94,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** The first value of this pair. Not null. */
   public final Y second;
 
-  Pair(final X first, final Y second) {
+  private Pair(final X first, final Y second) {
     this.first = requireNonNull(first);
     this.second = requireNonNull(second);
   }
