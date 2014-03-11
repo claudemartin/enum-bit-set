@@ -219,17 +219,20 @@ public class SmallDomainBitSetTest {
 
   @Test
   public void testOfListOfTLong() {
-    final DomainBitSet<Integer> set = SmallDomainBitSet.of(asList(0, 1, 2, 3), 0b11);
+    final List<Integer> domain = asList(0, 1, 2, 3);
+    final DomainBitSet<Integer> set = SmallDomainBitSet.of(domain, 0b11L);
     assertTrue(set.getBit(0));
     assertTrue(set.getBit(1));
     assertFalse(set.getBit(2));
     assertFalse(set.getBit(3));
+    SmallDomainBitSet.of(new DefaultDomain<>(domain), 15L);
 
     try {
-      new SmallDomainBitSet<>(new DefaultDomain<>(asList(0, 1, 2, 3)), -1);
+      SmallDomainBitSet.of(new DefaultDomain<>(domain), -1L);
       fail();
     } catch (final IllegalArgumentException e) {
     }
+
   }
 
   @Test
@@ -239,16 +242,6 @@ public class SmallDomainBitSetTest {
     assertEquals(2, this.twoThree.size());
     assertEquals(2, this.threeFour.size());
     assertEquals(4, this.oneTo4.size());
-  }
-
-  @Test
-  public void testSmallDomainBitSet() {
-    new SmallDomainBitSet<>(new DefaultDomain<>(asList(0, 1, 2, 3)), 15);
-    try {
-      new SmallDomainBitSet<>(new DefaultDomain<>(asList(0, 1, 2, 3)), -1);
-      fail();
-    } catch (final IllegalArgumentException e) {
-    }
   }
 
   @Test
@@ -279,11 +272,11 @@ public class SmallDomainBitSetTest {
     for (int i = 0; i < 32; i++)
       el32.add(values[i]);
 
-    final SmallDomainBitSet<Element> none64 = new SmallDomainBitSet<>(new DefaultDomain<>(el64), 0L);
+    final SmallDomainBitSet<Element> none64 = SmallDomainBitSet.of(new DefaultDomain<>(el64), 0L);
     assertEquals(0L, none64.toLong());
     assertEquals(-1L, none64.complement().toLong());
 
-    final SmallDomainBitSet<Element> none32 = new SmallDomainBitSet<>(new DefaultDomain<>(el32), 0L);
+    final SmallDomainBitSet<Element> none32 = SmallDomainBitSet.of(new DefaultDomain<>(el32), 0L);
     assertEquals(0L, none32.toLong());
     assertEquals(-1L >>> 32, none32.complement().toLong());
   }

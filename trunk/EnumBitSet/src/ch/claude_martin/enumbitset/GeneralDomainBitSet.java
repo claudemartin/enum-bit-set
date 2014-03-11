@@ -15,33 +15,123 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-/** This implementation can be used with any type.
- * 
- * <p>
- * This implements the interface of {@link Set}, but the method {@link #equals(Object)} always
- * returns false for sets without a domain, as it also compares the domain. */
-public final class GeneralDomainBitSet<T> implements Set<T>, DomainBitSet<T> {
+/** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type. */
+public final class GeneralDomainBitSet<T> implements Collection<T>, DomainBitSet<T> {
 
-  /** Creates a set with the given domain, that contains all elements. */
-  @SafeVarargs
-  public static <X> GeneralDomainBitSet<X> allOf(final X... domain) {
-    final List<X> list = asList(domain);
-    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(list);
-    result.addAll(list);
+  /** Creates a set with the given domain, that contains all elements.
+   * 
+   * @param <X>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @return New GeneralDomainBitSet of given domain, containing all elements. */
+  public static <X> GeneralDomainBitSet<X> allOf(final LinkedHashSet<X> domain) {
+    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    result.addAll(domain);
     return result;
   }
 
+  /** Creates a set with the given domain, that contains all elements.
+   * 
+   * @param <X>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @return New GeneralDomainBitSet of given domain, containing all elements. */
+  public static <X> GeneralDomainBitSet<X> allOf(final List<X> domain) {
+    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    result.addAll(domain);
+    return result;
+  }
+
+  /** Creates a set with the given domain, that contains all elements.
+   * 
+   * @param <X>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @return New GeneralDomainBitSet of given domain, containing all elements. */
+  @SafeVarargs
+  public static <X> GeneralDomainBitSet<X> allOf(final X... domain) {
+    return allOf(asList(domain));
+  }
+
+  /** Creates an empty set with the given domain.
+   * 
+   * @param <X>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @return Empty GeneralDomainBitSet of given domain. */
+  public static <X> GeneralDomainBitSet<X> noneOf(final LinkedHashSet<X> domain) {
+    return new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+  }
+
+  /** Creates an empty set with the given domain.
+   * 
+   * @param <X>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @return Empty GeneralDomainBitSet of given domain. */
+  public static <X> GeneralDomainBitSet<X> noneOf(final List<X> domain) {
+    return new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+  }
+
+  /** Creates an empty set with the given domain.
+   * 
+   * @param <X>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @return Empty GeneralDomainBitSet of given domain. */
   @SafeVarargs
   public static <X> GeneralDomainBitSet<X> noneOf(final X... domain) {
-    return new GeneralDomainBitSet<>(asList(domain));
+    return noneOf(asList(domain));
+  }
+
+  /** Creates an empty set with the given domain, containing the given elements.
+   * 
+   * @param <T>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @param initialSet
+   *          The elements to be contained.
+   * @return New GeneralDomainBitSet of given domain and elements. */
+  public static <T> GeneralDomainBitSet<T> of(final LinkedHashSet<T> domain,
+      final Collection<T> initialSet) {
+    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    result.addAll(initialSet);
+    return result;
+  }
+
+  /** Creates an empty set with the given domain, containing the given elements.
+   * 
+   * @param <T>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The domain.
+   * @param initialSet
+   *          The elements to be contained.
+   * @return New GeneralDomainBitSet of given domain and elements. */
+  public static <T> GeneralDomainBitSet<T> of(final List<T> domain, final Collection<T> initialSet) {
+    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    result.addAll(initialSet);
+    return result;
   }
 
   private final Set<T>    set;
 
   private final Domain<T> domain;
 
+  private GeneralDomainBitSet(final Domain<T> domain) {
+    this.domain = domain;
+    this.set = new HashSet<>();
+  }
+
   /** Copy-Constructor that returns an exact clone. */
-  public GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset) {
+  private GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset) {
     this.domain = bitset.domain;
     this.set = new HashSet<>(bitset.set);
   }
@@ -55,34 +145,6 @@ public final class GeneralDomainBitSet<T> implements Set<T>, DomainBitSet<T> {
   private GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset, final boolean empty) {
     this.domain = bitset.domain;
     this.set = empty ? new HashSet<>(this.domain.size()) : new HashSet<T>(bitset.domain);
-  }
-
-  public GeneralDomainBitSet(final LinkedHashSet<T> domain) {
-    this.domain = new DefaultDomain<>(domain);
-    this.set = new HashSet<>();
-  }
-
-  public GeneralDomainBitSet(final LinkedHashSet<T> domain, final Set<T> initialSet) {
-    this(domain);
-    for (final T t : initialSet) {
-      if (!domain.contains(t))
-        throw new IllegalArgumentException("Domain does not contain " + t);
-      this.set.add(t);
-    }
-  }
-
-  public GeneralDomainBitSet(final List<T> domain) {
-    this.domain = new DefaultDomain<>(domain);
-    this.set = new HashSet<>();
-  }
-
-  public GeneralDomainBitSet(final List<T> domain, final Set<T> initialSet) {
-    this(domain);
-    for (final T t : initialSet) {
-      if (!this.domain.contains(t))
-        throw new IllegalArgumentException("Domain does not contain " + t);
-      this.set.add(t);
-    }
   }
 
   @Override
@@ -157,7 +219,7 @@ public final class GeneralDomainBitSet<T> implements Set<T>, DomainBitSet<T> {
   @SuppressWarnings("unchecked")
   public boolean equals(final Object o) {
     return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
-        && this.set.equals(o);
+        && this.ofEqualElements((DomainBitSet<T>) o);
   }
 
   @Override
@@ -281,6 +343,13 @@ public final class GeneralDomainBitSet<T> implements Set<T>, DomainBitSet<T> {
   }
 
   @Override
+  public boolean ofEqualElements(final DomainBitSet<T> other) {
+    if (other instanceof GeneralDomainBitSet)
+      return this.set.equals(((GeneralDomainBitSet<T>) other).set);
+    return this.set.equals(other.toSet());
+  }
+
+  @Override
   public Stream<T> parallelStream() {
     return this.set.parallelStream();
   }
@@ -346,7 +415,9 @@ public final class GeneralDomainBitSet<T> implements Set<T>, DomainBitSet<T> {
     return result;
   }
 
-  /** Returns a new LinkedHashSet with the same elements, ordered as they appear in the domain. */
+  /** Returns a new LinkedHashSet with the same elements, ordered as they appear in the domain.
+   * 
+   * @return A {@link LinkedHashSet} containing all elements of this set. */
   public LinkedHashSet<T> toLinkedHashSet() {
     final LinkedHashSet<T> result = new LinkedHashSet<>();
     for (final T t : this.domain)

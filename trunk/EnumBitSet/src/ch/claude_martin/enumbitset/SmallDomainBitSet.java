@@ -55,6 +55,20 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
   /** Creates a set with the given domain, that contains all elements.
    * 
    * @param <T>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The type of the domain.
+   * @return A SmallDomainBitSet containing all elements of the given domain. */
+  public static <T> SmallDomainBitSet<T> allOf(final List<T> domain) {
+    if (domain.size() == 64)
+      return SmallDomainBitSet.<T> of(domain, -1L);
+    else
+      return SmallDomainBitSet.<T> of(domain, (1L << domain.size()) - 1L);
+  }
+
+  /** Creates a set with the given domain, that contains all elements.
+   * 
+   * @param <T>
    *          The type of the domain.
    * @param domain
    *          The domain.
@@ -62,32 +76,54 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
    * @return A SmallDomainBitSet containing all elements of the given domain. */
   @SafeVarargs
   public static <T> SmallDomainBitSet<T> allOf(final T... domain) {
-    return SmallDomainBitSet.<T> of(asList(domain), (1L << domain.length) - 1L);
+    return allOf(asList(domain));
   }
 
   /** Creates a set with the given domain, that contains none of the elements.
    * 
+   * @param <T>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The elements of the domain.
+   * @return Empty SmallDomainBitSet based on the given domain. */
+  public static <T> SmallDomainBitSet<T> noneOf(final List<T> domain) {
+    return SmallDomainBitSet.of(new DefaultDomain<>(domain), 0L);
+  }
+
+  /** Creates a set with the given domain, that contains none of the elements.
+   * 
+   * @param <T>
+   *          The type of the set and its domain.
    * @param domain
    *          The elements of the domain.
    * @return Empty SmallDomainBitSet based on the given domain. */
   @SafeVarargs
   public static <T> SmallDomainBitSet<T> noneOf(final T... domain) {
-    return SmallDomainBitSet.<T> of(asList(domain), 0L);
+    return noneOf(asList(domain));
   }
 
-  private static <T> SmallDomainBitSet<T> of(final Domain<T> domain, final long set) {
-    final SmallDomainBitSet<T> result = new SmallDomainBitSet<>(domain, set);
-    result.checkMask(set);
-    return result;
-  }
-
-  /** Create a new SmallDomainBitSet.
+  /** Creates a set with the given domain, containing all given elements.
    * 
+   * @param <T>
+   *          The type of the set and its domain.
    * @param domain
-   *          The domain for the set.
+   *          The elements of the domain.
    * @param set
-   *          The elements of the set.
-   * @return A set with the given domain and the given elements. */
+   *          The elements.
+   * @return SmallDomainBitSet based on the given domain and set. */
+  private static <T> SmallDomainBitSet<T> of(final Domain<T> domain, final long set) {
+    return new SmallDomainBitSet<>(domain, set);
+  }
+
+  /** Creates a set with the given domain, containing all given elements.
+   * 
+   * @param <T>
+   *          The type of the set and its domain.
+   * @param domain
+   *          The elements of the domain.
+   * @param set
+   *          The elements.
+   * @return SmallDomainBitSet based on the given domain and set. */
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final Collection<T> set) {
     int i = 0;
     long mask = 0L;
@@ -101,6 +137,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
 
   /** Creates a set with the given domain, containing elements according to a given bit mask.
    * 
+   * @param <T>
+   *          The type of the set and its domain.
    * @param domain
    *          The elements of the domain.
    * @param mask
@@ -112,6 +150,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
 
   /** Creates a set with the given domain, containing all given elements.
    * 
+   * @param <T>
+   *          The type of the set and its domain.
    * @param domain
    *          The elements of the domain.
    * @param set
@@ -130,7 +170,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
 
   private int             hash = 0;
 
-  SmallDomainBitSet(final Domain<T> domain, final long set) {
+  private SmallDomainBitSet(final Domain<T> domain, final long set) {
     this.domain = domain;
     this.set = set;
     final int size = this.domain.size();

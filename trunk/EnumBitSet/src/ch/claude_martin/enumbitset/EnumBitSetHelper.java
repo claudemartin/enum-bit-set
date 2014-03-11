@@ -114,7 +114,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     return requireNonNull(bitset).get(((E) this).ordinal());
   }
 
-  /** Returns whether this enum can be found in the list of enums of the same type.
+  /** Returns whether this enum constant can be found in the array of constants of the same type.
    * 
    * @param set
    *          A set of enum elements, all non-null and of the same enum type.
@@ -240,10 +240,14 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     return mask & this.bitmask64();
   }
 
-  /** @see Enum#name() */
+  /** Returns the name of this enum constant, exactly as declared in its enum declaration.
+   * 
+   * @see Enum#name()
+   * @return the name of this enumeration constant */
   public String name();
 
-  /** @see Enum#ordinal() */
+  /** @see Enum#ordinal()
+   * @return the ordinal of this enumeration constant */
   public int ordinal();
 
   /** Returns a set of all elements except <code>this</code>.
@@ -416,9 +420,10 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     return result;
   }
 
-  /** Note that there is another way using {@link EnumSet#of(Enum) of(...)}. The following
-   * expressions define the same set: <br>
-   * <code>Planet.<b>EARTH</b>.or(Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)<br>
+  /** Creates an EnumBitSet containing this and all other elements.
+   * <p>
+   * Note that there are other ways to do this. The following expressions define the same set: <br>
+   * <code>Planet.<b>EARTH</b>.union(Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)<br>
    * Planet.of(Planet.<b>EARTH</b>, Planet.<b>MARS</b>, Planet.<b>JUPITER</b>)</code>
    * 
    * @see EnumSet#of(Enum)

@@ -31,6 +31,14 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
    * @see #uncurry(BiFunction)
+   * @param <TT>
+   *          Common type
+   * @param <TX>
+   *          Type of first element. Extends TT.
+   * @param <TY>
+   *          Type of second element. Extends TT.
+   * @param <R>
+   *          Return type of <i>f</i>.
    * @param f
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
@@ -43,6 +51,12 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
    * <p>
    * The common type is checked at construction, but not available later.
    * 
+   * @param <TT>
+   *          Common type
+   * @param <TX>
+   *          Type of first element. Extends TT.
+   * @param <TY>
+   *          Type of second element. Extends TT.
    * @param commonType
    *          The type that both elements implement.
    * @param first
@@ -65,6 +79,12 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
 
   /** Creates a new pair.
    * 
+   * @param <TT>
+   *          Common type
+   * @param <TX>
+   *          Type of first element. Extends TT.
+   * @param <TY>
+   *          Type of second element. Extends TT.
    * @param first
    *          The first element.
    * @param second
@@ -80,6 +100,14 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
    * 
    * @see #curry(Function)
+   * @param <TT>
+   *          Common type
+   * @param <TX>
+   *          Type of first element. Extends TT.
+   * @param <TY>
+   *          Type of second element. Extends TT.
+   * @param <R>
+   *          Return type of <i>f</i>.
    * @param f
    *          A BiFunction that takes two elements.
    * @return A Function that takes a pair and applies both elements on the given Function. */
@@ -99,13 +127,13 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     this.second = requireNonNull(second);
   }
 
-  /** @return <code>this</code> */
+  /** {@inheritDoc} @return <code>this</code> */
   @Override
   public Pair<T, X, Y> clone() {
     return this;
   }
 
-  /** {@inheritDoc} */
+  /** {@inheritDoc} @return <code>true</code>, iff both first and second are equal. */
   @Override
   public boolean equals(final Object obj) {
     return obj instanceof Pair //
@@ -113,7 +141,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
         && Objects.equals(this.second, ((Pair<?, ?, ?>) obj).second);
   }
 
-  /** {@inheritDoc} */
+  /** {@inheritDoc} @return <code>Objects.hash(this.first, this.second)</code> */
   @Override
   public int hashCode() {
     return Objects.hash(this.first, this.second);

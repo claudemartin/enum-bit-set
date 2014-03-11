@@ -46,7 +46,27 @@ import java.util.function.BiFunction;
  *          A type that all elements in the domain share. */
 public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
-  /** Creates a set with the given domain, that contains all elements. */
+  /** Creates a set with the given domain, that contains all elements.
+   * 
+   * @param <T>
+   *          The type of the elements.
+   * @param elements
+   *          The elements of the domain and the set.
+   * @return A new DomainBitSet containing all given elements. */
+  public static <T> DomainBitSet<T> allOf(final List<T> elements) {
+    if (elements.size() > 64)
+      return GeneralDomainBitSet.allOf(elements);
+    else
+      return SmallDomainBitSet.allOf(elements);
+  }
+
+  /** Creates a set with the given domain, that contains all elements.
+   * 
+   * @param <T>
+   *          The type of the elements.
+   * @param elements
+   *          The elements of the domain and the set.
+   * @return A new DomainBitSet containing all given elements. */
   @SafeVarargs
   public static <T> DomainBitSet<T> allOf(final T... elements) {
     if (elements.length > 64)
@@ -67,9 +87,38 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
       for (final E e : EnumSet.allOf((Class<E>) type))
         dom.add(e);
     if (dom.size() > 64)
-      return new GeneralDomainBitSet<>(dom);
+      return GeneralDomainBitSet.noneOf(dom);
     else
-      return SmallDomainBitSet.of(dom, 0L);
+      return SmallDomainBitSet.noneOf(dom);
+  }
+
+  /** Creates a set with the given domain, that contains none of the elements.
+   * 
+   * @param <T>
+   *          The type of the elements.
+   * @param elements
+   *          The elements of the domain.
+   * @return A new DomainBitSet containing none of the given elements. */
+  public static <T> DomainBitSet<T> noneOf(final List<T> elements) {
+    if (elements.size() > 64)
+      return GeneralDomainBitSet.noneOf(elements);
+    else
+      return SmallDomainBitSet.noneOf(elements);
+  }
+
+  /** Creates a set with the given domain, that contains none of the elements.
+   * 
+   * @param <T>
+   *          The type of the elements.
+   * @param elements
+   *          The elements of the domain.
+   * @return A new DomainBitSet containing none of the given elements. */
+  @SafeVarargs
+  public static <T> DomainBitSet<T> noneOf(final T... elements) {
+    if (elements.length > 64)
+      return GeneralDomainBitSet.noneOf(elements);
+    else
+      return SmallDomainBitSet.noneOf(elements);
   }
 
   /** Default implementation of a {@link java.lang.Cloneable cloning-method} using
@@ -84,7 +133,10 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * that are not contained in this set.
    * 
    * @return The complement of this set. */
-  public DomainBitSet<T> complement();
+  public default DomainBitSet<T> complement() {
+    return allOf(getDomain()).minus(this);
+
+  }
 
   /** Returns <tt>true</tt> if this set contains the specified element.
    *
@@ -170,7 +222,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * <code>this.toSet().equals(other.toSet())</code>
    * <p>
    * Comparison of domain only: <br/>
-   * <code>this.ofEqualDomain(other)</code> */
+   * <code>this.ofEqualDomain(other)</code>
+   * 
+   * @see #ofEqualElements(DomainBitSet) */
   @Override
   public boolean equals(final Object other);
 
@@ -305,7 +359,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** Compares the domains.
    * <p>
-   * This is euql to, but could be a bit faster than
+   * This is equal to, but could be a bit faster than
    * <code>this.getDomain().equals(set.getDomain())</code>.
    * 
    * @param set
@@ -313,6 +367,18 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return <code>true</code> if both are of equal domains. */
   public default boolean ofEqualDomain(final DomainBitSet<T> set) {
     return this.getDomain().equals(set.getDomain());
+  }
+
+  /** Compares the elements, ignoring the domains.
+   * <p>
+   * This is equal to, but could be a bit faster than <code>this.toSet().equals(set.toSet())</code>.
+   * 
+   * @param set
+   *          The other set.
+   * @see Set#equals(Object)
+   * @return <code>true</code> if both are contain the same elements. */
+  public default boolean ofEqualElements(final DomainBitSet<T> set) {
+    return this.toSet().equals(set.toSet());
   }
 
   /** The number of elements in this set.
