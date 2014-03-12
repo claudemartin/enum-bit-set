@@ -44,7 +44,9 @@ import java.util.stream.StreamSupport;
  * appear in the domain.
  * 
  * @param <T>
- *          A type that all elements in the domain share. */
+ *          A type that all elements in the domain share.
+ * 
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** Creates a set with the given domain, that contains all elements.

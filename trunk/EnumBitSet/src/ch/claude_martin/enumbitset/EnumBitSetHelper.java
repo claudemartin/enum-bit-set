@@ -10,15 +10,15 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.EnumSet;
 
-/** This adds support to use bit fields and bit masks for the enym type. The set of enum values is
- * interpreted as an {@link EnumBitSet enum bit set}, which can be stored to a bit field (i.e. an
- * integer field in a database).
+/** This extends any enum type with methods for bitwise operations and use in an {@link EnumBitSet}.
+ * A set of such enum values can be interpreted as an {@link EnumBitSet enum bit set}, which can be
+ * stored to a bit field (i.e. an integer field in a database).
  * 
  * <p>
  * Since this is an interface it does not change the state of the element it is used on or any
  * parameters passed to a method. Instead it always returns a newly created object. I.e. all methods
- * that take a Set return a new Set. If you wish to alter the set you can simply use the methods of
- * that set.
+ * that take an EnumBitSet return a new EnumBitSet. If you wish to alter such a set you can simply
+ * use the methods of that set.
  * 
  * <p>
  * Examples for usage:

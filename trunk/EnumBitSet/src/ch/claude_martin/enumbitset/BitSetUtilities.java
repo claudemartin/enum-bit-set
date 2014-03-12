@@ -5,6 +5,9 @@ import static java.util.Objects.requireNonNull;
 import java.math.BigInteger;
 import java.util.BitSet;
 
+/** A collection of utility methods for {@link DomainBitSet}s.
+ * 
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 public class BitSetUtilities {
 
   /** Creates a BigInteger of a given bit set. The value is a positive value with the same "value" as
