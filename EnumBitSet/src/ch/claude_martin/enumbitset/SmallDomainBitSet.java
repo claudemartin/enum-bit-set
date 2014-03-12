@@ -40,7 +40,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
 
     @Override
     public boolean hasNext() {
-      return this.next != 0;
+      return this.next != 0L;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
       do {
         this.pos++;
         this.next >>>= 1;
-      } while (this.next != 0 && (this.next & 1L) == 0);
+      } while (this.next != 0L && (this.next & 1L) == 0L);
       return result;
     }
   }
