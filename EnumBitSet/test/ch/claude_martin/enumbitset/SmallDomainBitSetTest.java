@@ -6,6 +6,9 @@ import static ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet.D;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet.E;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet.L;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet.U;
+import static ch.claude_martin.enumbitset.SmallDomainBitSet.allOf;
+import static ch.claude_martin.enumbitset.SmallDomainBitSet.noneOf;
+import static ch.claude_martin.enumbitset.SmallDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -37,16 +40,16 @@ public class SmallDomainBitSetTest {
         .of(asList(Alphabet.values()), C, L, A, U, D, E);
   }
 
-  SmallDomainBitSet<Integer> none      = SmallDomainBitSet.noneOf(1, 2, 3, 4);
-  SmallDomainBitSet<Integer> oneTo4    = SmallDomainBitSet.allOf(1, 2, 3, 4);
-  SmallDomainBitSet<Integer> oneTwo    = SmallDomainBitSet.of(this.none.getDomain(), asList(1, 2));
-  SmallDomainBitSet<Integer> twoThree  = SmallDomainBitSet.of(this.none.getDomain(), asList(2, 3));
+  SmallDomainBitSet<Integer> none      = noneOf(1, 2, 3, 4);
+  SmallDomainBitSet<Integer> oneTo4    = allOf(1, 2, 3, 4);
+  SmallDomainBitSet<Integer> oneTwo    = of(this.none.getDomain(), asList(1, 2));
+  SmallDomainBitSet<Integer> twoThree  = of(this.none.getDomain(), asList(2, 3));
 
-  SmallDomainBitSet<Integer> threeFour = SmallDomainBitSet.of(this.none.getDomain(), asList(3, 4));
+  SmallDomainBitSet<Integer> threeFour = of(this.none.getDomain(), asList(3, 4));
 
   @Test
   public void testAllOf() {
-    final SmallDomainBitSet<Integer> allOf = SmallDomainBitSet.allOf(1, 2, 3, 4, 5, 6);
+    final SmallDomainBitSet<Integer> allOf = allOf(1, 2, 3, 4, 5, 6);
     assertEquals(6, allOf.size());
     assertEquals(0, allOf.complement().size());
   }
@@ -136,7 +139,7 @@ public class SmallDomainBitSetTest {
 
   @Test
   public void testIterator() {
-    final SmallDomainBitSet<String> foo = SmallDomainBitSet.of(asList("a", "b", "c"), "b", "c");
+    final SmallDomainBitSet<String> foo = of(asList("a", "b", "c"), "b", "c");
     for (final String string : foo) {
       assertFalse(string.equals("a"));
       assertTrue(string.equals("b") || string.equals("c"));
@@ -189,7 +192,7 @@ public class SmallDomainBitSetTest {
     } catch (final Exception e) {
     }
 
-    final DomainBitSet<Element> set = SmallDomainBitSet.of(asList(Element.values()).subList(0, 64));
+    final DomainBitSet<Element> set = of(asList(Element.values()).subList(0, 64));
     assertTrue(set.minus(-1).isEmpty());
   }
 
@@ -202,17 +205,34 @@ public class SmallDomainBitSetTest {
 
   @Test
   public void testNoneOf() {
-    final SmallDomainBitSet<Integer> noneOf = SmallDomainBitSet.noneOf(1, 2, 3, 4, 5, 6);
+    final SmallDomainBitSet<Integer> noneOf = noneOf(1, 2, 3, 4, 5, 6);
     assertEquals(0, noneOf.size());
     assertEquals(6, noneOf.complement().size());
   }
 
   @Test
+  public void testOfEqualDomain() throws Exception {
+    assertTrue(this.threeFour.ofEqualDomain(this.threeFour));
+    assertTrue(this.threeFour.ofEqualDomain(this.threeFour.clone()));
+    assertTrue(this.threeFour.ofEqualDomain(this.twoThree));
+    assertFalse(this.threeFour.ofEqualDomain(allOf(3, 4)));
+    assertTrue(allOf().ofEqualDomain(noneOf()));
+  }
+
+  @Test
+  public void testOfEqualElements() throws Exception {
+    assertTrue(this.threeFour.ofEqualElements(this.threeFour));
+    assertTrue(this.threeFour.ofEqualElements(this.threeFour.clone()));
+    assertFalse(this.threeFour.ofEqualElements(this.twoThree));
+    assertTrue(this.threeFour.ofEqualElements(allOf(3, 4)));
+    assertTrue(this.none.ofEqualElements(allOf()));
+  }
+
+  @Test
   public void testOfListOfT_() {
-    final SmallDomainBitSet<String> of1 = SmallDomainBitSet.<String> of(asList("a", "b", "c"),
-        asList("b", "c"));
+    final SmallDomainBitSet<String> of1 = of(asList("a", "b", "c"), asList("b", "c"));
     assertTrue(of1.contains("b"));
-    final SmallDomainBitSet<String> of2 = SmallDomainBitSet.of(asList("a", "b", "c"), "b", "c");
+    final SmallDomainBitSet<String> of2 = of(asList("a", "b", "c"), "b", "c");
     assertTrue(of2.contains("b"));
     assertEquals(of1, of2);
   }
@@ -220,15 +240,15 @@ public class SmallDomainBitSetTest {
   @Test
   public void testOfListOfTLong() {
     final List<Integer> domain = asList(0, 1, 2, 3);
-    final DomainBitSet<Integer> set = SmallDomainBitSet.of(domain, 0b11L);
+    final DomainBitSet<Integer> set = of(domain, 0b11L);
     assertTrue(set.getBit(0));
     assertTrue(set.getBit(1));
     assertFalse(set.getBit(2));
     assertFalse(set.getBit(3));
-    SmallDomainBitSet.of(new DefaultDomain<>(domain), 15L);
+    of(new DefaultDomain<>(domain), 15L);
 
     try {
-      SmallDomainBitSet.of(new DefaultDomain<>(domain), -1L);
+      of(new DefaultDomain<>(domain), -1L);
       fail();
     } catch (final IllegalArgumentException e) {
     }
@@ -257,7 +277,7 @@ public class SmallDomainBitSetTest {
     for (int i = 0; i < 4; i++)
       assertTrue(bitSet.get(i));
 
-    bitSet = SmallDomainBitSet.<Integer> of(asList(0, 1, 2, 3, 4), singleton(3)).toBitSet();
+    bitSet = of(asList(0, 1, 2, 3, 4), singleton(3)).toBitSet();
     assertTrue(bitSet.get(3));
     assertEquals(1, bitSet.cardinality());
   }
@@ -272,11 +292,11 @@ public class SmallDomainBitSetTest {
     for (int i = 0; i < 32; i++)
       el32.add(values[i]);
 
-    final SmallDomainBitSet<Element> none64 = SmallDomainBitSet.of(new DefaultDomain<>(el64), 0L);
+    final SmallDomainBitSet<Element> none64 = of(new DefaultDomain<>(el64), 0L);
     assertEquals(0L, none64.toLong());
     assertEquals(-1L, none64.complement().toLong());
 
-    final SmallDomainBitSet<Element> none32 = SmallDomainBitSet.of(new DefaultDomain<>(el32), 0L);
+    final SmallDomainBitSet<Element> none32 = of(new DefaultDomain<>(el32), 0L);
     assertEquals(0L, none32.toLong());
     assertEquals(-1L >>> 32, none32.complement().toLong());
   }
@@ -335,4 +355,13 @@ public class SmallDomainBitSetTest {
     assertEquals(this.oneTwo, this.oneTwo.unionVarArgs(1, 2));
   }
 
+  @Test
+  public void testZipWithPosition() throws Exception {
+    for (final DomainBitSet<Integer> s : asList(this.oneTo4, this.none, this.oneTwo, this.twoThree,
+        this.threeFour)) {
+      s.zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
+      s.complement().zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
+      assertEquals(s.size(), s.zipWithPosition().count());
+    }
+  }
 }

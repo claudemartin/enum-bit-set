@@ -8,11 +8,13 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
 
 /** BitSet with a domain of up to 64 elements. This is checked at creation, so that it is not thrown
  * later. However, a mask that has a larger domain causes an {@link IllegalArgumentException}
@@ -24,14 +26,14 @@ import java.util.Set;
 public class SmallDomainBitSet<T> implements DomainBitSet<T> {
   private static final class Itr<T> implements Iterator<T> {
     private final Domain<T> dom;
-    private int             current = 0;
+    private int             pos = 0;
     private long            next;
 
     public Itr(final Domain<T> d, final long mask) {
       this.dom = d;
       this.next = mask;
       while (this.next != 0L && (this.next & 1L) == 0L) {
-        this.current++;
+        this.pos++;
         this.next >>>= 1;
       }
     }
@@ -43,9 +45,9 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
 
     @Override
     public T next() {
-      final T result = this.dom.get(this.current);
+      final T result = this.dom.get(this.pos);
       do {
-        this.current++;
+        this.pos++;
         this.next >>>= 1;
       } while (this.next != 0 && (this.next & 1L) == 0);
       return result;
@@ -263,6 +265,11 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
   }
 
   @Override
+  public boolean isEmpty() {
+    return this.set == 0L;
+  }
+
+  @Override
   public Iterator<T> iterator() {
     return new Itr<>(this.domain, this.set);
   }
@@ -310,8 +317,26 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
   }
 
   @Override
+  public boolean ofEqualElements(final DomainBitSet<T> other) {
+    if (this == other)
+      return true;
+    if (other == null)
+      return false;
+    if (this.isEmpty())
+      return other.isEmpty();
+    // note: the other SmallDBS could have a different domain, but still contain the same elements!
+    return this.size() == other.size() && this.stream().allMatch(other::contains);
+  }
+
+  @Override
   public int size() {
     return Long.bitCount(this.set);
+  }
+
+  @Override
+  public Spliterator<T> spliterator() {
+    return Spliterators.spliterator(this.iterator(), this.size(), Spliterator.SIZED
+        | Spliterator.DISTINCT | Spliterator.NONNULL | Spliterator.IMMUTABLE);
   }
 
   @Override
@@ -331,10 +356,9 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
 
   @Override
   public Set<T> toSet() {
-    final Set<T> result = new LinkedHashSet<>();
-    for (final T t : this)
-      result.add(t);
-    return Collections.unmodifiableSet(result);
+    final Set<T> result = new LinkedHashSet<>(this.size());
+    this.forEach(result::add);
+    return result;
   }
 
   @Override
@@ -377,5 +401,10 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
   @Override
   public DomainBitSet<T> unionVarArgs(@SuppressWarnings("unchecked") final T... elements) {
     return new SmallDomainBitSet<>(this.domain, this.set | this.arrayToLong(elements));
+  }
+
+  @Override
+  public Stream<Pair<Object, Integer, T>> zipWithPosition() {
+    return this.stream().map(e -> Pair.of(this.domain.indexOf(e), e));
   }
 }

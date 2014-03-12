@@ -1,7 +1,9 @@
 package ch.claude_martin.enumbitset;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -9,6 +11,7 @@ import java.math.BigInteger;
 import java.util.BitSet;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -624,12 +627,14 @@ public class EnumBitSetTest {
   public void testToEnumSet() throws Exception {
     final EnumBitSet<Alphabet> set = Alphabet.A.toEnumBitSet();
     final EnumSet<Alphabet> set2 = set.toEnumSet();
-    assertEquals(set, set2);
-    assertEquals(set2, set);
+    assertEquals(set.toSet(), set2);
+    assertNotEquals(set, set2);// set2 has no domain
+    assertEquals(set2, set.toEnumSet());
+    assertNotEquals(set2, set);// set is not a j.u.Set
     // Must be a new, independent set:
     set2.add(Alphabet.B);
-    assertFalse(set2.equals(set));
-    assertFalse(set.equals(set2));
+    assertFalse(set2.equals(set.toSet()));
+    assertFalse(set.toSet().equals(set2));
   }
 
   @Test
@@ -703,5 +708,25 @@ public class EnumBitSetTest {
   public void testXor() {
     assertEquals(BigInteger.ZERO, Alphabet.A.xor(BigInteger.ONE));
     assertEquals(BigInteger.valueOf(3), Alphabet.B.xor(BigInteger.ONE));
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Test
+  public <E extends Enum<E> & EnumBitSetHelper<E>> void testZipWithPosition() throws Exception {
+    final List<DomainBitSet<E>> list = new LinkedList<>();
+    for (final Class c : asList(Alphabet.class, Element.class, Suit.class)) {
+      final EnumBitSet<E> allOf = EnumBitSet.allOf(c);
+      list.add(allOf);
+      list.add(allOf.complement());
+      list.add(allOf.minus(BigInteger.valueOf(0b1010L)));
+      list.add(allOf.minus(BigInteger.valueOf(0b0101L)));
+      list.add(allOf.minus(allOf.stream().limit(10).collect(Collectors.toList())));
+      list.add(allOf.minus(allOf.stream().filter(x -> x.bitmask().isProbablePrime(1))
+          .collect(Collectors.toList())));
+    }
+    for (final DomainBitSet<? extends Enum<?>> s : list) {
+      s.zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second.ordinal()));
+      assertEquals(s.size(), s.zipWithPosition().count());
+    }
   }
 }

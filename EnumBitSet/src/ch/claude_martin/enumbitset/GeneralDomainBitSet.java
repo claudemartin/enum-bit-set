@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type. */
-public final class GeneralDomainBitSet<T> implements Collection<T>, DomainBitSet<T> {
+public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection<T> {
 
   /** Creates a set with the given domain, that contains all elements.
    * 
