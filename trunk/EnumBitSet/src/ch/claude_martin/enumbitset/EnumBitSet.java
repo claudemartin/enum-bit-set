@@ -13,25 +13,28 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-/** EnumSet and BitSet in one mutable object. This holds a regular EnumSet, but adds more functions
- * to use it as a BitSet. Note that the implementation of EnumSet works like a bit set but the
- * interface doesn't allow to use it as such.
+/** This data structure allows managing enum constants in a mutable set with methods similar to
+ * EnumSet and BitSet. This holds a regular EnumSet, but adds more functions to use it as a BitSet.
+ * Note that the implementation of EnumSet works like a bit set but it does not share an interface
+ * with the type.
  * 
  * <p>
  * All information is hidden. But this class offers many more methods compared to {@link EnumSet}.
  * Those extra methods are inspired by set theory so that set operations are much simpler to perform
- * with the given methods.
+ * with the given methods. These methods are defined in the interface {@link DomainBitSet}.
  * 
  * <p>
  * Methods such as {@link #union(EnumBitSet)}, {@link #toEnumSet()}, and {@link #complement()}
  * return a new and independent set. This allows a functional style of programming.
  * 
- * However, this set is mutable. It can be altered using the interface of {@link Set} (
+ * However, this set is mutable. It can be altered using the interface of {@link Collection} (
  * {@link #add(Enum)}, {@link #remove(Object)} etc.). This allows the classic imperative style of
  * programming.
  * 
@@ -55,7 +58,7 @@ import java.util.function.Consumer;
  * @param <E>
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
 public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implements DomainBitSet<E>,
-    Set<E> {
+    Collection<E> {
 
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
    * 
@@ -376,15 +379,19 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
         requireNonNull(to)));
   }
 
-  private final EnumSet<E>                                                                         bitset;
+  private final EnumSet<E>    bitset;
 
-  private final Class<E>                                                                           enumType;
+  private final Class<E>      enumType;
 
   // Note that is is intentionally not marked as "volatile". Visibility is guaranteed by JMM.
-  private volatile int                                                                             enumTypeSize = -1;
+  private volatile int        enumTypeSize = -1;
 
-  private Domain<E>                                                                                domain       = null;
-  private static final HashMap<Class<? extends Enum<?>>, SoftReference<Domain<? extends Enum<?>>>> domainCache  = new HashMap<>();
+  private Domain<E>           domain       = null;
+
+  private static final// domainCache:
+  Map<Class<? extends Enum<?>>, // Maps Enum-Type to Domain
+  SoftReference<// Allows GC to collect unused Domains
+  Domain<? extends Enum<?>>>> domainCache  = new HashMap<>();
 
   private EnumBitSet(final Class<E> type) {
     this(type, EnumSet.noneOf(type));
@@ -443,6 +450,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** The Cartesian product with another EnumBitSet. This overload only differs in that its generic
    * return type uses {@link Enum} and {@link EnumBitSetHelper} instead of Object.
    * 
+   * @param <Y>
+   *          The type of the elements in the given set.
    * @param set
    *          Another set.
    * @return an {@link ArrayList} containing all {@link Pair pairs}.
@@ -452,11 +461,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     final ArrayList<Pair<EnumBitSetHelper<?>, E, Y>> result = new ArrayList<>(this.size()
         * set.size());
     // Could be written like this:
-    // this.cross(set, Pair::of.andThen(result::add));
-    // But javac can't infer the type, but this would work:
-    // this.cross(set, ((BiFunction<E, Y, Pair<EnumBitSetHelper<?>, E, Y>>)
-    // Pair::of).andThen(result::add));
-    // However, this looks much nicer:
+    // this.cross(set, Pair.curry(result::add));
+    // But javac can't infer the type.
     this.cross(set, (x, y) -> result.add(Pair.of(x, y)));
     return result;
   }
@@ -469,28 +475,42 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     return object.getDeclaringClass() == this.enumType;
   }
 
-  /** {@inheritDoc}
+  /** Compares the specified object with this domain bit set for equality. Returns <tt>true</tt>, iff
+   * the given object is also a {@link DomainBitSet}, the two sets have the same domain, and every
+   * member of the given set is contained in this set.
    * 
-   * @see EnumSet#equals(Object) */
+   * @see DomainBitSet#equals(Object)
+   * @see #ofEqualElements(DomainBitSet)
+   * @return True, if this also a {@link DomainBitSet}, with the same domain and elements. */
+  @SuppressWarnings("unchecked")
   @Override
-  public boolean equals(final Object obj) {
-    return this.bitset.equals(obj);
+  public boolean equals(final Object other) {
+    if (this == other)
+      return true;
+    if (other instanceof EnumBitSet)
+      return this.enumType == ((EnumBitSet<E>) other).enumType
+          && this.bitset.equals(((EnumBitSet<E>) other).bitset);
+    if (other instanceof DomainBitSet)
+      return this.ofEqualDomain((DomainBitSet<E>) other)
+          && this.ofEqualElements((DomainBitSet<E>) other);
+    return false;
   }
 
   @Override
   public void forEach(final Consumer<? super E> action) {
-    requireNonNull(action);
-    for (final E e : this.bitset)
-      action.accept(e);
+    this.bitset.forEach(requireNonNull(action));
   }
 
+  /** {@inheritDoc}
+   * 
+   * @see #getElement(int) */
   @Override
   public boolean getBit(final int bitIndex) throws IndexOutOfBoundsException {
     final int size = this.getEnumTypeSize();
     if (bitIndex < 0 || bitIndex >= size)
       throw new IndexOutOfBoundsException();
     if (size <= 64)
-      return (this.toLong() >>> bitIndex) % 2 == 1;
+      return (this.toLong() >>> bitIndex) % 2L == 1L;
     // Using getDomain should be faster as the domain is cached.
     final boolean result = this.bitset.contains(this.getDomain().get(bitIndex));
     assert result == this.toBitSet().get(bitIndex);
@@ -613,8 +633,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * <code>set</code>.
    * 
    * @see #complement()
-   * @param mask
-   *          Another set..
+   * @param set
+   *          Another set.
    * @return <code> this &#x2229; set</code> */
   @Override
   public DomainBitSet<E> intersect(final Iterable<E> set) {
@@ -800,6 +820,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     return this.getDomain().equals(set.getDomain());
   }
 
+  @Override
+  public Stream<E> parallelStream() {
+    return this.bitset.parallelStream();
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean remove(final Object o) {
@@ -842,6 +867,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @Override
   public Spliterator<E> spliterator() {
     return this.bitset.spliterator();
+  }
+
+  @Override
+  public Stream<E> stream() {
+    return this.bitset.stream();
   }
 
   /** {@inheritDoc} */
@@ -1062,4 +1092,12 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     return new EnumBitSet<>(this.enumType, clone);
   }
 
+  /** {@inheritDoc}
+   * <p>
+   * As this uses enum types the position is always the {@link Enum#ordinal() ordinal} of the
+   * constant. */
+  @Override
+  public Stream<Pair<Object, Integer, E>> zipWithPosition() {
+    return this.stream().map(e -> Pair.of(e.ordinal(), e));
+  }
 }

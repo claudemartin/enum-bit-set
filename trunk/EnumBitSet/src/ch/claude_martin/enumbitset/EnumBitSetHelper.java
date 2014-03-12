@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Set;
 
 /** This adds support to use bit fields and bit masks for the enym type. The set of enum values is
  * interpreted as an {@link EnumBitSet enum bit set}, which can be stored to a bit field (i.e. an
@@ -114,6 +114,18 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     return requireNonNull(bitset).get(((E) this).ordinal());
   }
 
+  /** Returns whether this enum can be found in the given collection.
+   * <p>
+   * This is equivalent to: <code>coll.contains(this);</code>
+   * 
+   * @param collection
+   *          A collection, not null.
+   * 
+   * @return <code>true</code>, iff <code>this</code> can be found in <code>collection</code>. */
+  public default boolean elementOf(final Collection<E> collection) {
+    return requireNonNull(collection).contains(this);
+  }
+
   /** Returns whether this enum constant can be found in the array of constants of the same type.
    * 
    * @param set
@@ -136,18 +148,6 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @return (this.bitmask64() &amp; bitmask8) != 0; */
   public default boolean elementOf(final long bitmask64) throws MoreThan64ElementsException {
     return (this.bitmask64() & bitmask64) != 0;
-  }
-
-  /** Returns whether this enum can be found in the set of enums of the same type.
-   * <p>
-   * This is equivalent to: <code>set.contains(this);</code>
-   * 
-   * @param set
-   *          A set of enum elements, all non-null and of the same enum type.
-   * 
-   * @return <code>true</code>, if <code>this</code> can be found in <code>set</code>. */
-  public default boolean elementOf(final Set<E> set) {
-    return requireNonNull(set).contains(this);
   }
 
   /** Bit mask with all other bits removed. The resulting bit mask will have just one or zero bits

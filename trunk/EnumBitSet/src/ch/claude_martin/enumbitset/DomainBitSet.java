@@ -8,10 +8,16 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /** A bit set with a defined domain (universe). The domain is an ordered set of all elements that are
  * allowed in this bit set.
@@ -22,21 +28,16 @@ import java.util.function.BiFunction;
  * implementations are expected to also implement {@link Set}&lt;T&gt;.
  * 
  * <p>
- * Note that ambiguity arises when any of the types are used that are supported. <br>
- * Example: <code><pre>
- * DomainBitSet&lt;BigInteger&gt; set = ...;
- * final BigInteger value = BigInteger.valueOf(42);
- * set.union(value); // bit mask: "101010" =&gt; 3 elements
- * set.union(value, value); // element 42
- * set.union(Arrays.asList(value)); // element 42
- * set.union(Collections.singleton(value)); // element 42
- * </pre></code>
+ * Methods such as {@link #union(Iterable)}, {@link #toSet()}, and {@link #complement()} return a
+ * new and independent set. This allows a functional style of programming.
+ * 
+ * However, this set could be mutable. This allows the classic imperative style of programming.
  * 
  * <p>
  * Note that the implementation is not necessarily a bit set. It could be any data structure that
  * allows to add and remove elements of the domain. Therefore, all elements of the domain should
  * implement {@link #hashCode()} and {@link #equals(Object)} for correct behavior and better
- * performance.
+ * performance. The iterator can return the elements in any order.
  * 
  * <p>
  * Iteration over s domain bit set always returns all containing elements in the same order as they
@@ -77,15 +78,19 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** Creates a general bit set with a domain that consists of all elements of all given enum types.
    * Note that all bit masks become invalid when any of the types are altered. The set is empty
-   * after creation. */
+   * after creation.
+   * 
+   * @param enumTypes
+   *          All enum types that define the domain. The ordering is relevant.
+   * @return A new DomainBitSet that can contain enums from different enum types. */
   @SafeVarargs
-  @SuppressWarnings("unchecked")
-  public static <E extends Enum<E>> DomainBitSet<E> createMultiEnumBitSet(
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  public static DomainBitSet<Enum<?>> createMultiEnumBitSet(
       final Class<? extends Enum<?>>... enumTypes) {
-    final List<E> dom = new LinkedList<>();
-    for (final Class<? extends Enum<?>> type : enumTypes)
-      for (final E e : EnumSet.allOf((Class<E>) type))
-        dom.add(e);
+    final List<Enum<?>> dom = new LinkedList<>();
+    for (final Class type : enumTypes)
+      for (final Object e : EnumSet.allOf(type))
+        dom.add((Enum) e);
     if (dom.size() > 64)
       return GeneralDomainBitSet.noneOf(dom);
     else
@@ -180,9 +185,16 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** Returns the Cartesian Product.
    * 
+   * <p>
+   * The list has a size of <code>this.size() * set.size()</code> and contains as many {@link Pair
+   * Pairs}.
+   * 
+   * @see #cross(DomainBitSet, BiFunction)
+   * @param <Y>
+   *          The type of the elements in the given set.
    * @param set
    *          Another set.
-   * @return the Cartesian Product */
+   * @return the Cartesian Product. */
 
   public default <Y extends Object> List<Pair<Object, T, Y>> cross(final DomainBitSet<Y> set) {
     final ArrayList<Pair<Object, T, Y>> result = new ArrayList<>(this.size() * set.size());
@@ -190,41 +202,49 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     return result;
   }
 
-  /** Returns the Cartesian Product.
+  /** Creates the Cartesian Product and applies a given function to all coordinates.
    * <p>
    * Cartesian product of A and B, denoted <code>A × B</code>, is the set whose members are all
    * possible ordered pairs <code>(a,b)</code> where a is a member of A and b is a member of B. The
    * Cartesian product of <code>{1, 2}</code> and <code>{red, white}</code> is {(1, red), (1,
    * white), (2, red), (2, white)}.
    * 
+   * @param <Y>
+   *          The type of the elements in the given set.
    * @param set
    *          Another set.
    * @param consumer
    *          A function to consume two elements. The return value should always be
-   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(result::add)</code>.
-   * 
-   * @return The Cartesian Product of <code>this</code> and <code>set</code>. */
+   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(result::add)</code>. */
   public default <Y> void cross(final DomainBitSet<Y> set, final BiFunction<T, Y, ?> consumer) {
     // for (final T e1 : this) for (final Y e2 : set) consumer.apply(e1, e2);
     this.forEach(x -> set.forEach(y -> consumer.apply(x, y)));
   }
 
+  /** Searches an object in the domain of this set.
+   * 
+   * @param object
+   *          The object to be searched.
+   * @return <tt>true</tt>, iff the domain contains the given object. */
   public default boolean domainContains(final T object) {
     return this.getDomain().contains(object);
   }
 
-  /** Compares the specified object with this domain bit set for equality. Returns <tt>true</tt> if
+  /** Compares the specified object with this domain bit set for equality. Returns <tt>true</tt>, iff
    * the given object is also a {@link DomainBitSet}, the two sets have the same domain, and every
    * member of the given set is contained in this set.
    * 
    * <p>
-   * Comparison of elements only: <br/>
+   * Comparison of elements only: <br>
+   * <code>this.ofEqualElements(other)</code><br>
+   * Which is equivalent to:<br>
    * <code>this.toSet().equals(other.toSet())</code>
    * <p>
-   * Comparison of domain only: <br/>
+   * Comparison of domain only: <br>
    * <code>this.ofEqualDomain(other)</code>
    * 
-   * @see #ofEqualElements(DomainBitSet) */
+   * @see #ofEqualElements(DomainBitSet)
+   * @return True, if this also a {@link DomainBitSet}, with the same domain and elements. */
   @Override
   public boolean equals(final Object other);
 
@@ -250,8 +270,27 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * <p>
    * All elements are ordered as they are defined in the domain.
    * <p>
-   * Note that the returned set should be immutable. */
+   * Note that the returned set is immutable.
+   * 
+   * @return The {@link Domain} of this set. */
   public Domain<T> getDomain();
+
+  /** Returns an Optional that might contain the element at the specified position.
+   *
+   * @see #getBit(int)
+   * @param index
+   *          index of an element in the domain.
+   * @see #zipWithPosition()
+   * @return Optional that might contain the element at the specified position.
+   * @throws IndexOutOfBoundsException
+   *           if the index is out of range */
+  public default Optional<T> getElement(final int index) {
+    final T o = this.getDomain().get(index);
+    if (this.contains(o))
+      return Optional.of(o);
+    else
+      return Optional.empty();
+  }
 
   /** Hash code of domain and elements.
    * <p>
@@ -269,7 +308,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** The intersection of this and a given bit set.
    * 
-   * @param mask
+   * @param set
    *          The bit set representation of the other set.
    * 
    * @return Intersection of this and the given bit set. */
@@ -281,7 +320,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          An {@link Iterable} collection of elements from the domain.
    * @throws IllegalArgumentException
    *           If any of the elements are not in the domain.
-   * @return */
+   * @return Intersection of this and the given collection. */
   public DomainBitSet<T> intersect(Iterable<T> set) throws IllegalArgumentException;
 
   /** Intersection of this and the given set.
@@ -314,10 +353,21 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     return this.size() == 0;
   }
 
+  /** Returns an iterator over elements of type T.
+   * 
+   * <p>
+   * The order is not defined as this could be backed by a set. Iteration in the same order as the
+   * domain can be done like this: <br>
+   * <code>domainBitSet.getDomain().stream().filter(set::contains).forEach(...)</code> */
+  @Override
+  public Iterator<T> iterator();
+
   /** The relative complement of this set and a set represented by a {@link BigInteger}.
    * 
-   * @param set
-   *          The other set.
+   * @param mask
+   *          The other set as a bit mask.
+   * @throws IllegalArgumentException
+   *           If the parameter is negative.
    * @return The relative complement of this and the given set. */
   public DomainBitSet<T> minus(BigInteger mask);
 
@@ -381,11 +431,38 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     return this.toSet().equals(set.toSet());
   }
 
+  /** Returns a possibly parallel {@code Stream} with this set as its source. It is allowable for
+   * this method to return a sequential stream.
+   *
+   * @see Collection#parallelStream()
+   * @return a possibly parallel {@code Stream} over the elements in this set */
+  public default Stream<T> parallelStream() {
+    return StreamSupport.stream(spliterator(), true);
+  }
+
   /** The number of elements in this set.
    * 
    * @see Collection#size()
    * @return The number of elements in this set. */
   public int size();
+
+  /** Creates a {@link Spliterator} over the elements in this collection.
+   * 
+   * @see Collection#spliterator()
+   * @return a {@code Spliterator} over the elements in this collection */
+  @Override
+  default Spliterator<T> spliterator() {
+    return Spliterators.spliterator(iterator(), size(), Spliterator.SIZED | Spliterator.DISTINCT
+        | Spliterator.NONNULL);
+  }
+
+  /** Returns a sequential {@code Stream} with this collection as its source.
+   *
+   * @see Collection#stream()
+   * @return a sequential {@code Stream} over the elements in this collection */
+  default Stream<T> stream() {
+    return StreamSupport.stream(spliterator(), false);
+  }
 
   /** A representation of the elements in this set as a {@link BigInteger}.
    * 
@@ -421,7 +498,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** The union of this set and a set represented by a {@link BitSet}.
    * 
-   * @param mask
+   * @param set
    *          A BitSet representing another set.
    *
    * @return The union of this set and the given set. */
@@ -429,7 +506,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** The union of this set and a set represented by an {@link Iterable iterable} collection.
    * 
-   * @param mask
+   * @param set
    *          An Iterable representing another set.
    *
    * @return The union of this set and the given set. */
@@ -458,4 +535,15 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     return this.union(Arrays.asList(requireNonNull(set)));
   }
 
+  /** Returns a sequential stream with pairs of all elements of this set and their position in the
+   * domain.
+   * <p>
+   * TODO : Write test;
+   * 
+   * @see #getElement(int)
+   * @return A stream of elements and their position. */
+  public default Stream<Pair<Object, Integer, T>> zipWithPosition() {
+    final Domain<T> domain = this.getDomain();
+    return domain.stream().filter(this::contains).map(e -> Pair.of(domain.indexOf(e), e));
+  }
 }

@@ -1,5 +1,8 @@
 package ch.claude_martin.enumbitset;
 
+import static ch.claude_martin.enumbitset.GeneralDomainBitSet.allOf;
+import static ch.claude_martin.enumbitset.GeneralDomainBitSet.noneOf;
+import static ch.claude_martin.enumbitset.GeneralDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertArrayEquals;
@@ -20,7 +23,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
@@ -29,29 +31,11 @@ import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
 @SuppressWarnings("static-method")
 public class GeneralDomainBitSetTest {
 
-  @BeforeClass
-  public static void init() {
-
-  }
-
-  GeneralDomainBitSet<Integer> none      = GeneralDomainBitSet.noneOf(1, 2, 3, 4);
-  GeneralDomainBitSet<Integer> oneTo4    = GeneralDomainBitSet.allOf(1, 2, 3, 4);
-  GeneralDomainBitSet<Integer> oneTwo    = this.none.clone();
-  {
-    this.oneTwo.add(1);
-    this.oneTwo.add(2);
-  }
-  GeneralDomainBitSet<Integer> twoThree  = this.none.clone();
-  {
-    this.twoThree.add(2);
-    this.twoThree.add(3);
-  }
-  GeneralDomainBitSet<Integer> threeFour = this.none.clone();
-
-  {
-    this.threeFour.add(3);
-    this.threeFour.add(4);
-  }
+  final GeneralDomainBitSet<Integer> none      = noneOf(1, 2, 3, 4);
+  final GeneralDomainBitSet<Integer> oneTo4    = allOf(1, 2, 3, 4);
+  final GeneralDomainBitSet<Integer> oneTwo    = of(this.none.getDomain(), asList(1, 2));
+  final GeneralDomainBitSet<Integer> twoThree  = of(this.none.getDomain(), asList(2, 3));
+  final GeneralDomainBitSet<Integer> threeFour = of(this.none.getDomain(), asList(3, 4));
 
   @Test
   public void testAdd() {
@@ -91,7 +75,7 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testAllOfListOfT() {
-    final GeneralDomainBitSet<Integer> set = GeneralDomainBitSet.allOf(asList(1, 2, 3, 4));
+    final GeneralDomainBitSet<Integer> set = allOf(asList(1, 2, 3, 4));
     assertEquals(this.oneTo4, set);
   }
 
@@ -158,8 +142,7 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testGetBit() throws Exception {
-    final GeneralDomainBitSet<Integer> set = GeneralDomainBitSet.of(asList(0, 1, 2, 3, 4),
-        Collections.singleton(3));
+    final GeneralDomainBitSet<Integer> set = of(asList(0, 1, 2, 3, 4), Collections.singleton(3));
     assertTrue(set.getBit(3));
     assertFalse(set.getBit(0));
     assertFalse(set.getBit(1));
@@ -320,8 +303,7 @@ public class GeneralDomainBitSetTest {
     } catch (final IllegalArgumentException e) {
     }
 
-    final DomainBitSet<Element> set = GeneralDomainBitSet.allOf(asList(Element.values()).subList(0,
-        64));
+    final DomainBitSet<Element> set = allOf(asList(Element.values()).subList(0, 64));
     assertEquals(64, set.size());
     assertTrue(set.minus(-1L).isEmpty());
   }
@@ -335,8 +317,8 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testNoneOf() {
-    final GeneralDomainBitSet<Integer> set1 = GeneralDomainBitSet.noneOf(1, 2, 3, 4);
-    final GeneralDomainBitSet<Integer> set2 = GeneralDomainBitSet.noneOf(asList(1, 2, 3, 4));
+    final GeneralDomainBitSet<Integer> set1 = noneOf(1, 2, 3, 4);
+    final GeneralDomainBitSet<Integer> set2 = noneOf(asList(1, 2, 3, 4));
     assertEquals(set2, set1);
     assertTrue(set1.isEmpty());
     assertTrue(set2.isEmpty());
@@ -349,14 +331,32 @@ public class GeneralDomainBitSetTest {
     set1.add(2);
     set1.add(3);
     set1.add(4);
-    final GeneralDomainBitSet<Integer> set2 = GeneralDomainBitSet.noneOf(set1);
+    final GeneralDomainBitSet<Integer> set2 = noneOf(set1);
     assertEquals(this.none, set2);
   }
 
   @Test
   public void testNoneOfListOfT() {
-    final GeneralDomainBitSet<Integer> set = GeneralDomainBitSet.noneOf(asList(1, 2, 3, 4));
+    final GeneralDomainBitSet<Integer> set = noneOf(asList(1, 2, 3, 4));
     assertEquals(this.none, set);
+  }
+
+  @Test
+  public void testOfEqualDomain() throws Exception {
+    assertTrue(this.threeFour.ofEqualDomain(this.threeFour));
+    assertTrue(this.threeFour.ofEqualDomain(this.threeFour.clone()));
+    assertTrue(this.threeFour.ofEqualDomain(this.twoThree));
+    assertFalse(this.threeFour.ofEqualDomain(allOf(3, 4)));
+    assertTrue(allOf().ofEqualDomain(noneOf()));
+  }
+
+  @Test
+  public void testOfEqualElements() throws Exception {
+    assertTrue(this.threeFour.ofEqualElements(this.threeFour));
+    assertTrue(this.threeFour.ofEqualElements(this.threeFour.clone()));
+    assertFalse(this.threeFour.ofEqualElements(this.twoThree));
+    assertTrue(this.threeFour.ofEqualElements(allOf(3, 4)));
+    assertTrue(this.none.ofEqualElements(allOf()));
   }
 
   @Test
@@ -366,17 +366,16 @@ public class GeneralDomainBitSetTest {
     set1.add(2);
     set1.add(3);
     set1.add(4);
-    final GeneralDomainBitSet<Integer> set2 = GeneralDomainBitSet.of(set1, set1);
+    final GeneralDomainBitSet<Integer> set2 = of(set1, set1);
     assertEquals(this.oneTo4, set2);
 
-    final GeneralDomainBitSet<Integer> set3 = GeneralDomainBitSet.of(set1, new HashSet<>());
-    assertEquals(GeneralDomainBitSet.noneOf(1, 2, 3, 4), set3);
+    final GeneralDomainBitSet<Integer> set3 = of(set1, new HashSet<>());
+    assertEquals(noneOf(1, 2, 3, 4), set3);
   }
 
   @Test
   public void testOfListOfTSetOfT() {
-    final GeneralDomainBitSet<Integer> set = GeneralDomainBitSet.of(asList(1, 2, 3, 4),
-        singleton(3));
+    final GeneralDomainBitSet<Integer> set = of(asList(1, 2, 3, 4), singleton(3));
     assertTrue(set.contains(3));
     assertFalse(set.contains(1));
     assertFalse(set.contains(2));
@@ -389,7 +388,7 @@ public class GeneralDomainBitSetTest {
   @Test
   public void testParallelStream() {
     final Set<Element> copy = new ConcurrentSkipListSet<>();
-    final GeneralDomainBitSet<Element> elements = GeneralDomainBitSet.allOf(Element.values());
+    final GeneralDomainBitSet<Element> elements = allOf(Element.values());
     elements.parallelStream().forEach(copy::add);
     assertEquals(elements.toSet(), copy);
   }
@@ -470,7 +469,7 @@ public class GeneralDomainBitSetTest {
   @Test
   public void testToBigInteger() {
     assertEquals(BigInteger.valueOf(15), this.oneTo4.toBigInteger());
-    final BigInteger i = GeneralDomainBitSet.of(asList(0, 1, 2, 3, 4), singleton(3)).toBigInteger();
+    final BigInteger i = of(asList(0, 1, 2, 3, 4), singleton(3)).toBigInteger();
     assertEquals(BigInteger.valueOf(0b01000L), i);
   }
 
@@ -480,7 +479,7 @@ public class GeneralDomainBitSetTest {
     for (int i = 0; i < 4; i++)
       assertTrue(bitSet.get(i));
 
-    bitSet = GeneralDomainBitSet.of(asList(0, 1, 2, 3, 4), singleton(3)).toBitSet();
+    bitSet = of(asList(0, 1, 2, 3, 4), singleton(3)).toBitSet();
     assertTrue(bitSet.get(3));
     assertEquals(1, bitSet.cardinality());
   }
@@ -500,7 +499,7 @@ public class GeneralDomainBitSetTest {
       EnumBitSet<Element> enum64 = EnumBitSet.allOf(EnumBitSetTest.Element.class);
       enum64 = enum64.intersect(BitSetUtilities.asBigInteger(-1));
       final ArrayList<Element> domain = new ArrayList<>(enum64);
-      GeneralDomainBitSet<Element> set = GeneralDomainBitSet.of(domain, enum64);
+      GeneralDomainBitSet<Element> set = of(domain, enum64);
       assertEquals(-1L, set.toLong());
       set = set.intersect(Long.MIN_VALUE);
       assertEquals(Long.MIN_VALUE, set.toLong());
@@ -509,8 +508,7 @@ public class GeneralDomainBitSetTest {
     }
 
     try {
-      final GeneralDomainBitSet<Element> elements = GeneralDomainBitSet.noneOf(asList(Element
-          .values()));
+      final GeneralDomainBitSet<Element> elements = noneOf(asList(Element.values()));
       elements.toLong();
       fail("Even an empty set with a large domain should throw MoreThan64ElementsException");
     } catch (final MoreThan64ElementsException e) {
@@ -569,4 +567,13 @@ public class GeneralDomainBitSetTest {
     assertEquals(this.oneTwo, this.oneTwo.unionVarArgs(1, 2));
   }
 
+  @Test
+  public void testZipWithPosition() throws Exception {
+    for (final DomainBitSet<Integer> s : asList(this.oneTo4, this.none, this.oneTwo, this.twoThree,
+        this.threeFour)) {
+      s.zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
+      s.complement().zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
+      assertEquals(s.size(), s.zipWithPosition().count());
+    }
+  }
 }
