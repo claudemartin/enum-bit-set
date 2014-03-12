@@ -15,18 +15,20 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/** An immutable, ordered pair. This can be used in a Cartesian product.
+/** An immutable, ordered pair (2-tuple) of two non-null elements. This can be used in a Cartesian
+ * product.
  * <p>
  * A special characteristic is that each pair has a generic type argument that is a supertype of
  * both elements. As a Cartesian product often uses two related types this can make it easier to
- * worth with such a pair.
+ * work with such a pair.
  * 
  * @param <T>
  *          A common type of both elements. <code>Object.class</code> always works.
  * @param <X>
  *          The type of the first element. Extends &lt;T&gt;.
  * @param <Y>
- *          The type of the second element. Extends &lt;T&gt;. */
+ *          The type of the second element. Extends &lt;T&gt;.
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
@@ -116,10 +118,16 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     return (p) -> f.apply(p.first, p.second);
   }
 
-  /** The first value of this pair. Not null. */
+  /** The first value of this pair. Not null.
+   * 
+   * <p>
+   * This is also known as the <i>first coordinate</i> or the <i>left projection</i> of the pair. */
   public final X first;
 
-  /** The first value of this pair. Not null. */
+  /** The first value of this pair. Not null.
+   * 
+   * <p>
+   * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
   public final Y second;
 
   private Pair(final X first, final Y second) {

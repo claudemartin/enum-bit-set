@@ -135,7 +135,7 @@
  * convert the value like this:<br>
  * <code>byte b = (byte) (myEnumBitSet.toLong() &amp; 0xFF);</code> 
  * <br>
- * Invoking a method that uses 64 bit on an enum type with more than 64 elements 
+ * Invoking a method that uses 64 bit on a set with a domain of more than 64 elements 
  * will throw a {@link ch.claude_martin.enumbitset.MoreThan64ElementsException}.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a>
