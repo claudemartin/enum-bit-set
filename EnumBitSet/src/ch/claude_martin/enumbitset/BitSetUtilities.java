@@ -123,11 +123,12 @@ public class BitSetUtilities {
    * <p>
    * Note that the performance of this is not as good as direct operations on the set.
    * <p>
-   * The methods {@link ListIterator#set(Object) set()} and {@link ListIterator#set(Object) add()}
-   * are not supported. The methods {@link ListIterator#nextIndex() nextIndex()} and
-   * {@link ListIterator#previousIndex() previousIndex()} represent the position in the iterator, not
-   * the position in the domain. It is allowed to remove the last returned element and that change
-   * will be applied to the given set.
+   * The iterator is backed by a list of the elements, so that concurrent modification of the set do
+   * not influence this iteration. The methods {@link ListIterator#set(Object) set()} and
+   * {@link ListIterator#set(Object) add()} are not supported. The methods
+   * {@link ListIterator#nextIndex() nextIndex()} and {@link ListIterator#previousIndex()
+   * previousIndex()} represent the position in the iterator, not the position in the domain. It is
+   * allowed to remove the last returned element and that change will be applied to the given set.
    * 
    * @param <S>
    *          the type of the given set.
@@ -182,7 +183,6 @@ public class BitSetUtilities {
       @Override
       public void remove() {
         itr.remove();
-        assert this.lastReturned != null;
         set.remove(this.lastReturned);
         this.lastReturned = null;
       }
