@@ -275,7 +275,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
         return o.getClass().isArray() || o instanceof Collection ? o.getClass().getSimpleName() //
             : o.toString();
       };
-      this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.first) + ")";
+      this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
     }
     return this.string;
   }
