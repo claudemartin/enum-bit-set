@@ -7,10 +7,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -24,6 +26,17 @@ public class PairTest {
   public final void testClone() {
     final Pair<?, String, Integer> p = Pair.of("foo", 42);
     assertTrue(p == p.clone());
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Test
+  public final void testCurry() {
+    final Pair p = Pair.of("foo", 42);
+    final Object snd1 = p.applyTo(Pair.curry(x -> x.second));
+    final Object snd2 = Pair.uncurry((a, b) -> b).apply(p);
+    final Object snd3 = p.applyTo(Pair.curry(Pair::_2));
+    assertEquals(snd1, snd2);
+    assertEquals(snd1, snd3);
   }
 
   @Test
@@ -64,6 +77,19 @@ public class PairTest {
 
     final Object[] array = p.stream().distinct().toArray();
     assertArrayEquals(p.toArray(), array);
+  }
+
+  @Test
+  public void testOf() throws Exception {
+    {
+      final Pair<Number, Integer, Double> p1 = Pair.of(1, 0.5);
+      final Pair<Number, Integer, Double> p2 = Pair.of(Number.class, 1, 0.5);
+      assertEquals(p1, p2);
+      final Pair<?, ?, ?> p3 = Pair.of(Pair.of(1, 2), Pair.of(3, 4));
+      final Pair<?, ?, ?> p4 = Pair.of(Pair.class, Pair.of(Integer.class, 1, 2),
+          Pair.of(Integer.class, 3, 4));
+      assertEquals(p3, p4);
+    }
   }
 
   @Test
@@ -108,6 +134,7 @@ public class PairTest {
     assertEquals(p.second, array[1]);
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
   public final void testToString() {
     final Pair<?, String, Integer> p = Pair.of("foo", 42);
@@ -115,5 +142,16 @@ public class PairTest {
     assertTrue(string.startsWith(Pair.class.getSimpleName()));
     assertTrue(string.contains(p.first));
     assertTrue(string.contains(p.second.toString()));
+
+    // Recursion:
+    final Pair<Object, ArrayList, AtomicReference<Object>> p2 = Pair.of(new ArrayList(),
+        new AtomicReference<>());
+    p2.first.add(p2);
+    p2.second.set(p2);
+    try {
+      p2.toString();
+    } catch (final Throwable e) {
+      fail("Pair.toString failed: " + e);
+    }
   }
 }
