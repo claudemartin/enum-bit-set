@@ -129,6 +129,13 @@ public class BitSetUtilities {
    * the position in the domain. It is allowed to remove the last returned element and that change
    * will be applied to the given set.
    * 
+   * @param <S>
+   *          the type of the given set.
+   * @param <T>
+   *          the type of the elements.
+   * @param set
+   *          a set that implements both {@link Collection} and {@link DomainBitSet}.
+   * 
    * @return a new ListIterator. */
   public static <S extends DomainBitSet<T> & Collection<T>, T> ListIterator<T> listIterator(
       final S set) {
@@ -232,7 +239,11 @@ public class BitSetUtilities {
    * <p>
    * A stream with multiple entries for the same position will cause a {@link IllegalStateException}.
    * 
-   * @see DomainBitSet#zipWithPosition() */
+   * @param <T>
+   *          the type of the elements.
+   * @see DomainBitSet#zipWithPosition()
+   * 
+   * @return a Collector */
   public static <T> Collector<Pair<Object, Integer, T>, ?, TreeMap<Integer, T>> toTreeMap() {
     // Note: A collision should not occur, unless this is applied to an invalid stream.
     return Collectors.toMap(Pair::_1, Pair::_2, (u, v) -> {
