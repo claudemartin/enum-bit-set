@@ -6,11 +6,14 @@ import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -71,7 +74,6 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  // TODO : Write test for this method.
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<TT> commonType,
       final TX first, final TY second) {
     if (!commonType.isAssignableFrom(first.getClass())
@@ -103,6 +105,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
    * 
    * @see #curry(Function)
+   * @see #applyTo(BiFunction)
    * @param <TT>
    *          Common type
    * @param <TX>
@@ -123,13 +126,17 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
    * 
    * <p>
    * This is also known as the <i>first coordinate</i> or the <i>left projection</i> of the pair. */
-  public final X first;
+  public final X              first;
 
   /** The first value of this pair. Not null.
    * 
    * <p>
    * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
-  public final Y second;
+  public final Y              second;
+
+  private String              string             = null;
+
+  private final AtomicBoolean recursionPreventer = new AtomicBoolean(false);
 
   private Pair(final X first, final Y second) {
     this.first = requireNonNull(first);
@@ -152,10 +159,37 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     return this.second;
   }
 
-  /** {@inheritDoc} @return <code>this</code> */
+  /** Applies the given function to both elements of this pair.
+   * 
+   * @see #uncurry(BiFunction)
+   * @param <R>
+   *          return type.
+   * @param f
+   *          A function on two elements.
+   * @throws NullPointerException
+   *           if f is null
+   * @return The result of applying this pair to f. */
+  public <R> R applyTo(final BiFunction<X, Y, R> f) {
+    return f.apply(this.first, this.second);
+  }
+
+  /** Returns this pair, as it is immutable.
+   * 
+   * @return <code>this</code> */
   @Override
   public Pair<T, X, Y> clone() {
     return this;
+  }
+
+  /** Performs the operation of the given consumer on both elements of this pair.
+   * 
+   * @see #uncurry(BiFunction)
+   * @throws NullPointerException
+   *           if consumer is null
+   * @param consumer
+   *          A consumer of two elements. */
+  public void consumeBy(final BiConsumer<X, Y> consumer) {
+    consumer.accept(this.first, this.second);
   }
 
   /** {@inheritDoc} @return <code>true</code>, iff both first and second are equal. */
@@ -226,11 +260,28 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   }
 
   /** Returns a string representation of this Pair.
+   * <p>
+   * This could lead to recursion in rare cases. The method tried to detect this and return the
+   * types of the two elements instead. Collections and Arrays are always represented by their type.
    * 
    * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
   public String toString() {
-    return "Pair(" + this.first + ", " + this.second + ")";
+    if (null == this.string) {
+      if (this.recursionPreventer.getAndSet(true))
+        return this.toStringTypes();
+      final Function<Object, String> f = (o) -> {
+        // other candidates: Optional, Reference, etc.
+        return o.getClass().isArray() || o instanceof Collection ? o.getClass().getSimpleName() //
+            : o.toString();
+      };
+      this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.first) + ")";
+    }
+    return this.string;
   }
 
+  private String toStringTypes() {
+    return "Pair(<" + this.first.getClass().getSimpleName() + ">, <"
+        + this.second.getClass().getSimpleName() + ">)";
+  }
 }
