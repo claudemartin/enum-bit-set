@@ -228,9 +228,11 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * 
    * @param object
    *          The object to be searched.
+   * @throws NullPointerException
+   *           if the object is <tt>null</tt>.
    * @return <tt>true</tt>, iff the domain contains the given object. */
   public default boolean domainContains(final T object) {
-    return this.getDomain().contains(object);
+    return this.getDomain().contains(requireNonNull(object));
   }
 
   /** Compares the specified object with this domain bit set for equality. Returns <tt>true</tt>, iff
@@ -363,7 +365,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * domain can be done like this: <br>
    * <code>domainBitSet.getDomain().stream().filter(domainBitSet::contains).forEach(...)</code><br>
    * Or by ListIterator:<br>
-   * <code>BitSetUtilities.listIterator(domainBitSet).forEachRemaining(...)</code> 
+   * <code>BitSetUtilities.listIterator(domainBitSet).forEachRemaining(...)</code>
    * 
    * @see BitSetUtilities#listIterator(DomainBitSet) */
   @Override
