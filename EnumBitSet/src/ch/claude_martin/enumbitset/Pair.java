@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Spliterator.IMMUTABLE;
 import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterator.ORDERED;
+import static java.util.Spliterator.SIZED;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -135,6 +136,22 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     this.second = requireNonNull(second);
   }
 
+  /** Scala-style getter for {@link #first}.
+   * 
+   * @see #first
+   * @return the first element. */
+  public X _1() {
+    return this.first;
+  }
+
+  /** Scala-style getter for {@link #second}.
+   * 
+   * @see #second
+   * @return the second element. */
+  public Y _2() {
+    return this.second;
+  }
+
   /** {@inheritDoc} @return <code>this</code> */
   @Override
   public Pair<T, X, Y> clone() {
@@ -185,7 +202,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
 
   @Override
   public Spliterator<T> spliterator() {
-    return Spliterators.spliterator(this.iterator(), 2, IMMUTABLE | ORDERED | NONNULL);
+    return Spliterators.spliterator(this.iterator(), 2, SIZED | IMMUTABLE | ORDERED | NONNULL);
   }
 
   public Stream<T> stream() {
