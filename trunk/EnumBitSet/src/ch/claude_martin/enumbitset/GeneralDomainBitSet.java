@@ -1,6 +1,7 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
 import java.util.BitSet;
@@ -212,7 +213,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public boolean domainContains(final T object) {
-    return this.domain.contains(object);
+    return this.domain.contains(requireNonNull(object));
   }
 
   @Override
@@ -443,6 +444,8 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public String toString() {
+    // Note: This could theoretically lead to recursion, but then the domain contains references to
+    // mutable objects, which is invalid.
     return this.set.toString();
   }
 
