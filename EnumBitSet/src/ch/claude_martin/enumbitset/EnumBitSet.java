@@ -383,8 +383,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   private final Class<E>      enumType;
 
-  // Note that is is intentionally not marked as "volatile". Visibility is guaranteed by JMM.
-  private volatile int        enumTypeSize = -1;
+  // Note that those are intentionally not marked as "volatile". Visibility is guaranteed by JMM.
+  private int                 enumTypeSize = -1;
 
   private Domain<E>           domain       = null;
 
@@ -559,7 +559,6 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return Number of constants of the enum type. */
   public int getEnumTypeSize() {
     if (this.enumTypeSize == -1) {
-      // this.enumTypeSize = this.enumType.getEnumConstants().length;
       this.getDomain(); // This also sets this.enumTypeSize!
       synchronized (domainCache) {
         // JMM guarantees visibility:
