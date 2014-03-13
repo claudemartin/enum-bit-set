@@ -22,6 +22,15 @@
 	<target name="mkjar" depends="compile" description="generate the distribution">
 		<jar jarfile="${build}/${projectName}-${TIME}.jar" basedir="${bin}">
 			<exclude name="**Test.class" />
+      <manifest>
+        <attribute name="Manifest-Version" value="1.0" />
+        <attribute name="Built-By" value="${user.name}" />
+        <attribute name="Sealed" value="true" />
+        <attribute name="Implementation-Time" value="${TIME}" />
+        <attribute name="Implementation-Title" value="EnumBitSet" />
+        <attribute name="Implementation-Vendor" value="Claude Martin" />
+        <attribute name="Implementation-Vendor-URL" value="http://claude-martin.ch/enumbitset/" />
+      </manifest>
 		</jar>
 	</target>
 
