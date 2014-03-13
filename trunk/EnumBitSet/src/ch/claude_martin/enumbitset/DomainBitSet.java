@@ -11,6 +11,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -360,7 +361,11 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * <p>
    * The order is not defined as this could be backed by a set. Iteration in the same order as the
    * domain can be done like this: <br>
-   * <code>domainBitSet.getDomain().stream().filter(set::contains).forEach(...)</code> */
+   * <code>domainBitSet.getDomain().stream().filter(domainBitSet::contains).forEach(...)</code><br>
+   * Or by ListIterator:<br>
+   * <code>BitSetUtilities.listIterator(domainBitSet).forEachRemaining(...)</code> 
+   * 
+   * @see BitSetUtilities#listIterator(DomainBitSet) */
   @Override
   public Iterator<T> iterator();
 
@@ -540,8 +545,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   /** Returns a sequential stream with pairs of all elements of this set and their position in the
    * domain.
    * <p>
-   * TODO : Write test;
+   * This can be collected to a {@link Map} using {@link BitSetUtilities#toTreeMap() toTreeMap}.
    * 
+   * @see BitSetUtilities#toTreeMap()
    * @see #getElement(int)
    * @return A stream of elements and their position. */
   public default Stream<Pair<Object, Integer, T>> zipWithPosition() {
