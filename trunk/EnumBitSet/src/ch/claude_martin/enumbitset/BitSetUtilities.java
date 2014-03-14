@@ -4,8 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
 import java.util.BitSet;
-import java.util.Collection;
-import java.util.ListIterator;
 import java.util.TreeMap;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -116,82 +114,6 @@ public class BitSetUtilities {
    * @return The intersection of both sets. */
   public static <T> DomainBitSet<T> intersect(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     return set1.intersect(set2);
-  }
-
-  /** Creates an ordered {@link ListIterator} for any mutable {@link DomainBitSet}.
-   * 
-   * <p>
-   * Note that the performance of this is not as good as direct operations on the set.
-   * <p>
-   * The iterator is backed by a list of the elements, so that concurrent modification of the set do
-   * not influence this iteration. The methods {@link ListIterator#set(Object) set()} and
-   * {@link ListIterator#set(Object) add()} are not supported. The methods
-   * {@link ListIterator#nextIndex() nextIndex()} and {@link ListIterator#previousIndex()
-   * previousIndex()} represent the position in the iterator, not the position in the domain. It is
-   * allowed to remove the last returned element and that change will be applied to the given set.
-   * 
-   * @param <S>
-   *          the type of the given set.
-   * @param <T>
-   *          the type of the elements.
-   * @param set
-   *          a set that implements both {@link Collection} and {@link DomainBitSet}.
-   * 
-   * @return a new ListIterator. */
-  public static <S extends DomainBitSet<T> & Collection<T>, T> ListIterator<T> listIterator(
-      final S set) {
-    final ListIterator<T> itr = set.getDomain().stream().filter(set::contains)
-        .collect(Collectors.toList()).stream().collect(Collectors.toList()).listIterator();
-    return new ListIterator<T>() {
-      private T lastReturned = null;
-
-      @Override
-      public void add(final T e) {
-        throw new UnsupportedOperationException();
-      }
-
-      @Override
-      public boolean hasNext() {
-        return itr.hasNext();
-      }
-
-      @Override
-      public boolean hasPrevious() {
-        return itr.hasPrevious();
-      }
-
-      @Override
-      public T next() {
-        return this.lastReturned = itr.next();
-      }
-
-      @Override
-      public int nextIndex() {
-        return itr.nextIndex();
-      }
-
-      @Override
-      public T previous() {
-        return this.lastReturned = itr.previous();
-      }
-
-      @Override
-      public int previousIndex() {
-        return itr.previousIndex();
-      }
-
-      @Override
-      public void remove() {
-        itr.remove();
-        set.remove(this.lastReturned);
-        this.lastReturned = null;
-      }
-
-      @Override
-      public void set(final T e) {
-        throw new UnsupportedOperationException();
-      }
-    };
   }
 
   private static byte[] longToBytes(final long value) {

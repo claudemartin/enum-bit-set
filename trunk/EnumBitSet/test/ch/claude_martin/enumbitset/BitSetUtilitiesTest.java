@@ -6,7 +6,6 @@ import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.util.BitSet;
-import java.util.ListIterator;
 import java.util.Objects;
 import java.util.TreeMap;
 
@@ -161,35 +160,4 @@ public class BitSetUtilitiesTest {
     }
   }
 
-  @Test
-  public void testListIterator() throws Exception {
-    final EnumBitSet<Element> elements = EnumBitSet.allOf(Element.class);
-    int i;
-    ListIterator<Element> itr = BitSetUtilities.listIterator(elements);
-    assertEquals(-1, itr.previousIndex());
-    i = elements.size();
-    while (itr.hasNext())
-      itr.next();
-    assertEquals(i, itr.nextIndex());
-    while (itr.hasPrevious())
-      itr.previous();
-    while (itr.hasNext()) {
-      itr.next();
-      itr.remove();
-      i--;
-    }
-    assertEquals(0, i);
-    assertTrue(elements.isEmpty());
-
-    elements.getDomain().stream().filter(e -> e.ordinal() % 5 == 0).forEach(elements::add);
-    i = elements.size();
-    itr = BitSetUtilities.listIterator(elements);
-    while (itr.hasNext()) {
-      itr.next();
-      itr.remove();
-      i--;
-    }
-    assertEquals(0, i);
-    assertTrue(elements.isEmpty());
-  }
 }
