@@ -3,11 +3,11 @@ package ch.claude_martin.enumbitset;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -189,8 +189,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   /** Returns the Cartesian Product.
    * 
    * <p>
-   * The list has a size of <code>this.size() * set.size()</code> and contains as many {@link Pair
-   * Pairs}.
+   * The returned set has a size of <code>this.size() * set.size()</code>.
    * 
    * @see #cross(DomainBitSet, BiFunction)
    * @param <Y>
@@ -198,9 +197,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @param set
    *          Another set.
    * @return the Cartesian Product. */
-
-  public default <Y extends Object> List<Pair<Object, T, Y>> cross(final DomainBitSet<Y> set) {
-    final ArrayList<Pair<Object, T, Y>> result = new ArrayList<>(this.size() * set.size());
+  public default <Y extends Object> Set<Pair<Object, T, Y>> cross(final DomainBitSet<Y> set) {
+    final HashSet<Pair<Object, T, Y>> result = new HashSet<>(this.size() * set.size());
     this.cross(set, Pair.curry(result::add));
     return result;
   }
@@ -211,7 +209,10 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * possible ordered pairs <code>(a,b)</code> where a is a member of A and b is a member of B. The
    * Cartesian product of <code>{1, 2}</code> and <code>{red, white}</code> is {(1, red), (1,
    * white), (2, red), (2, white)}.
+   * <p>
+   * The consumer will be invoked exactly <code>(this.size() * set.size())</code> times.
    * 
+   * @see #cross(DomainBitSet)
    * @param <Y>
    *          The type of the elements in the given set.
    * @param set
@@ -220,7 +221,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          A function to consume two elements. The return value should always be
    *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(result::add)</code>. */
   public default <Y> void cross(final DomainBitSet<Y> set, final BiFunction<T, Y, ?> consumer) {
-    // for (final T e1 : this) for (final Y e2 : set) consumer.apply(e1, e2);
+    if (set.isEmpty())
+      return; // Nothing to do...
     this.forEach(x -> set.forEach(y -> consumer.apply(x, y)));
   }
 

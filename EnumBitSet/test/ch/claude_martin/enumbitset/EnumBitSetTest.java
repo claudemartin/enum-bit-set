@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -306,23 +307,18 @@ public class EnumBitSetTest {
     final EnumBitSet<Element> el = EnumBitSet.of(Element.Ar, Element.Br, Element.Cr);
     final EnumBitSet<Planet> pl = EnumBitSet.of(Planet.MERCURY, Planet.EARTH, Planet.SATURN);
 
-    final List<Pair<EnumBitSetHelper<?>, Element, Planet>> cross1 = el.cross(pl);
+    final Collection<Pair<EnumBitSetHelper<?>, Element, Planet>> cross1 = el.cross(pl);
     assertEquals(el.size() * pl.size(), cross1.size()); // 9
     cross1.forEach(p -> p.forEach(e -> assertTrue(e.bitmask64() > 0)));
-    final Enum<?> e = (Enum<?>) cross1.get(0).iterator().next();
-    assertEquals(e, cross1.get(0).first);
 
     assertTrue(cross1.contains(Pair.of(Element.Ar, Planet.SATURN)));
-    final List<Pair<EnumBitSetHelper<?>, Planet, Element>> cross2 = pl.cross(el);
+    final Collection<Pair<EnumBitSetHelper<?>, Planet, Element>> cross2 = pl.cross(el);
     assertTrue(cross2.contains(Pair.of(Planet.EARTH, Element.Br)));
     assertEquals(9, cross2.size());
-    // swapping twice should result in the same list:
-    final List<Pair<EnumBitSetHelper<?>, Planet, Element>> cross3 = cross2.parallelStream()//
-        .map(Pair::swap).map(Pair::swap).collect(Collectors.toList());
+    // swapping twice should result in the same set:
+    final Set<Pair<EnumBitSetHelper<?>, Planet, Element>> cross3 = cross2.parallelStream()//
+        .map(Pair::swap).map(Pair::swap).collect(Collectors.toSet());
     assertEquals(cross2, cross3);
-    final Pair<EnumBitSetHelper<?>, Planet, Element> firstPair = cross2.get(0);
-    assertEquals(firstPair.toArray()[0], firstPair.first);
-    assertEquals(firstPair.toArray()[1], firstPair.second);
 
     {
       final EnumBitSet<Element> elements = EnumBitSet.allOf(Element.class);

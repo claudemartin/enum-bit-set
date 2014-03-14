@@ -5,14 +5,12 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.ref.SoftReference;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
@@ -454,17 +452,20 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          The type of the elements in the given set.
    * @param set
    *          Another set.
-   * @return an {@link ArrayList} containing all {@link Pair pairs}.
-   * @see DomainBitSet#cross(DomainBitSet, BiFunction) */
-  public <Y extends Enum<Y> & EnumBitSetHelper<Y>> List<Pair<EnumBitSetHelper<?>, E, Y>> cross(
+   * @see DomainBitSet#cross(DomainBitSet, BiFunction)
+   * @see DomainBitSet#cross(DomainBitSet)
+   * @return a {@link Set} containing all {@link Pair pairs}. */
+  @SuppressWarnings("unchecked")
+  public <Y extends Enum<Y> & EnumBitSetHelper<Y>> Set<Pair<EnumBitSetHelper<?>, E, Y>> cross(
       final EnumBitSet<Y> set) {
-    final ArrayList<Pair<EnumBitSetHelper<?>, E, Y>> result = new ArrayList<>(this.size()
-        * set.size());
-    // Could be written like this:
-    // this.cross(set, Pair.curry(result::add));
-    // But javac can't infer the type.
-    this.cross(set, (x, y) -> result.add(Pair.of(x, y)));
-    return result;
+    // This cast is ok because we know that all EnumBitSets always use types that implement
+    // EnumBitSetHelper. The default implementation can be used, because the type is only generic.
+    // This can be tested with this:
+    assert this.isEmpty()
+        || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
+    assert set.isEmpty()
+        || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
+    return (Set<Pair<EnumBitSetHelper<?>, E, Y>>) (Object) DomainBitSet.super.cross(set);
   }
 
   /** Is the given enum constant an element of this set's domain?
