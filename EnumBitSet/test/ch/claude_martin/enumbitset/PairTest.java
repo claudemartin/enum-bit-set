@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
@@ -144,10 +143,10 @@ public class PairTest {
     assertTrue(string.contains(p.second.toString()));
 
     // Recursion:
-    final Pair<Object, ArrayList, AtomicReference<Object>> p2 = Pair.of(new ArrayList(),
-        new AtomicReference<>());
+    final Pair<Object, ArrayList, ArrayList<Object>> p2 = Pair.of(new ArrayList(),
+        new ArrayList<>());
     p2.first.add(p2);
-    p2.second.set(p2);
+    p2.second.add(p2);
     try {
       p2.toString();
     } catch (final Throwable e) {
