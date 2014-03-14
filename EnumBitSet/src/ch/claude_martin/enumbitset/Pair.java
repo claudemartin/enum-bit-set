@@ -6,13 +6,13 @@ import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 
-import java.util.Collection;
+import java.lang.ref.Reference;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -25,6 +25,9 @@ import java.util.stream.StreamSupport;
  * A special characteristic is that each pair has a generic type argument that is a supertype of
  * both elements. As a Cartesian product often uses two related types this can make it easier to
  * work with such a pair.
+ * <p>
+ * A pair should never be recursive, that is it should not contain itself directly or indirectly.
+ * Some methods will throw a {@link StackOverflowError} on recursion.
  * 
  * @param <T>
  *          A common type of both elements. <code>Object.class</code> always works.
@@ -126,17 +129,15 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
    * 
    * <p>
    * This is also known as the <i>first coordinate</i> or the <i>left projection</i> of the pair. */
-  public final X              first;
+  public final X first;
 
   /** The first value of this pair. Not null.
    * 
    * <p>
    * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
-  public final Y              second;
+  public final Y second;
 
-  private String              string             = null;
-
-  private final AtomicBoolean recursionPreventer = new AtomicBoolean(false);
+  private String string = null;
 
   private Pair(final X first, final Y second) {
     this.first = requireNonNull(first);
@@ -200,7 +201,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
         && Objects.equals(this.second, ((Pair<?, ?, ?>) obj).second);
   }
 
-  /** {@inheritDoc} @return <code>Objects.hash(this.first, this.second)</code> */
+  /** {@inheritDoc}
+   * 
+   * @return <code>Objects.hash(this.first, this.second)</code> */
   @Override
   public int hashCode() {
     return Objects.hash(this.first, this.second);
@@ -261,18 +264,16 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
 
   /** Returns a string representation of this Pair.
    * <p>
-   * This could lead to recursion in rare cases. The method tried to detect this and return the
-   * types of the two elements instead. Collections and Arrays are always represented by their type.
+   * This could lead to recursion in rare cases. Pairs, Collections, Arrays, References etc. are
+   * always represented by their type. But can still lead to a {@link StackOverflowError}.
    * 
    * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
   public String toString() {
     if (null == this.string) {
-      if (this.recursionPreventer.getAndSet(true))
-        return this.toStringTypes();
       final Function<Object, String> f = (o) -> {
-        // other candidates: Optional, Reference, etc.
-        return o.getClass().isArray() || o instanceof Collection ? o.getClass().getSimpleName() //
+        return o.getClass().isArray() || o instanceof Iterable || o instanceof Reference
+            || o instanceof Optional ? o.getClass().getSimpleName() //
             : o.toString();
       };
       this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
@@ -280,8 +281,4 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     return this.string;
   }
 
-  private String toStringTypes() {
-    return "Pair(<" + this.first.getClass().getSimpleName() + ">, <"
-        + this.second.getClass().getSimpleName() + ">)";
-  }
 }
