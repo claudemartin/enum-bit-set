@@ -363,11 +363,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * <p>
    * The order is not defined as this could be backed by a set. Iteration in the same order as the
    * domain can be done like this: <br>
-   * <code>domainBitSet.getDomain().stream().filter(domainBitSet::contains).forEach(...)</code><br>
-   * Or by ListIterator:<br>
-   * <code>BitSetUtilities.listIterator(domainBitSet).forEachRemaining(...)</code>
-   * 
-   * @see BitSetUtilities#listIterator(DomainBitSet) */
+   * <code>domainBitSet.getDomain().stream().filter(domainBitSet::contains).forEach(...)</code> */
   @Override
   public Iterator<T> iterator();
 
