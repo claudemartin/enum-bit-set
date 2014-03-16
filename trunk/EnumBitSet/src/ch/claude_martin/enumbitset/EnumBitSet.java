@@ -3,15 +3,12 @@ package ch.claude_martin.enumbitset;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-import java.lang.ref.SoftReference;
 import java.math.BigInteger;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.BiFunction;
@@ -377,19 +374,14 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
         requireNonNull(to)));
   }
 
-  private final EnumSet<E>    bitset;
+  private final EnumSet<E> bitset;
 
-  private final Class<E>      enumType;
+  private final Class<E>   enumType;
 
   // Note that those are intentionally not marked as "volatile". Visibility is guaranteed by JMM.
-  private int                 enumTypeSize = -1;
-
-  private Domain<E>           domain       = null;
-
-  private static final// domainCache:
-  Map<Class<? extends Enum<?>>, // Maps Enum-Type to Domain
-  SoftReference<// Allows GC to collect unused Domains
-  Domain<? extends Enum<?>>>> domainCache  = new HashMap<>();
+  private int              enumTypeSize = -1;
+  private final Object     mutex        = new Object();
+  private Domain<E>        domain       = null;
 
   private EnumBitSet(final Class<E> type) {
     this(type, EnumSet.noneOf(type));
@@ -522,21 +514,12 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * 
    * @see #getEnumTypeSize()
    * @return <code>Domain</code> with all enum elements. */
-  @SuppressWarnings("unchecked")
   @Override
   public Domain<E> getDomain() {
     if (this.domain == null)
-      synchronized (domainCache) {
+      synchronized (this.mutex) {
         if (null == this.domain) {
-          final SoftReference<Domain<? extends Enum<?>>> SoftReference = domainCache
-              .get(this.enumType);
-          if (SoftReference != null)
-            this.domain = (Domain<E>) SoftReference.get();
-          if (null == this.domain) {
-            this.domain = new DefaultDomain<>(asList(this.enumType.getEnumConstants()));
-            domainCache.put(this.enumType,
-                new SoftReference<Domain<? extends Enum<?>>>(this.domain));
-          }
+          this.domain = EnumDomain.of(this.enumType);
           assert this.enumTypeSize == -1 || this.enumTypeSize == this.domain.size();
           this.enumTypeSize = this.domain.size();
         }
@@ -555,17 +538,12 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** Amount of enum elements. This is relevant to know how large the bit field must be to hold a bit
    * set of this type.
    * <p>
-   * This is euqal to <code>{@link #getDomain()}.size()</code>, but possibly faster.
+   * This is equal to <code>{@link #getDomain()}.size()</code>, but possibly faster.
    * 
    * @return Number of constants of the enum type. */
   public int getEnumTypeSize() {
-    if (this.enumTypeSize == -1) {
+    if (this.enumTypeSize == -1)
       this.getDomain(); // This also sets this.enumTypeSize!
-      synchronized (domainCache) {
-        // JMM guarantees visibility:
-        return this.enumTypeSize;
-      }
-    }
     return this.enumTypeSize;
   }
 
