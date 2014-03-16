@@ -32,6 +32,13 @@ public interface Domain<T> extends List<T>, Set<T> {
   @Override
   public boolean equals(Object other);
 
+  /** Returns the hash code value for this domain. The value must be equal to:<br>
+   * <code>java.util.Arrays.hashCode(this.toArray())</code>
+   * 
+   * @return a hash code for this domain */
+  @Override
+  public int hashCode();
+
   @Override
   public default Spliterator<T> spliterator() {
     return Spliterators.spliterator(this, Spliterator.ORDERED | Spliterator.DISTINCT
