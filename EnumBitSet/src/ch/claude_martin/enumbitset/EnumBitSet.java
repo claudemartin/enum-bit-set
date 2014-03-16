@@ -555,7 +555,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
-    return this.bitset.hashCode();
+    return this.enumType.hashCode() ^ this.bitset.hashCode();
   }
 
   /** Returns a new EnumBitSet containing all elements that are in <code>this</code> and the given
