@@ -28,7 +28,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   @SuppressWarnings("unchecked")
   public DefaultDomain(final Collection<? extends T> domain) {
     this.elements = (T[]) new Object[domain.size()];
-    this.map = new HashMap<>(3 * domain.size());
+    this.map = new HashMap<>((int) 1.5 * domain.size());
     this.list = asList(this.elements);
     int i = 0;
     for (final T t : domain) {
@@ -69,7 +69,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
-    if (obj == null || !(obj instanceof Domain))
+    if (obj == null || !(obj instanceof Domain) || this.hashCode() != obj.hashCode())
       return false;
     if (obj instanceof DefaultDomain)
       return Arrays.equals(this.elements, ((DefaultDomain<?>) obj).elements);
