@@ -542,8 +542,13 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * 
    * @return Number of constants of the enum type. */
   public int getEnumTypeSize() {
-    if (this.enumTypeSize == -1)
+    if (this.enumTypeSize == -1) {
       this.getDomain(); // This also sets this.enumTypeSize!
+      synchronized (this.mutex) {
+        // JMM guarantees visibility:
+        return this.enumTypeSize;
+      }
+    }
     return this.enumTypeSize;
   }
 
