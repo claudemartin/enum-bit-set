@@ -90,7 +90,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     final E e = (E) this;
     if (e.ordinal() >= 64)
       throw new MoreThan64ElementsException(e.getDeclaringClass());
-    return 1 << e.ordinal();
+    return 1L << e.ordinal();
   }
 
   /** Returns whether this value is set in the given bitmask.
@@ -131,9 +131,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param set
    *          A set of enum elements, all non-null and of the same enum type.
    * @return <code>true</code>, if <code>this</code> can be found. */
-  // @SafeVarargs
+  // @SafeVarargs not possible because default method can't be final.
   @SuppressWarnings("unchecked")
-  // TODO add @SafeVarargs as soon as java 8 allows it here.
   public default boolean elementOf(final Enum<E>... set) {
     for (final Enum<?> e : requireNonNull(set))
       if (e == this)
@@ -142,9 +141,14 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
   }
 
   /** Returns whether this value is set in the given bitmask.
+   * <p>
+   * Note: This does not check if the given mask is valid for the enum type of this element. It may
+   * have more bits set than this enum type has constants.
    * 
    * @param bitmask64
    *          A bitmask.
+   * @throws MoreThan64ElementsException
+   *           if this element is not one of the first 64 elements.
    * @return (this.bitmask64() &amp; bitmask8) != 0; */
   public default boolean elementOf(final long bitmask64) throws MoreThan64ElementsException {
     return (this.bitmask64() & bitmask64) != 0;
@@ -178,13 +182,13 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     return result;
   }
 
-  /** Bit mask with all other bits removed. The resulting bit mask will have just one or zero bits
-   * set to 1.
+  /** Creates a set with all other elements removed. The resulting set will contain just this element
+   * or nothing at all.
    * 
    * @see #elementOf(BitSet)
    * @param set
    *          A set.
-   * @return <code>mask &amp; this.ordinal()</code> */
+   * @return <code>set &amp; this.ordinal()</code> */
   @SuppressWarnings({ "unchecked" })
   // @SafeVarargs
   public default EnumBitSet<E> intersect(final E... set) {
@@ -194,8 +198,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
       return EnumBitSet.noneOf(((Enum<E>) this).getDeclaringClass());
   }
 
-  /** Bit mask with all other bits removed. The resulting bit mask will have just one or zero bits
-   * set to 1.
+  /** Creates a set with all other elements removed. The resulting set will contain just this element
+   * or nothing at all.
    * 
    * @see #elementOf(BigInteger)
    * @param set
@@ -229,6 +233,9 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
 
   /** Bit mask with all other bits removed. The resulting bit mask will have just one or zero bits
    * set to 1.
+   * <p>
+   * Note: This does not check if the given mask is valid for the enum type of this element. It may
+   * have more bits set than this enum type has constants.
    * 
    * @see #elementOf(long)
    * @param mask
@@ -329,13 +336,12 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
   /** Removes this from the given mask.
    * <p>
    * Note: This does not check if the given mask is valid for the enum type of this element. It may
-   * have more bits set than this enum type has constants. The result is simply the value with one
-   * bit set to 0.
+   * have more bits set than this enum type has constants.
    * 
    * @param mask
    *          A bit mask.
    * @throws MoreThan64ElementsException
-   *           Thrown if any of the contained enum constants can't be represented with 64 bits.
+   *           if this element is not one of the first 64 elements.
    * @return <code>mask &amp; ~this.bitmask64()</code> */
   public default long removedFrom(final long mask) throws MoreThan64ElementsException {
     return mask & ~this.bitmask64();
