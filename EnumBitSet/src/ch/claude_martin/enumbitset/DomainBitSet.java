@@ -210,7 +210,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * Cartesian product of <code>{1, 2}</code> and <code>{red, white}</code> is {(1, red), (1,
    * white), (2, red), (2, white)}.
    * <p>
-   * The consumer will be invoked exactly <code>(this.size() * set.size())</code> times.
+   * The consumer will be invoked exactly <code>(this.size() &times; set.size())</code> times.
    * 
    * @see #cross(DomainBitSet)
    * @param <Y>
@@ -219,7 +219,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          Another set.
    * @param consumer
    *          A function to consume two elements. The return value should always be
-   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(result::add)</code>. */
+   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(myList::add)</code>. */
   public default <Y> void cross(final DomainBitSet<Y> set, final BiFunction<T, Y, ?> consumer) {
     if (set.isEmpty())
       return; // Nothing to do...
