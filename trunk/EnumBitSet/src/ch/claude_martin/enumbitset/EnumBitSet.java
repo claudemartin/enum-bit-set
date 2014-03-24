@@ -987,6 +987,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     if (requireNonNull(mask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     final EnumBitSet<E> result = this.clone();
+    if (mask.signum() == 0)
+      return result;
     final Domain<E> dom = this.getDomain();
     // Test that mask does not contain more than domain allows:
     if (0 != mask.shiftRight(dom.size()).signum())

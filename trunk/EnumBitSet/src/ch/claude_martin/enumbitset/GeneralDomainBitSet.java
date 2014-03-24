@@ -451,6 +451,8 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> union(final BigInteger mask) {
+    if (0 == mask.signum())
+      return new GeneralDomainBitSet<>(this);
     return this.union(BitSetUtilities.asBitSet(mask));
   }
 
