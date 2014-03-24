@@ -275,7 +275,7 @@ public class EnumBitSetTest {
   public void testBitmask64() {
     final long bitmask64 = Element.Xe.bitmask64();
     assertEquals(Element.Xe.bitmask64(), bitmask64);
-    assertEquals(1 << Element.Xe.ordinal(), bitmask64);
+    assertEquals(1L << Element.Xe.ordinal(), bitmask64);
   }
 
   @Test
