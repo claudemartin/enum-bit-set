@@ -42,6 +42,7 @@
   <target name="javadoc">
       <javadoc access="public" author="true" 
       	destdir="${doc}" 
+        encoding="UTF-8" charset="UTF-8" 
       	nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" 
       	packagenames="ch.claude_martin.enumbitset" source="1.8" 
       	header="project home: &lt;a style=&quot;text-transform:lowercase;&quot; href=&quot;http://claude-martin.ch/enumbitset/&quot;&gt;http://claude-martin.ch/enumbitset/&lt;/a&gt;"
