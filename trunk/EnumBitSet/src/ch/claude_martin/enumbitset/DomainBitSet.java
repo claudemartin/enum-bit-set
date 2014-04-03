@@ -219,7 +219,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          Another set.
    * @param consumer
    *          A function to consume two elements. The return value should always be
-   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(myList::add)</code>. */
+   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(mySet::add)</code>. */
   public default <Y> void cross(final DomainBitSet<Y> set, final BiFunction<T, Y, ?> consumer) {
     if (set.isEmpty())
       return; // Nothing to do...
@@ -283,11 +283,15 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   public Domain<T> getDomain();
 
   /** Returns an Optional that might contain the element at the specified position.
-   *
-   * @see #getBit(int)
+   * <p>
+   * The inverse has to be done in the domain: <br/>
+   * <code>mySet.{@linkplain #getDomain()}.{@linkplain Domain#indexOf(Object) indexOf(element)};</code>
+   * 
    * @param index
    *          index of an element in the domain.
    * @see #zipWithPosition()
+   * @see #getBit(int)
+   * @see Domain#indexOf(Object)
    * @return Optional that might contain the element at the specified position.
    * @throws IndexOutOfBoundsException
    *           if the index is out of range */
