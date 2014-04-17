@@ -147,7 +147,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Scala-style getter for {@link #first}.
    * 
    * @see #first
-   * @return the first element. */
+   * @return the first element (not null). */
   public X _1() {
     return this.first;
   }
@@ -155,7 +155,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Scala-style getter for {@link #second}.
    * 
    * @see #second
-   * @return the second element. */
+   * @return the second element (not null). */
   public Y _2() {
     return this.second;
   }
@@ -193,12 +193,15 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
     consumer.accept(this.first, this.second);
   }
 
-  /** {@inheritDoc} @return <code>true</code>, iff both first and second are equal. */
+  /** Compares two pairs for equality (by value comparison). The given object must also be a pair and
+   * contain two elements that are equal to this pair's elements.
+   * 
+   * @return <code>true</code>, iff both first and second are equal. */
   @Override
   public boolean equals(final Object obj) {
     return obj instanceof Pair //
-        && Objects.equals(this.first, ((Pair<?, ?, ?>) obj).first) //
-        && Objects.equals(this.second, ((Pair<?, ?, ?>) obj).second);
+        && this.first.equals(((Pair<?, ?, ?>) obj).first) //
+        && this.second.equals(((Pair<?, ?, ?>) obj).second);
   }
 
   /** {@inheritDoc}
