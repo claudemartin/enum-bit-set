@@ -5,6 +5,8 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 
+import javax.annotation.concurrent.Immutable;
+
 /** A domain defines the elements that a {@link DomainBitSet} can contain. This is also know as the
  * <i>universe of discourse</i>. It is a set with the following characteristics:
  * <ul>
@@ -24,6 +26,7 @@ import java.util.Spliterators;
  *          A type that all elements in the domain share.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+@Immutable
 public interface Domain<T> extends List<T>, Set<T> {
   /** Two domains are defined to be equal if they contain the same elements in the same order.
    * 
