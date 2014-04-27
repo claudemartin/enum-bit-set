@@ -15,6 +15,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /** This data structure allows managing enum constants in a mutable set with methods similar to
  * EnumSet and BitSet. This holds a regular EnumSet, but adds more functions to use it as a BitSet.
  * Note that the implementation of EnumSet works like a bit set but it does not share an interface
@@ -53,7 +55,7 @@ import java.util.stream.Stream;
  * @param <E>
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
 public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implements DomainBitSet<E>,
-    Collection<E> {
+Collection<E> {
 
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
    * 
@@ -454,9 +456,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     // EnumBitSetHelper. The default implementation can be used, because the type is only generic.
     // This can be tested with this:
     assert this.isEmpty()
-        || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
+    || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
     assert set.isEmpty()
-        || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
+    || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
     return (Set<Pair<EnumBitSetHelper<?>, E, Y>>) (Object) DomainBitSet.super.cross(set);
   }
 
@@ -482,7 +484,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
       return true;
     if (other instanceof EnumBitSet)
       return this.enumType == ((EnumBitSet<E>) other).enumType
-          && this.bitset.equals(((EnumBitSet<E>) other).bitset);
+      && this.bitset.equals(((EnumBitSet<E>) other).bitset);
     if (other instanceof DomainBitSet)
       return this.ofEqualDomain((DomainBitSet<E>) other)
           && this.ofEqualElements((DomainBitSet<E>) other);
@@ -515,8 +517,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @see #getEnumTypeSize()
    * @return <code>Domain</code> with all enum elements. */
   @Override
+  @SuppressFBWarnings(value = "DC_DOUBLECHECK", justification = "Doublecheck works since Java 1.5.")
   public Domain<E> getDomain() {
-    if (this.domain == null)
+    if (null == this.domain)
       synchronized (this.mutex) {
         if (null == this.domain) {
           this.domain = EnumDomain.of(this.enumType);
