@@ -9,10 +9,12 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+
 /** A collection of utility methods for {@link DomainBitSet}s.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
-public class BitSetUtilities {
+public final class BitSetUtilities {
 
   /** Creates a BigInteger of a given bit set. The value is a positive value with the same "value" as
    * the bit set.
@@ -20,7 +22,7 @@ public class BitSetUtilities {
    * @param bitset
    *          A bit set.
    * @return The bit mask. */
-  public static BigInteger asBigInteger(final BitSet bitset) {
+  public static BigInteger asBigInteger(@Nonnull final BitSet bitset) {
     if (requireNonNull(bitset).isEmpty())
       return BigInteger.ZERO;
     final BigInteger result = new BigInteger(1, reverse(bitset.toByteArray()));
@@ -49,7 +51,7 @@ public class BitSetUtilities {
    * @param mask
    *          A bit mask, must be positive.
    * @return New BitSet, equal to the given bit mask. */
-  public static BitSet asBitSet(final BigInteger mask) {
+  public static BitSet asBitSet(@Nonnull final BigInteger mask) {
     if (requireNonNull(mask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return BitSet.valueOf(reverse(mask.toByteArray()));
@@ -77,7 +79,7 @@ public class BitSetUtilities {
    * @throws IllegalArgumentException
    *           Only positive values with up to 64 bits are allowed.
    * @return A long value representing the given BigInteger, if it is valid (bit length = 64). */
-  public static long asLong(final BigInteger mask) {
+  public static long asLong(@Nonnull final BigInteger mask) {
     if (mask.signum() < 0)
       throw new IllegalArgumentException("Negative value not permitted.");
     if (mask.bitLength() > 64)
@@ -93,7 +95,7 @@ public class BitSetUtilities {
    * @throws IllegalArgumentException
    *           Only bit sets with using up to 64 bits are allowed.
    * @return A long value representing the given bit set. */
-  public static long asLong(final BitSet bitset) {
+  public static long asLong(@Nonnull final BitSet bitset) {
     if (bitset.length() > 64)
       throw new IllegalArgumentException("The bitset contains more than 64 elements.");
     if (bitset.isEmpty())
@@ -112,7 +114,8 @@ public class BitSetUtilities {
    * @see java.util.function.BinaryOperator
    * @see DomainBitSet#intersect(Iterable)
    * @return The intersection of both sets. */
-  public static <T> DomainBitSet<T> intersect(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
+  public static <T> DomainBitSet<T> intersect(@Nonnull final DomainBitSet<T> set1,
+      @Nonnull final DomainBitSet<T> set2) {
     return set1.intersect(set2);
   }
 
@@ -137,7 +140,8 @@ public class BitSetUtilities {
    * @see java.util.function.BinaryOperator
    * @see DomainBitSet#minus(Iterable)
    * @return The relative complement of both sets. */
-  public static <T> DomainBitSet<T> minus(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
+  public static <T> DomainBitSet<T> minus(@Nonnull final DomainBitSet<T> set1,
+      @Nonnull final DomainBitSet<T> set2) {
     return set1.minus(set2);
   }
 
