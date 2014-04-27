@@ -16,6 +16,8 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 
+import javax.annotation.concurrent.Immutable;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /** BitSet with a domain of up to 64 elements. This is checked at creation, so that it is not thrown
@@ -25,6 +27,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @param <T>
  *          The type of the domain. All elements in the domain must be of type T or of any subtype
  *          of T. */
+@Immutable
 public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   private static final class Itr<T> implements Iterator<T> {
     private final Domain<T> dom;
@@ -172,7 +175,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   private final long      all;
 
-  private int             hash = 0;
+  @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
+  private int             hash = 0; // defaults to 0, later it's set to a hash code.
 
   private SmallDomainBitSet(final Domain<T> domain, final long set) {
     this.domain = domain;
