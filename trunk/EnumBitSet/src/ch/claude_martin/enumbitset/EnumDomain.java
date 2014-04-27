@@ -72,7 +72,7 @@ class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E
       return false;
     if (obj instanceof EnumDomain) {
       final EnumDomain<?> ed = (EnumDomain<?>) obj;
-      return ed.enumType == ed.enumType;
+      return this.enumType == ed.enumType;
     }
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
   }
