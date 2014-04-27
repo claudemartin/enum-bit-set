@@ -36,7 +36,7 @@ import java.util.stream.StreamSupport;
  * @param <Y>
  *          The type of the second element. Extends &lt;T&gt;.
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
-public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
+public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
    * @see #uncurry(BiFunction)
