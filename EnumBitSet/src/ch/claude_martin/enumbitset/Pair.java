@@ -19,6 +19,11 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /** An immutable, ordered pair (2-tuple) of two non-null elements. This can be used in a Cartesian
  * product.
  * <p>
@@ -36,6 +41,7 @@ import java.util.stream.StreamSupport;
  * @param <Y>
  *          The type of the second element. Extends &lt;T&gt;.
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+@Immutable
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
@@ -52,7 +58,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
   public static <TT, TX extends TT, TY extends TT, R> BiFunction<TX, TY, R> curry(
-      final Function<Pair<TT, TX, TY>, R> f) {
+      @Nonnull final Function<Pair<TT, TX, TY>, R> f) {
     return (x, y) -> f.apply(Pair.of(x, y));
   }
 
@@ -77,8 +83,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<TT> commonType,
-      final TX first, final TY second) {
+  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(
+      @Nonnull final Class<TT> commonType, @Nonnull final TX first, @Nonnull final TY second) {
     if (!commonType.isAssignableFrom(first.getClass())
         || !commonType.isAssignableFrom(second.getClass()))
       throw new ClassCastException();
@@ -100,8 +106,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final TX first,
-      final TY second) {
+  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(@Nonnull final TX first,
+      @Nonnull final TY second) {
     return new Pair<>(first, second);
   }
 
@@ -121,7 +127,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *          A BiFunction that takes two elements.
    * @return A Function that takes a pair and applies both elements on the given Function. */
   public static <TT, TX extends TT, TY extends TT, R> Function<Pair<TT, TX, TY>, R> uncurry(
-      final BiFunction<TX, TY, R> f) {
+      @Nonnull final BiFunction<TX, TY, R> f) {
     return (p) -> f.apply(p.first, p.second);
   }
 
@@ -129,17 +135,20 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * <p>
    * This is also known as the <i>first coordinate</i> or the <i>left projection</i> of the pair. */
+  @Nonnull
   public final X first;
 
   /** The first value of this pair. Not null.
    * 
    * <p>
    * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
+  @Nonnull
   public final Y second;
 
+  @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private String string = null;
 
-  private Pair(final X first, final Y second) {
+  private Pair(@Nonnull final X first, @Nonnull final Y second) {
     this.first = requireNonNull(first);
     this.second = requireNonNull(second);
   }
@@ -170,7 +179,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           if f is null
    * @return The result of applying this pair to f. */
-  public <R> R applyTo(final BiFunction<X, Y, R> f) {
+  public <R> R applyTo(@Nonnull final BiFunction<X, Y, R> f) {
     return f.apply(this.first, this.second);
   }
 
@@ -189,7 +198,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *           if consumer is null
    * @param consumer
    *          A consumer of two elements. */
-  public void consumeBy(final BiConsumer<X, Y> consumer) {
+  public void consumeBy(@Nonnull final BiConsumer<X, Y> consumer) {
     consumer.accept(this.first, this.second);
   }
 
