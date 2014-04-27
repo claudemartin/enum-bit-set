@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressWarnings("static-method")
 public class GeneralDomainBitSetTest {
@@ -64,7 +65,8 @@ public class GeneralDomainBitSetTest {
     try {
       clone.addAll(asList(2, 3, 4, 5));
       fail("Only elements from the domain should be allowed.");
-    } catch (final Exception e) {
+    } catch (final IllegalArgumentException e) {
+      // IllegalArgumentException is expected!
     }
   }
 
@@ -105,13 +107,14 @@ public class GeneralDomainBitSetTest {
   public void testContains() {
     assertFalse(this.none.contains(1));
     assertFalse(this.oneTo4.contains(5));
-    assertTrue(this.oneTo4.contains(new Integer(1)));
+    assertTrue(this.oneTo4.contains(Integer.valueOf(1)));
   }
 
   @Test
   public void testContainsAll() {
-    assertTrue(this.oneTo4.containsAll(this.oneTo4));
     assertTrue(this.oneTo4.containsAll(this.oneTwo));
+    assertTrue(this.oneTo4.containsAll(this.twoThree));
+    assertTrue(this.oneTo4.containsAll(this.threeFour));
     assertFalse(this.oneTwo.containsAll(this.oneTo4));
   }
 
@@ -394,6 +397,7 @@ public class GeneralDomainBitSetTest {
   }
 
   @Test
+  @SuppressFBWarnings(value = "GC_UNRELATED_TYPES", justification = "it's not a bug, it's a test.")
   public void testRemove() {
     final GeneralDomainBitSet<Integer> clone = this.oneTo4.clone();
     clone.remove(1);
