@@ -430,7 +430,7 @@ Collection<E> {
   /** {@inheritDoc} */
   @Override
   public boolean contains(final Object o) {
-    return this.bitset.contains(o);
+    return this.bitset.contains(requireNonNull(o));
   }
 
   /** {@inheritDoc} */
