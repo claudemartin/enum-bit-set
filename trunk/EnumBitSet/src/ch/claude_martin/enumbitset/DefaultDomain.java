@@ -11,22 +11,33 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
 
-/** Works as a "BiMap" (bijective map) of the domain (universe). Allows to search elements by index
- * and vice versa. This class is immutable and zero-based. */
+import javax.annotation.Nonnull;
+import javax.annotation.concurrent.Immutable;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+@Immutable
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   // Array of all elements in the domain:
+  @Nonnull
   private final T[]                 elements;
   // View of the array as a List:
+  @Nonnull
   private final List<T>             list;
   // Lookup table: element->index
+  @Nonnull
   private final HashMap<T, Integer> map;
 
-  private int                       hash;    // default to 0
+  @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
+  private int                       hash;    // defaults to 0, later it's set to a hash code.
 
   /** The caller must make sure that the domain is a distinct collection with a well defined
-   * iteration order (e.g. List, LinkedHashSet etc.) . */
+   * iteration order (e.g. List, LinkedHashSet etc.).
+   * 
+   * @throws IllegalArgumentException
+   *           if the given collections contains duplicates. */
   @SuppressWarnings("unchecked")
-  public DefaultDomain(final Collection<? extends T> domain) {
+  public DefaultDomain(@Nonnull final Collection<? extends T> domain) {
     this.elements = (T[]) new Object[domain.size()];
     this.map = new HashMap<>((int) 1.5 * domain.size());
     this.list = asList(this.elements);
@@ -138,7 +149,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   }
 
   @Override
-  public <X> X[] toArray(final X[] a) {
+  public <X> X[] toArray(@Nonnull final X[] a) {
     return super.toArray(a);
   }
 }
