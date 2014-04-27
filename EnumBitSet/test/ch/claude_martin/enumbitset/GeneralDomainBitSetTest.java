@@ -384,8 +384,13 @@ public class GeneralDomainBitSetTest {
     assertFalse(set.contains(2));
     assertFalse(set.contains(4));
 
-    assertFalse(set.contains(null));
     assertFalse(set.contains("3"));
+    try {
+      assertFalse(set.contains(null));
+      fail("contains() should not accept null");
+    } catch (final NullPointerException e) {
+      // expected
+    }
   }
 
   @Test
