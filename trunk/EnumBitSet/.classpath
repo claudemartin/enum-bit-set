@@ -4,6 +4,10 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="var" path="FINDBUGS_ANNOTATIONS"/>
+	<classpathentry kind="var" path="FINDBUGS_ANNOTATIONS">
+		<attributes>
+			<attribute name="javadoc_location" value="http://findbugs.sourceforge.net/api/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
