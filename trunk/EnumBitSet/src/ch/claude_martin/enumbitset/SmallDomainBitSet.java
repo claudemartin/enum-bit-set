@@ -16,6 +16,8 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /** BitSet with a domain of up to 64 elements. This is checked at creation, so that it is not thrown
  * later. However, a mask that has a larger domain causes an {@link IllegalArgumentException}
  * instead.
@@ -23,7 +25,7 @@ import java.util.stream.Stream;
  * @param <T>
  *          The type of the domain. All elements in the domain must be of type T or of any subtype
  *          of T. */
-public class SmallDomainBitSet<T> implements DomainBitSet<T> {
+public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   private static final class Itr<T> implements Iterator<T> {
     private final Domain<T> dom;
     private int             pos = 0;
@@ -196,6 +198,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T> {
   }
 
   @Override
+  @SuppressFBWarnings("CN_IDIOM_NO_SUPER_CALL")
   public SmallDomainBitSet<T> clone() {
     return this;
   }
