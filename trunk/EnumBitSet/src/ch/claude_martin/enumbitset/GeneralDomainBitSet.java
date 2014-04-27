@@ -203,7 +203,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public boolean contains(final Object o) {
-    return this.set.contains(o);
+    return this.set.contains(requireNonNull(o));
   }
 
   @Override
