@@ -268,7 +268,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
   /** Returns a string representation of this Pair.
    * <p>
    * This could lead to recursion in rare cases. Pairs, Collections, Arrays, References etc. are
-   * always represented by their type. But can still lead to a {@link StackOverflowError}.
+   * always represented by their type. But this can still lead to a {@link StackOverflowError}.
    * 
    * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
@@ -277,7 +277,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T> {
       final Function<Object, String> f = (o) -> {
         return o.getClass().isArray() || o instanceof Iterable || o instanceof Reference
             || o instanceof Optional ? o.getClass().getSimpleName() //
-            : o.toString();
+                : o.toString();
       };
       this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
     }
