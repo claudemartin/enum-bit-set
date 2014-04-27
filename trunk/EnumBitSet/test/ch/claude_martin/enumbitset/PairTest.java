@@ -17,8 +17,10 @@ import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressWarnings("static-method")
+@SuppressFBWarnings(value = { "DM_NUMBER_CTOR", "DM_STRING_CTOR" }, justification = "It's part of the test.")
 public class PairTest {
 
   @Test
@@ -41,7 +43,7 @@ public class PairTest {
   @Test
   public final void testEqualsObject() {
     final Pair<?, String, Integer> p1 = Pair.of("foo", 42);
-    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"), 42);
+    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"), new Integer(42));
     assertEquals(p1, p1);
     assertEquals(p1, p2);
     assertEquals(p2, p1);
@@ -53,7 +55,7 @@ public class PairTest {
   @Test
   public final void testHashCode() {
     final Pair<?, String, Integer> p1 = Pair.of("foo", 42);
-    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"), 42);
+    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"), new Integer(42));
     assertEquals(p1.hashCode(), p1.hashCode());
     assertEquals(p1.hashCode(), p2.hashCode());
     assertEquals(p2.hashCode(), p2.hashCode());
