@@ -1,6 +1,6 @@
 <project name="EnumBitSet" default="mkjar" basedir="..">
 	<description>
-        This project only consists of few java files that can just be added to any project. If you want a jar-file then you can use this build file to generate it.
+        Go to http://claude-martin.ch/enumbitset/ for information about this project.
     </description>
 
 	<property name="projectName" value="EnumBitSet" />
