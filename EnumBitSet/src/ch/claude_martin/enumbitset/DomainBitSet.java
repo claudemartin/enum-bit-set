@@ -29,7 +29,8 @@ import javax.annotation.Nonnull;
  * <p>
  * The methods that return a DomainBitSet&lt;T&gt; are expected to create a new object and not
  * change the state of this object. The implementation could be mutable or immutable. Mutable
- * implementations are expected to also implement {@link Set}&lt;T&gt;.
+ * implementations should not implement {@link Set}&lt;T&gt;, because the specifications of 
+ * {@link #equals(Object)} are different.
  * 
  * <p>
  * Methods such as {@link #union(Iterable)}, {@link #toSet()}, and {@link #complement()} return a
@@ -41,11 +42,7 @@ import javax.annotation.Nonnull;
  * Note that the implementation is not necessarily a bit set. It could be any data structure that
  * allows to add and remove elements of the domain. Therefore, all elements of the domain should
  * implement {@link #hashCode()} and {@link #equals(Object)} for correct behavior and better
- * performance. The iterator can return the elements in any order.
- * 
- * <p>
- * Iteration over s domain bit set always returns all containing elements in the same order as they
- * appear in the domain.
+ * performance. The {@link #iterator() iterator} can return the elements in any order.
  * 
  * @param <T>
  *          A type that all elements in the domain share.
@@ -370,7 +367,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * 
    * @see #intersect(Iterable)
    * @param set
-   *          A set as an array. Duplicates are ignored. Must not be or contain <code>null</code>.
+   *          A set as an array. Duplicates are ignored. Must not be nor contain <code>null</code>.
    * @return The intersection of this and the given set. */
   @Nonnull
   @CheckReturnValue
@@ -444,7 +441,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * 
    * @see #minus(Iterable)
    * @param set
-   *          A set as an array. Duplicates are ignored. Must not be or contain <code>null</code>.
+   *          A set as an array. Duplicates are ignored. Must not be nor contain <code>null</code>.
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
@@ -472,7 +469,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @param set
    *          The other set.
    * @see Set#equals(Object)
-   * @return <code>true</code> if both are contain the same elements. */
+   * @return <code>true</code> if both contain the same elements. */
   public default boolean ofEqualElements(@Nonnull final DomainBitSet<T> set) {
     return this.toSet().equals(set.toSet());
   }
@@ -593,7 +590,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * 
    * @see #union(Iterable)
    * @param set
-   *          A set as an array. Duplicates are ignored. Must not be or contain <code>null</code>.
+   *          A set as an array. Duplicates are ignored. Must not be nor contain <code>null</code>.
    * @return The union of this and the given set. */
   @Nonnull
   @CheckReturnValue
