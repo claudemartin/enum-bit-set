@@ -494,19 +494,19 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
     return mask.xor(this.bitmask());
   }
 
-  /** This can be used to switch one bit in a bit mask.
+  /** Removes or adds <tt>this</tt> to the given set. The operation is equivalent to switching one
+   * bit in a bit mask.
    * 
    * @param set
    *          A set of enum elements.
-   * @return <code>mask.clone() XOR this</code> */
+   * @return <code>set.clone() XOR this</code> */
+  @SuppressWarnings("unchecked")
   public default EnumBitSet<E> xor(final EnumBitSet<E> set) {
-    @SuppressWarnings("unchecked")
-    final E e = (E) this;
     final EnumBitSet<E> result = set.clone();
     if (set.contains(this))
-      result.remove(e);
+      result.remove(this);
     else
-      result.add(e);
+      result.add((E) this);
     return result;
   }
 
