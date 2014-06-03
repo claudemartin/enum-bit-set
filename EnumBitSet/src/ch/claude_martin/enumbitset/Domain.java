@@ -13,9 +13,11 @@ import javax.annotation.concurrent.Immutable;
  * <li><b>ordered</b> (as it is a {@link List}),</li>
  * <li><b>distinct</b> (as it is a {@link Set}),</li>
  * <li><b>immutable</b> (in size and content),</li>
+ * <li><b>finite</b> (up to 2<sup>31</sup>-1 elements),</li>
+ * <li><b>enumerable</b> (computably),</li>
  * <li><b>non-null</b> (no element is <code>null</code>).</li>
  * </ul>
- * The {@link Spliterator} returned by {@link #spliterator() } also indicates all these
+ * The {@link Spliterator} returned by {@link #spliterator() } also indicates most of these
  * characteristics.
  * 
  * <p>
