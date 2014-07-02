@@ -16,6 +16,12 @@ import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
+/** Default implementation of {@link Domain}.
+ * 
+ * @param <T>
+ *          A type that all elements in the domain share.
+ * 
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   // Array of all elements in the domain:
@@ -39,7 +45,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   @SuppressWarnings("unchecked")
   public DefaultDomain(@Nonnull final Collection<? extends T> domain) {
     this.elements = (T[]) new Object[domain.size()];
-    this.map = new HashMap<>((int) 1.5 * domain.size());
+    this.map = new HashMap<>((int) (1.5 * domain.size()));
     this.list = asList(this.elements);
     int i = 0;
     for (final T t : domain) {
