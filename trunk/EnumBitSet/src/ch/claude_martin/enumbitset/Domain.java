@@ -7,7 +7,7 @@ import java.util.Spliterators;
 
 import javax.annotation.concurrent.Immutable;
 
-/** A domain defines the elements that a {@link DomainBitSet} can contain. This is also know as the
+/** A domain defines the elements that a {@link DomainBitSet} can contain. This is also known as the
  * <i>universe of discourse</i>. It is a set with the following characteristics:
  * <ul>
  * <li><b>ordered</b> (as it is a {@link List}),</li>
