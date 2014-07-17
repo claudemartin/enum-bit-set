@@ -1,9 +1,11 @@
 package ch.claude_martin.enumbitset;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Function;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -35,7 +37,14 @@ public interface Domain<T> extends List<T>, Set<T> {
    * @param other
    *          the object to be compared for equality with this domain */
   @Override
-  public boolean equals(Object other);
+  public boolean equals(final Object other);
+
+  /** Creates a factory to create new sets with this domain.
+   * <p>
+   * The returned DomainBitSet is optimized for this Domain.
+   * 
+   * @see BitSetUtilities#toDomainBitSet(Domain) */
+  public Function<Collection<T>, DomainBitSet<T>> factory();
 
   /** Returns the hash code value for this domain. The value must be equal to:<br>
    * <code>java.util.Arrays.hashCode(this.toArray())</code>

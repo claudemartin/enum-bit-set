@@ -65,6 +65,14 @@ public class SmallDomainBitSetTest {
   }
 
   @Test
+  public void testCross() {
+    assertEquals(this.oneTo4.cross(this.oneTo4), this.oneTo4.cross(this.oneTo4));
+    assertEquals(emptySet(), this.none.cross(this.none));
+    assertEquals(emptySet(), this.oneTo4.cross(this.none));
+    assertEquals(emptySet(), this.none.cross(this.oneTo4));
+  }
+
+  @Test
   public void testGetDomain() {
     assertEquals(claude.getDomain(), claude.getDomain());
     assertEquals(claude.getDomain(), claude.complement().getDomain());
@@ -143,6 +151,25 @@ public class SmallDomainBitSetTest {
     for (final String string : foo) {
       assertFalse(string.equals("a"));
       assertTrue(string.equals("b") || string.equals("c"));
+    }
+  }
+
+  @Test
+  public void testMap() throws Exception {
+    final Domain<Integer> domain = allOf(1, 2, 3, 4, 5).getDomain();
+
+    DomainBitSet<Integer> mapped;
+    mapped = this.none.map(domain);
+    assertEquals(SmallDomainBitSet.noneOf(domain), mapped);
+
+    for (final SmallDomainBitSet<Integer> set : asList(this.oneTwo, this.twoThree, this.oneTo4)) {
+      // Map to the same number:
+      mapped = set.map(domain);
+      assertEquals(set.toSet(), mapped.toSet());
+
+      // Map all to 1:
+      mapped = set.map(domain, (x) -> 1);
+      assertEquals(SmallDomainBitSet.of(domain, asList(1)), mapped);
     }
   }
 

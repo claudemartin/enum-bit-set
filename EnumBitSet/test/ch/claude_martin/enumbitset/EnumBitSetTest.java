@@ -1,6 +1,7 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -328,6 +329,16 @@ public class EnumBitSetTest {
           .collect(Collectors.toSet());
       assertEquals(set1, set2);
     }
+
+    {
+      final EnumBitSet<Element> set = EnumBitSet.of(Element.Ar, Element.Br, Element.Cr);
+      final EnumBitSet<Element> none = EnumBitSet.noneOf(Element.class);
+      // EnumBitSet#cross = DomainBitSet#cross
+      assertEquals(set.cross(set), set.cross((DomainBitSet<?>) set));
+      assertEquals(emptySet(), none.cross(none));
+      assertEquals(emptySet(), set.cross(none));
+      assertEquals(emptySet(), none.cross(set));
+    }
   }
 
   @Test
@@ -479,6 +490,49 @@ public class EnumBitSetTest {
     final EnumBitSet<Alphabet> justA = EnumBitSet.just(Alphabet.A);
     assertEquals(1, justA.size());
     assertTrue(justA.contains(Alphabet.A));
+  }
+
+  @Test
+  public void testMap() throws Exception {
+    final EnumBitSet<Alphabet> none = EnumBitSet.noneOf(Alphabet.class);
+    final EnumBitSet<Alphabet> abc = EnumBitSet.of(Alphabet.A, Alphabet.B, Alphabet.C);
+    DomainBitSet<Element> mapped;
+    {
+      mapped = none.map(EnumDomain.of(Element.class));
+      assertEquals(EnumBitSet.noneOf(Element.class), mapped);
+
+      mapped = abc.map(EnumDomain.of(Element.class));
+      assertEquals(EnumBitSet.of(Element.H, Element.C, Element.N), mapped);
+
+      // Map all to Xe:
+      mapped = abc.map(EnumDomain.of(Element.class), (x) -> Element.Xe);
+      assertEquals(Element.Xe.toEnumBitSet(), mapped);
+
+      try {
+        EnumBitSet.allOf(Element.class).map(EnumDomain.of(Alphabet.class));
+        fail("Element -> Alphabet should not be possible!");
+      } catch (final IllegalArgumentException e) {
+        // expected!
+      }
+    }
+    {
+      mapped = none.map(Element.class);
+      assertEquals(EnumBitSet.noneOf(Element.class), mapped);
+
+      mapped = abc.map(Element.class);
+      assertEquals(EnumBitSet.of(Element.H, Element.C, Element.N), mapped);
+
+      // Map all to Xe:
+      mapped = abc.map(Element.class, (x) -> Element.Xe);
+      assertEquals(Element.Xe.toEnumBitSet(), mapped);
+
+      try {
+        final EnumBitSet<Alphabet> mapped2 = EnumBitSet.allOf(Element.class).map(Alphabet.class);
+        fail("Element -> Alphabet should not be possible! bad result: " + mapped2);
+      } catch (final IllegalArgumentException e) {
+        // expected!
+      }
+    }
   }
 
   @Test

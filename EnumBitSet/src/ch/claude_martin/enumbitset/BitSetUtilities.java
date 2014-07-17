@@ -4,7 +4,16 @@ import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
 import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -159,6 +168,66 @@ public final class BitSetUtilities {
       array[i++] = tmp;
     }
     return array;
+  }
+
+  /** Collector to convert a {@link Stream} to a {@link DomainBitSet}.
+   * 
+   * @param bitsetFactory
+   *          Creates an empty bitset.
+   * @param <T>
+   *          Type of elements.
+   * @param <D>
+   *          Type of DomainBitSet.
+   * @see Domain#factory()
+   * @see Collectors#toCollection(Supplier)
+   * @return New Collector to collect elements into a DomainBitSet. */
+  public static <T> Collector<T, Set<T>, DomainBitSet<T>> toDomainBitSet(final Domain<T> domain) {
+    return toDomainBitSet(domain.factory());
+  }
+
+  /** Collector to convert a {@link Stream} to a {@link DomainBitSet}.
+   * 
+   * @param bitsetFactory
+   *          Creates an empty bitset.
+   * @param <T>
+   *          Type of elements.
+   * @param <D>
+   *          Type of DomainBitSet.
+   * @see Collectors#toCollection(Supplier)
+   * @return New Collector to collect elements into a DomainBitSet. */
+  public static <T, D extends DomainBitSet<T>> Collector<T, Set<T>, D> toDomainBitSet(
+      final Function<Collection<T>, D> bitsetFactory) {
+    return new Collector<T, Set<T>, D>() {
+
+      @Override
+      public BiConsumer<Set<T>, T> accumulator() {
+        return (set, t) -> set.add(t);
+      }
+
+      @Override
+      public Set<Characteristics> characteristics() {
+        return Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED));
+      }
+
+      @Override
+      public BinaryOperator<Set<T>> combiner() {
+        return (s1, s2) -> {
+          s1.addAll(s2);
+          return s1;
+        };
+      }
+
+      @Override
+      public Function<Set<T>, D> finisher() {
+        return bitsetFactory::apply;
+      }
+
+      @Override
+      public Supplier<Set<T>> supplier() {
+        return HashSet::new;
+      }
+
+    };
   }
 
   /** Collector to convert a {@link Stream} of {@link Pair}s to a {@link TreeMap}.

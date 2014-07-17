@@ -11,9 +11,13 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.Spliterator;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Stream;
+
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -446,7 +450,7 @@ Collection<E> {
    *          The type of the elements in the given set.
    * @param set
    *          Another set.
-   * @see DomainBitSet#cross(DomainBitSet, BiFunction)
+   * @see DomainBitSet#cross(DomainBitSet, BiConsumer)
    * @see DomainBitSet#cross(DomainBitSet)
    * @return a {@link Set} containing all {@link Pair pairs}. */
   @SuppressWarnings("unchecked")
@@ -454,7 +458,7 @@ Collection<E> {
       final EnumBitSet<Y> set) {
     // This cast is ok because we know that all EnumBitSets always use types that implement
     // EnumBitSetHelper. The default implementation can be used, because the type is only generic.
-    // This can be tested with this:
+    // This can be asserted by this:
     assert this.isEmpty()
     || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
     assert set.isEmpty()
@@ -671,6 +675,83 @@ Collection<E> {
   @Override
   public Iterator<E> iterator() {
     return this.bitset.iterator();
+  }
+
+  /** Returns a new set with elements of a given enum type, containing all elements of the other enum
+   * type.
+   * <p>
+   * Mapping is done by the ordinal of each enum constant. Therefore the given enum type must not
+   * contain less constants than the enum type of this set.
+   * 
+   * @see #map(Domain, Function)
+   * @see #map(Class, Function)
+   * @see Stream#map(Function)
+   * @param newEnumType
+   *          The new enum type.
+   * @param <S>
+   *          Type of given enum domain.
+   * @throws IllegalArgumentException
+   *           if the given enum type contains less constants.
+   * @return new set, using the given enum type. */
+  @SuppressWarnings("unchecked")
+  @Nonnull
+  @CheckReturnValue
+  public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(
+      @Nonnull final Class<S> newEnumType) {
+    requireNonNull(newEnumType, "enumType");
+    if (this.enumType == newEnumType)
+      return (EnumBitSet<S>) this.clone();
+    final Domain<S> d = EnumDomain.of(newEnumType);
+    if (d.size() < this.getDomain().size())
+      throw new IllegalArgumentException("The given enum type contains less elements.");
+    return this.map(newEnumType, e -> d.get(e.ordinal()));
+  }
+
+  /** Returns a new set with elements of a given enum type, containing all mapped elements.
+   * <p>
+   * This is a convenience method. The same can be done with: <code>this.stream().map(mapper)</code>
+   * 
+   * @see #map(Domain, Function)
+   * @param newEnumType
+   *          The new enum type.
+   * @param mapper
+   *          function to map from E to S.
+   * @param <S>
+   *          Type of given enum domain.
+   * @see #map(Domain, Function)
+   * @see Stream#map(Function)
+   * @return new set, using the given enum type. */
+  @Nonnull
+  @CheckReturnValue
+  public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(
+      @Nonnull final Class<S> newEnumType, @Nonnull final Function<E, S> mapper) {
+    requireNonNull(newEnumType, "enumType");
+    requireNonNull(mapper, "mapper");
+    final EnumBitSet<S> result = noneOf(newEnumType);
+    this.forEach(e -> result.add(mapper.apply(e)));
+    return result;
+  }
+
+  /** {@inheritDoc}
+   * <p>
+   * This returns an EnumBitSet if the given Domain originates from an EnumBitSet.
+   * 
+   * @see #map(Class, Function) */
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Nonnull
+  @Override
+  public <S> DomainBitSet<S> map(@Nonnull final Domain<S> newDomain,
+      @Nonnull final Function<E, S> mapper) {
+    requireNonNull(newDomain, "newDomain");
+    requireNonNull(mapper, "mapper");
+    if (newDomain instanceof EnumDomain) {
+      // fact: S extends Enum & EnumBitSetHelper
+      final EnumBitSet result = new EnumBitSet(((EnumDomain) newDomain).getEnumType());
+      final EnumSet bs = result.bitset;
+      this.forEach(e -> bs.add(mapper.apply(e)));
+      return result;
+    }
+    return DomainBitSet.super.map(newDomain, mapper);
   }
 
   /** Returns a new EnumBitSet containing all elements that are in <code>this</code>, but not in the
