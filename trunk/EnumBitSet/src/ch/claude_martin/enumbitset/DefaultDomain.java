@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Spliterator;
+import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
@@ -17,6 +18,9 @@ import javax.annotation.concurrent.Immutable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /** Default implementation of {@link Domain}.
+ * <p>
+ * This is used by {@link SmallDomainBitSet} and {@link GeneralDomainBitSet}, while
+ * {@link EnumBitSet} uses a specialized implementation.
  * 
  * @param <T>
  *          A type that all elements in the domain share.
@@ -91,6 +95,13 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
     if (obj instanceof DefaultDomain)
       return Arrays.equals(this.elements, ((DefaultDomain<?>) obj).elements);
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
+  }
+
+  @Override
+  public Function<Collection<T>, DomainBitSet<T>> factory() {
+    if (this.size() <= 64)
+      return (s) -> SmallDomainBitSet.of(this, s);
+      return (s) -> GeneralDomainBitSet.of(this, s);
   }
 
   @Override

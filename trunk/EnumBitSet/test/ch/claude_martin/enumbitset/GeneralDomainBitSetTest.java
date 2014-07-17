@@ -4,6 +4,7 @@ import static ch.claude_martin.enumbitset.GeneralDomainBitSet.allOf;
 import static ch.claude_martin.enumbitset.GeneralDomainBitSet.noneOf;
 import static ch.claude_martin.enumbitset.GeneralDomainBitSet.of;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -128,6 +129,14 @@ public class GeneralDomainBitSetTest {
     set.addAll(planets);
     assertEquals(set.size(), planets.size());
     assertEquals(set.complement().size(), Element.values().length);
+  }
+
+  @Test
+  public void testCross() {
+    assertEquals(this.oneTo4.cross(this.oneTo4), this.oneTo4.cross(this.oneTo4));
+    assertEquals(emptySet(), this.none.cross(this.none));
+    assertEquals(emptySet(), this.oneTo4.cross(this.none));
+    assertEquals(emptySet(), this.none.cross(this.oneTo4));
   }
 
   @Test
@@ -258,6 +267,31 @@ public class GeneralDomainBitSetTest {
     assertEquals(expected, sum);
     assertEquals(this.oneTo4.size(), this.oneTo4.stream().count());
     assertEquals(expected, (int) this.oneTo4.stream().reduce(0, Integer::sum));
+  }
+
+  @Test
+  public void testMap() throws Exception {
+    final Domain<Integer> domain = allOf(1, 2, 3, 4, 5).getDomain();
+
+    DomainBitSet<Integer> mapped;
+    mapped = this.none.map(domain);
+    assertEquals(SmallDomainBitSet.noneOf(domain), mapped);
+
+    for (final DomainBitSet<Integer> set : asList(this.oneTwo, this.twoThree, this.oneTo4)) {
+      // Map to the same number:
+      mapped = set.map(domain);
+      assertEquals(set.toSet(), mapped.toSet());
+      // Map all to 1:
+      mapped = set.map(domain, (x) -> 1);
+      assertEquals(SmallDomainBitSet.of(domain, asList(1)), mapped);
+    }
+
+    try {
+      this.oneTo4.map(allOf(1, 2).getDomain());
+      fail("map: (1,2,3,4) -> (1,2) is not possible!");
+    } catch (final IllegalArgumentException e) {
+      // expected!
+    }
   }
 
   @Test

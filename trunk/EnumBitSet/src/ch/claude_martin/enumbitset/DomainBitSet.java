@@ -3,6 +3,7 @@ package ch.claude_martin.enumbitset;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -16,7 +17,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.function.BiFunction;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -29,7 +32,7 @@ import javax.annotation.Nonnull;
  * <p>
  * The methods that return a DomainBitSet&lt;T&gt; are expected to create a new object and not
  * change the state of this object. The implementation could be mutable or immutable. Mutable
- * implementations should not implement {@link Set}&lt;T&gt;, because the specifications of 
+ * implementations should not implement {@link Set}&lt;T&gt;, because the specifications of
  * {@link #equals(Object)} are different.
  * 
  * <p>
@@ -195,28 +198,32 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * <p>
    * The returned set has a size of <code>this.size() * set.size()</code>.
    * 
-   * @see #cross(DomainBitSet, BiFunction)
+   * @see #cross(DomainBitSet, BiConsumer)
    * @param <Y>
    *          The type of the elements in the given set.
    * @param set
    *          Another set.
-   * @return the Cartesian Product. */
+   * @return the Cartesian Product.
+   * @see #semijoin(DomainBitSet, BiPredicate) */
   @Nonnull
   @CheckReturnValue
   public default <Y extends Object> Set<Pair<Object, T, Y>> cross(@Nonnull final DomainBitSet<Y> set) {
     final HashSet<Pair<Object, T, Y>> result = new HashSet<>(this.size() * set.size());
-    this.cross(set, Pair.curry(result::add));
+    this.cross(set, Pair.curry(result::add)::apply);
     return result;
   }
 
   /** Creates the Cartesian Product and applies a given function to all coordinates.
    * <p>
    * Cartesian product of A and B, denoted <code>A × B</code>, is the set whose members are all
-   * possible ordered pairs <code>(a,b)</code> where a is a member of A and b is a member of B. The
-   * Cartesian product of <code>{1, 2}</code> and <code>{red, white}</code> is {(1, red), (1,
+   * possible ordered pairs <code>(a,b)</code> where a is a member of A and b is a member of B. <br>
+   * The Cartesian product of <code>{1, 2}</code> and <code>{red, white}</code> is {(1, red), (1,
    * white), (2, red), (2, white)}.
    * <p>
    * The consumer will be invoked exactly <code>(this.size() &times; set.size())</code> times.
+   * <p>
+   * A BiFunction can be used by passing <code>::apply</code> as consumer.<br>
+   * Example: <code>Pair.curry(mySet::add)::apply</code>.
    * 
    * @see #cross(DomainBitSet)
    * @param <Y>
@@ -224,14 +231,15 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @param set
    *          Another set.
    * @param consumer
-   *          A function to consume two elements. The return value should always be
-   *          <code>true</code>, but it is ignored. Example: <code>Pair.curry(mySet::add)</code>. */
+   *          A function to consume two elements.
+   * @see #semijoin(DomainBitSet, BiPredicate) */
   public default <Y> void cross(@Nonnull final DomainBitSet<Y> set,
-      @Nonnull final BiFunction<T, Y, ?> consumer) {
+      @Nonnull final BiConsumer<T, Y> consumer) {
     requireNonNull(consumer);
+    requireNonNull(set);
     if (set.isEmpty())
       return; // Nothing to do...
-    this.forEach(x -> set.forEach(y -> consumer.apply(x, y)));
+    this.forEach(x -> set.forEach(y -> consumer.accept(x, y)));
   }
 
   /** Searches an object in the domain of this set.
@@ -278,7 +286,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @see BigInteger#testBit(int)
    * @throws IndexOutOfBoundsException
    *           if the specified index is negative or out of bounds. */
-  public boolean getBit(int bitIndex) throws IndexOutOfBoundsException;
+  public boolean getBit(final int bitIndex) throws IndexOutOfBoundsException;
 
   /** Returns a distinct list, containing all elements of the domain. There is no guarantee that the
    * set is the same for multiple invocations.
@@ -326,7 +334,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return Intersection of this and the given mask. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull BigInteger mask);
+  public DomainBitSet<T> intersect(@Nonnull final BigInteger mask);
 
   /** The intersection of this and a given bit set.
    * 
@@ -336,7 +344,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return Intersection of this and the given bit set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull BitSet set);
+  public DomainBitSet<T> intersect(@Nonnull final BitSet set);
 
   /** Intersection of this and the given set.
    * 
@@ -347,7 +355,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return Intersection of this and the given collection. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull Iterable<T> set) throws IllegalArgumentException;
+  public DomainBitSet<T> intersect(@Nonnull final Iterable<T> set) throws IllegalArgumentException;
 
   /** Intersection of this and the given set.
    * 
@@ -360,7 +368,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *           If the domain contains less than 64 elements then some long values are illegal. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull long mask) throws MoreThan64ElementsException;
+  public DomainBitSet<T> intersect(@Nonnull final long mask) throws MoreThan64ElementsException;
 
   /** The intersection of this set and a set represented by an array (varargs). The name is different
    * so that it is unambiguous.
@@ -394,6 +402,60 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   @Nonnull
   public Iterator<T> iterator();
 
+  /** Returns a new set with elements of a given domain, containing all mapped elements. Mapping is
+   * done by index in the domain. Therefore the new domains must not be smaller than the domain of
+   * this set.
+   * 
+   * <p>
+   * If the given domain is the same as the domain of this set then the returned value is equal to
+   * <code>this.clone()</code>.
+   * 
+   * @param domain
+   *          The new domain
+   * @param mapper
+   *          function to map from T to S.
+   * @param <S>
+   *          Type of given domain. It has to be the same size or larger than the domain of this
+   *          set.
+   * @throws IllegalArgumentException
+   *           if the given domain contains less elements.
+   * @return new set, using the given domain. */
+  @SuppressWarnings("unchecked")
+  @Nonnull
+  @CheckReturnValue
+  public default <S> DomainBitSet<S> map(final Domain<S> domain) {
+    requireNonNull(domain, "domain");
+    if (domain == this.getDomain())
+      return (DomainBitSet<S>) this.clone();
+    if (domain.size() < this.getDomain().size())
+      throw new IllegalArgumentException("The given domain is too small.");
+    return this.map(domain, (t) -> domain.get(this.getDomain().indexOf(t)));
+  }
+
+  /** Returns a new set with elements of a given domain, containing all mapped elements.
+   * <p>
+   * This is a convenience method. The same can be done with: <code>this.stream().map(mapper)</code>
+   * 
+   * @param domain
+   *          The new domain
+   * @param mapper
+   *          function to map from T to S.
+   * @param <S>
+   *          Type of given domain.
+   * 
+   * @see Stream#map(Function)
+   * @throws IllegalArgumentException
+   *           if the mapper returns illegal elements.
+   * @return new set, using the given domain. */
+  @Nonnull
+  @CheckReturnValue
+  public default <S> DomainBitSet<S> map(@Nonnull final Domain<S> domain,
+      @Nonnull final Function<T, S> mapper) {
+    requireNonNull(domain, "domain");
+    requireNonNull(mapper, "mapper");
+    return this.stream().map(mapper).collect(BitSetUtilities.toDomainBitSet(domain.factory()));
+  }
+
   /** The relative complement of this set and a set represented by a {@link BigInteger}.
    * 
    * @param mask
@@ -403,7 +465,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(@Nonnull BigInteger mask);
+  public DomainBitSet<T> minus(@Nonnull final BigInteger mask);
 
   /** The relative complement of this set and a set represented by a {@link BitSet}.
    * 
@@ -412,7 +474,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(@Nonnull BitSet set);
+  public DomainBitSet<T> minus(@Nonnull final BitSet set);
 
   /** The relative complement of this set and another set.
    * 
@@ -421,7 +483,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(@Nonnull Iterable<T> set);
+  public DomainBitSet<T> minus(@Nonnull final Iterable<T> set);
 
   /** The relative complement of this set and a set represented by a bit mask.
    * 
@@ -434,7 +496,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(long mask) throws MoreThan64ElementsException;
+  public DomainBitSet<T> minus(final long mask) throws MoreThan64ElementsException;
 
   /** The relative complement of this set and a set represented by an array (varargs). The name is
    * different so that it is unambiguous.
@@ -482,6 +544,31 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   @Nonnull
   public default Stream<T> parallelStream() {
     return StreamSupport.stream(spliterator(), true);
+  }
+
+  /** Returns a new set with all elements in this set, that have a matching element in the other set.
+   * <p>
+   * This is basically the same as {@link #cross(DomainBitSet)}, but filtered by a predicate. All
+   * <code>this.size() &times; set.size()</code> combinations are tested! The term "semijoin" is
+   * used in relational algebra, where the predicate compares the primary attributes of two tuples
+   * (natural join).
+   * 
+   * @param set
+   *          The other set
+   * @param predicate
+   *          Predicate to match the tuples
+   * @return <code>this ⋉ set</code>.
+   * @see #cross(DomainBitSet)
+   * @see #cross(DomainBitSet, BiConsumer) */
+  @Nonnull
+  public default <S> DomainBitSet<T> semijoin(final DomainBitSet<S> set,
+      final BiPredicate<T, S> predicate) {
+    final List<T> result = new ArrayList<>();
+    this.cross(set, (a, b) -> {
+      if (predicate.test(a, b))
+        result.add(a);
+    });
+    return this.intersect(result);
   }
 
   /** The number of elements in this set.
@@ -559,7 +646,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The union of this set and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> union(@Nonnull BitSet set);
+  public DomainBitSet<T> union(@Nonnull final BitSet set);
 
   /** The union of this set and a set represented by an {@link Iterable iterable} collection.
    * 
@@ -569,7 +656,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The union of this set and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> union(@Nonnull Iterable<T> set);
+  public DomainBitSet<T> union(@Nonnull final Iterable<T> set);
 
   /** The union of this set and a set represented by a bit mask.
    * 
@@ -583,7 +670,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @return The union of this set and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> union(long mask) throws MoreThan64ElementsException;
+  public DomainBitSet<T> union(final long mask) throws MoreThan64ElementsException;
 
   /** The union of this set and a set represented by an array (varargs). The name is different so
    * that it is unambiguous.

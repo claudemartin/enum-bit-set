@@ -107,7 +107,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     return result;
   }
 
-  /** Creates an empty set with the given domain, containing the given elements.
+  /** Creates a set with the given domain, containing the given elements.
    * 
    * @param <T>
    *          The type of the set and its domain.

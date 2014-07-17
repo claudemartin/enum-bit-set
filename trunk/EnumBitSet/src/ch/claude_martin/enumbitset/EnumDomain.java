@@ -5,14 +5,16 @@ import static java.util.Arrays.asList;
 import java.lang.ref.SoftReference;
 import java.util.AbstractList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
-class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E> implements
+final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E> implements
     Domain<E> {
   // Array of all elements in the domain:
   private final E[]           elements;                     // index == ordinal
@@ -64,7 +66,7 @@ class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E
   public boolean contains(final Object o) {
     if (o == null)
       return false;
-    return o.getClass().getDeclaringClass() == this.enumType;
+    return o.getClass().getDeclaringClass() == this.getEnumType();
   }
 
   @Override
@@ -75,14 +77,27 @@ class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E
       return false;
     if (obj instanceof EnumDomain) {
       final EnumDomain<?> ed = (EnumDomain<?>) obj;
-      return this.enumType == ed.enumType;
+      return this.getEnumType() == ed.getEnumType();
     }
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
+  }
+  
+  /**
+   * {@inheritDoc}
+   * <p>Note that this always creates {@link EnumBitSet}s.
+   */
+  @Override
+  public Function<Collection<E>, DomainBitSet<E>> factory() {
+    return (s) -> EnumBitSet.asEnumBitSet(s, this.getEnumType());
   }
 
   @Override
   public E get(final int index) {
     return this.elements[index];
+  }
+
+  Class<E> getEnumType() {
+    return this.enumType;
   }
 
   @Override

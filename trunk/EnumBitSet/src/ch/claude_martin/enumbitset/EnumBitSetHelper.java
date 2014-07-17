@@ -61,7 +61,7 @@ import java.util.EnumSet;
  * @param <E>
  *          The Enum-Type. */
 public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> extends Comparable<E>,
-    Serializable {
+Serializable {
 
   /** Bitmask for <code>this</code>. The value is based on the ordinal.
    * 
@@ -149,7 +149,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A bitmask.
    * @throws MoreThan64ElementsException
    *           if this element is not one of the first 64 elements.
-   * @return (this.bitmask64() &amp; bitmask8) != 0; */
+   * @return (this.bitmask64() &amp; bitmask64) != 0; */
   public default boolean elementOf(final long bitmask64) throws MoreThan64ElementsException {
     return (this.bitmask64() & bitmask64) != 0;
   }
