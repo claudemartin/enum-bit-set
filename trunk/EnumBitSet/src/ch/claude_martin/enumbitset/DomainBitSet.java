@@ -559,8 +559,11 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          Predicate to match the tuples
    * @return <code>this ⋉ set</code>.
    * @see #cross(DomainBitSet)
-   * @see #cross(DomainBitSet, BiConsumer) */
+   * @see #cross(DomainBitSet, BiConsumer)
+   * @see #map(Domain)
+   * @see #map(Domain, Function) */
   @Nonnull
+  @CheckReturnValue
   public default <S> DomainBitSet<T> semijoin(final DomainBitSet<S> set,
       final BiPredicate<T, S> predicate) {
     final List<T> result = new ArrayList<>();
