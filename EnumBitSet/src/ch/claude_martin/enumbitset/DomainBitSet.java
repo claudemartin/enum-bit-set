@@ -557,7 +557,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          The other set
    * @param predicate
    *          Predicate to match the tuples
-   * @return <code>this ⋉ set</code>.
+   * @return <code>this ⋉ set  = { t | t ∈ <i>this</i>, s ∈ <i>set</i> : <i>predicate</i>(t, s) }</code>.
    * @see #cross(DomainBitSet)
    * @see #cross(DomainBitSet, BiConsumer)
    * @see #map(Domain)
