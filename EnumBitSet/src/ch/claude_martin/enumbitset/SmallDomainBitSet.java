@@ -94,7 +94,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements of the domain.
    * @return Empty SmallDomainBitSet based on the given domain. */
   public static <T> SmallDomainBitSet<T> noneOf(final List<T> domain) {
-    return SmallDomainBitSet.of(new DefaultDomain<>(domain), 0L);
+    return SmallDomainBitSet.of(DefaultDomain.of(domain), 0L);
   }
 
   /** Creates a set with the given domain, that contains none of the elements.
@@ -152,7 +152,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements as a bit mask.
    * @return SmallDomainBitSet based on the given domain and bit mask. */
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final long mask) {
-    return SmallDomainBitSet.<T> of(new DefaultDomain<>(domain), mask);
+    return SmallDomainBitSet.<T> of(DefaultDomain.of(domain), mask);
   }
 
   /** Creates a set with the given domain, containing all given elements.
@@ -285,8 +285,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     long result = 0;
     for (final T t : itr) {
       final int index = this.domain.indexOf(t);
-      if (index == -1)
-        throw new IllegalArgumentException("Domain does not contain " + t);
+      assert index != -1 : "Domain does not contain " + t;
       result |= 1L << index;
     }
     return result;

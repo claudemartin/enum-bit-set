@@ -5,6 +5,7 @@ import static java.util.Collections.emptySet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -46,6 +47,24 @@ public class EnumBitSetTest {
     CLUBS, DIAMONDS, HEARTS, SPADES;
     static {
       assert values().length <= 64 : "This enum type is not indented do contain more than 64 constants.";
+    }
+  }
+
+  static final List<Class<? extends EnumBitSetHelper<?>>> enums = asList(Element.class,
+      Planet.class, Alphabet.class,
+      Rank.class, Suit.class);
+
+  static void expect(final Class<? extends Throwable> expected, final String msg,
+      final Runnable... r) {
+    for (final Runnable runnable : r) {
+      try {
+        runnable.run();
+        fail(msg);
+      } catch (final Exception e) {
+        // expected
+        if (!expected.isAssignableFrom(e.getClass()))
+          throw e;
+      }
     }
   }
 
@@ -164,12 +183,8 @@ public class EnumBitSetTest {
 
     bitset = BitSetUtilities.asBitSet(BigInteger.ZERO);
     assertTrue(bitset.isEmpty());
-    try {
-      bitset = BitSetUtilities.asBitSet(BigInteger.valueOf(-1));
-      fail("negative integer is not a mask!");
-    } catch (final IllegalArgumentException e) {
-      // OK
-    }
+    expect(IllegalArgumentException.class, "negative integer is not a mask!",
+        () -> BitSetUtilities.asBitSet(BigInteger.valueOf(-1)));
 
     final BigInteger mask = Element.H.others().toBigInteger();
     bitset = BitSetUtilities.asBitSet(mask);
@@ -388,12 +403,8 @@ public class EnumBitSetTest {
     assertTrue(Element.C.elementOf(-1));
     assertTrue(Element.Sm.elementOf(-1));
     // Eu has ordinal 64 and can't be in any 64bit mask:
-    try {
-      assertFalse(Element.Eu.elementOf(-1));
-      fail("Element.Eu should have ordinal 64");
-    } catch (final RuntimeException e) {
-      // ok
-    }
+    expect(RuntimeException.class, "Element.Eu should have ordinal 64",
+        () -> Element.Eu.elementOf(-1));
 
   }
 
@@ -414,6 +425,31 @@ public class EnumBitSetTest {
       assertFalse(Element.C.elementOf(set));
       set.add(Element.C);
       assertTrue(Element.C.elementOf(set));
+    }
+  }
+
+  @Test
+  public void testEquals() throws Exception {
+    final EnumBitSet<Element> c = Element.C.toEnumBitSet();
+    assertTrue(c.equals(c));
+    assertTrue(c.equals(c.clone()));
+    assertTrue(c.clone().equals(c));
+    // A BitSet is *not* a Set:
+    assertFalse(c.equals(c.toSet()));
+    assertFalse(c.toSet().equals(c));
+  }
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Test
+  public void testGetBit() throws Exception {
+    for (final Class cls : enums) {
+      final EnumBitSet<?> allOf = EnumBitSet.allOf(cls);
+
+      expect(IndexOutOfBoundsException.class, "expected: IndexOutOfBoundsException",
+          () -> allOf.getBit(-1), () -> allOf.getBit(allOf.size()));
+
+      for (final Enum e : allOf)
+        assertTrue(allOf.getBit(e.ordinal()));
     }
   }
 
@@ -443,6 +479,9 @@ public class EnumBitSetTest {
     assertEquals(a.toLong(), Alphabet.A.intersect(0b0111L));
     assertEquals(a.toEnumSet(), Alphabet.A.intersect(abc.toEnumSet()));
     assertEquals(a.toBitSet(), Alphabet.A.intersect(abc.toBitSet()));
+    assertEquals(a, a.intersectVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
+    assertEquals(a, a.intersect(abc.toSet()));
+    assertEquals(a, a.intersect((Iterable<Alphabet>) abc));
 
     assertEquals(abc, abc.intersect(abc));
     assertEquals(none, abc.intersect(EnumBitSet.noneOf(Alphabet.class)));
@@ -452,36 +491,54 @@ public class EnumBitSetTest {
     assertEquals(abc, abc.intersect(abc.toBitSet()));
     assertEquals(abc, abc.intersect(abc.toEnumSet()));
     assertEquals(abc, abc.intersect(abc.toLong()));
+    assertEquals(abc, abc.intersect((Iterable<Alphabet>) abc.toEnumSet()));
+    assertEquals(abc, abc.intersect(abc.toSet()));
+    assertEquals(abc, abc.intersectVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
     assertEquals(ab, abc.intersect(ab));
     assertEquals(ab, abc.intersect(ab.toBigInteger()));
     assertEquals(ab, abc.intersect(ab.toBitSet()));
     assertEquals(ab, abc.intersect(ab.toEnumSet()));
     assertEquals(ab, abc.intersect(ab.toLong()));
+    assertEquals(ab, abc.intersect((Iterable<Alphabet>) ab.toEnumSet()));
+    assertEquals(ab, abc.intersect(ab.toSet()));
+    assertEquals(ab, abc.intersectVarArgs(Alphabet.A, Alphabet.B));
 
     assertEquals(none, abc.intersect(none));
     assertEquals(none, abc.intersect(none.toBigInteger()));
     assertEquals(none, abc.intersect(none.toBitSet()));
     assertEquals(none, abc.intersect(none.toEnumSet()));
     assertEquals(none, abc.intersect(none.toLong()));
+    assertEquals(none, abc.intersect((Iterable<Alphabet>) none.toEnumSet()));
+    assertEquals(none, abc.intersect(none.toSet()));
+    assertEquals(none, abc.intersectVarArgs());
 
     assertEquals(abc, abc.intersect(abcd));
     assertEquals(abc, abc.intersect(abcd.toBigInteger()));
     assertEquals(abc, abc.intersect(abcd.toBitSet()));
     assertEquals(abc, abc.intersect(abcd.toEnumSet()));
     assertEquals(abc, abc.intersect(abcd.toLong()));
+    assertEquals(abc, abc.intersect((Iterable<Alphabet>) abcd.toEnumSet()));
+    assertEquals(abc, abc.intersect(abcd.toSet()));
+    assertEquals(abc, abc.intersectVarArgs(Alphabet.A, Alphabet.B, Alphabet.C, Alphabet.D));
 
     assertEquals(bc, abc.intersect(bcd));
     assertEquals(bc, abc.intersect(bcd.toBigInteger()));
     assertEquals(bc, abc.intersect(bcd.toBitSet()));
     assertEquals(bc, abc.intersect(bcd.toEnumSet()));
     assertEquals(bc, abc.intersect(bcd.toLong()));
+    assertEquals(bc, abc.intersect((Iterable<Alphabet>) bcd.toEnumSet()));
+    assertEquals(bc, abc.intersect(bcd.toSet()));
+    assertEquals(bc, abc.intersectVarArgs(Alphabet.B, Alphabet.C, Alphabet.D));
 
     assertEquals(bc, bcd.intersect(abc));
     assertEquals(bc, bcd.intersect(abc.toBigInteger()));
     assertEquals(bc, bcd.intersect(abc.toBitSet()));
     assertEquals(bc, bcd.intersect(abc.toEnumSet()));
     assertEquals(bc, bcd.intersect(abc.toLong()));
+    assertEquals(bc, bcd.intersect((Iterable<Alphabet>) abc.toEnumSet()));
+    assertEquals(bc, bcd.intersect(abc.toSet()));
+    assertEquals(bc, bcd.intersectVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
   }
 
@@ -497,7 +554,14 @@ public class EnumBitSetTest {
     final EnumBitSet<Alphabet> none = EnumBitSet.noneOf(Alphabet.class);
     final EnumBitSet<Alphabet> abc = EnumBitSet.of(Alphabet.A, Alphabet.B, Alphabet.C);
     DomainBitSet<Element> mapped;
+    { // should return clones:
+      assertEquals(abc, abc.map(abc.getDomain()));
+      assertSame(abc.getDomain(), abc.map(abc.getDomain()).getDomain());
+      assertEquals(none, none.map(none.getDomain()));
+      assertSame(none.getDomain(), none.map(none.getDomain()).getDomain());
+    }
     {
+
       mapped = none.map(EnumDomain.of(Element.class));
       assertEquals(EnumBitSet.noneOf(Element.class), mapped);
 
@@ -507,13 +571,8 @@ public class EnumBitSetTest {
       // Map all to Xe:
       mapped = abc.map(EnumDomain.of(Element.class), (x) -> Element.Xe);
       assertEquals(Element.Xe.toEnumBitSet(), mapped);
-
-      try {
-        EnumBitSet.allOf(Element.class).map(EnumDomain.of(Alphabet.class));
-        fail("Element -> Alphabet should not be possible!");
-      } catch (final IllegalArgumentException e) {
-        // expected!
-      }
+      expect(IllegalArgumentException.class, "Element -> Alphabet should not be possible!",
+          () -> EnumBitSet.allOf(Element.class).map(EnumDomain.of(Alphabet.class)));
     }
     {
       mapped = none.map(Element.class);
@@ -526,12 +585,8 @@ public class EnumBitSetTest {
       mapped = abc.map(Element.class, (x) -> Element.Xe);
       assertEquals(Element.Xe.toEnumBitSet(), mapped);
 
-      try {
-        final EnumBitSet<Alphabet> mapped2 = EnumBitSet.allOf(Element.class).map(Alphabet.class);
-        fail("Element -> Alphabet should not be possible! bad result: " + mapped2);
-      } catch (final IllegalArgumentException e) {
-        // expected!
-      }
+      expect(IllegalArgumentException.class, "Element -> Alphabet should not be possible!",
+          () -> EnumBitSet.allOf(Element.class).map(Alphabet.class));
     }
   }
 
@@ -551,49 +606,64 @@ public class EnumBitSetTest {
     assertEquals(abc, abc.minus(none));
     assertEquals(bc, bc.minus(none));
     assertEquals(abcd, abcd.minus(none));
+    assertEquals(abcd, abcd.minus(none.toSet()));
+    assertEquals(abcd, abcd.minusVarArgs());
 
     assertEquals(none, abc.minus(abc));
     assertEquals(none, abc.minus(abc.toBigInteger()));
     assertEquals(none, abc.minus(abc.toBitSet()));
     assertEquals(none, abc.minus(abc.toEnumSet()));
     assertEquals(none, abc.minus(abc.toLong()));
+    assertEquals(none, abc.minus(abc.toSet()));
+    assertEquals(none, abc.minusVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
     assertEquals(c, abc.minus(ab));
     assertEquals(c, abc.minus(ab.toBigInteger()));
     assertEquals(c, abc.minus(ab.toBitSet()));
     assertEquals(c, abc.minus(ab.toEnumSet()));
     assertEquals(c, abc.minus(ab.toLong()));
+    assertEquals(c, abc.minus(ab.toSet()));
+    assertEquals(c, abc.minusVarArgs(Alphabet.A, Alphabet.B));
 
     assertEquals(abc, abc.minus(none));
     assertEquals(abc, abc.minus(none.toBigInteger()));
     assertEquals(abc, abc.minus(none.toBitSet()));
     assertEquals(abc, abc.minus(none.toEnumSet()));
     assertEquals(abc, abc.minus(none.toLong()));
+    assertEquals(abc, abc.minus(none.toSet()));
+    assertEquals(abc, abc.minusVarArgs());
 
     assertEquals(none, none.minus(abc));
     assertEquals(none, none.minus(abc.toBigInteger()));
     assertEquals(none, none.minus(abc.toBitSet()));
     assertEquals(none, none.minus(abc.toEnumSet()));
     assertEquals(none, none.minus(abc.toLong()));
+    assertEquals(none, none.minus(abc.toSet()));
+    assertEquals(none, none.minusVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
     assertEquals(d, abcd.minus(abc));
     assertEquals(d, abcd.minus(abc.toBigInteger()));
     assertEquals(d, abcd.minus(abc.toBitSet()));
     assertEquals(d, abcd.minus(abc.toEnumSet()));
     assertEquals(d, abcd.minus(abc.toLong()));
+    assertEquals(d, abcd.minus(abc.toSet()));
+    assertEquals(d, abcd.minusVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
     assertEquals(a, abc.minus(bcd));
     assertEquals(a, abc.minus(bcd.toBigInteger()));
     assertEquals(a, abc.minus(bcd.toBitSet()));
     assertEquals(a, abc.minus(bcd.toEnumSet()));
     assertEquals(a, abc.minus(bcd.toLong()));
+    assertEquals(a, abc.minus(bcd.toSet()));
+    assertEquals(a, abc.minusVarArgs(Alphabet.B, Alphabet.C, Alphabet.D));
 
     assertEquals(d, bcd.minus(abc));
     assertEquals(d, bcd.minus(abc.toBigInteger()));
     assertEquals(d, bcd.minus(abc.toBitSet()));
     assertEquals(d, bcd.minus(abc.toEnumSet()));
     assertEquals(d, bcd.minus(abc.toLong()));
-
+    assertEquals(d, bcd.minus(abc.toSet()));
+    assertEquals(d, bcd.minusVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
   }
 
   @Test
@@ -613,6 +683,20 @@ public class EnumBitSetTest {
   }
 
   @Test
+  public void testOfEqualDomain() throws Exception {
+    final EnumBitSet<Alphabet> abc = EnumBitSet.of(Alphabet.A, Alphabet.B, Alphabet.C);
+    assertTrue(abc.ofEqualDomain(abc));
+    assertTrue(abc.ofEqualDomain(abc.intersect(BigInteger.ZERO)));
+    assertTrue(GeneralDomainBitSet.of(abc.getDomain(), abc).ofEqualDomain(abc));
+    try {
+      abc.ofEqualDomain(null);
+      fail("null");
+    } catch (final NullPointerException e) {
+      // expected
+    }
+  }
+
+  @Test
   public void testOr64Long() {
     final long mask = Alphabet.B.union(0b0101L);
     assertEquals(1 + 2 + 4, mask);
@@ -623,6 +707,17 @@ public class EnumBitSetTest {
     final EnumBitSet<Element> set = Element.C.others();
     assertTrue(Element.Ag.elementOf(set));
     assertFalse(Element.C.elementOf(set));
+  }
+
+  @Test
+  public void testRange() throws Exception {
+    final EnumBitSet<Alphabet> a2z = EnumBitSet.range(Alphabet.A, Alphabet.Z);
+    final EnumBitSet<Alphabet> a = EnumBitSet.range(Alphabet.A, Alphabet.A);
+    assertEquals(EnumBitSet.allOf(Alphabet.class), a2z);
+    assertEquals(EnumBitSet.just(Alphabet.A), a);
+    assertEquals(EnumSet.range(Alphabet.A, Alphabet.Z), a2z.toEnumSet());
+    assertEquals(EnumSet.range(Alphabet.A, Alphabet.A), a.toEnumSet());
+
   }
 
   @Test
@@ -712,6 +807,8 @@ public class EnumBitSetTest {
     assertEquals(abc.toLong(), Alphabet.A.union(0b0111L));
     assertEquals(abc.toEnumSet(), Alphabet.A.union(abc.toEnumSet()));
     assertEquals(abc.toBitSet(), Alphabet.A.union(abc.toBitSet()));
+    assertEquals(abc, a.union(abc.toSet()));
+    assertEquals(abc, a.unionVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
     assertEquals(abc, abc.union(abc));
     assertEquals(abc, abc.union(EnumBitSet.noneOf(Alphabet.class)));
@@ -721,36 +818,48 @@ public class EnumBitSetTest {
     assertEquals(abc, abc.union(abc.toBitSet()));
     assertEquals(abc, abc.union(abc.toEnumSet()));
     assertEquals(abc, abc.union(abc.toLong()));
+    assertEquals(abc, abc.union(abc.toSet()));
+    assertEquals(abc, abc.unionVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
     assertEquals(abc, abc.union(ab));
     assertEquals(abc, abc.union(ab.toBigInteger()));
     assertEquals(abc, abc.union(ab.toBitSet()));
     assertEquals(abc, abc.union(ab.toEnumSet()));
     assertEquals(abc, abc.union(ab.toLong()));
+    assertEquals(abc, abc.union(ab.toSet()));
+    assertEquals(abc, abc.unionVarArgs(Alphabet.A, Alphabet.B));
 
     assertEquals(abc, abc.union(none));
     assertEquals(abc, abc.union(none.toBigInteger()));
     assertEquals(abc, abc.union(none.toBitSet()));
     assertEquals(abc, abc.union(none.toEnumSet()));
     assertEquals(abc, abc.union(none.toLong()));
+    assertEquals(abc, abc.union(none.toSet()));
+    assertEquals(abc, abc.unionVarArgs());
 
     assertEquals(abcd, abc.union(abcd));
     assertEquals(abcd, abc.union(abcd.toBigInteger()));
     assertEquals(abcd, abc.union(abcd.toBitSet()));
     assertEquals(abcd, abc.union(abcd.toEnumSet()));
     assertEquals(abcd, abc.union(abcd.toLong()));
+    assertEquals(abcd, abc.union(abcd.toSet()));
+    assertEquals(abcd, abc.unionVarArgs(Alphabet.A, Alphabet.B, Alphabet.C, Alphabet.D));
 
     assertEquals(abcd, abc.union(bcd));
     assertEquals(abcd, abc.union(bcd.toBigInteger()));
     assertEquals(abcd, abc.union(bcd.toBitSet()));
     assertEquals(abcd, abc.union(bcd.toEnumSet()));
     assertEquals(abcd, abc.union(bcd.toLong()));
+    assertEquals(abcd, abc.union(bcd.toSet()));
+    assertEquals(abcd, abc.unionVarArgs(Alphabet.B, Alphabet.C, Alphabet.D));
 
     assertEquals(abcd, bcd.union(abc));
     assertEquals(abcd, bcd.union(abc.toBigInteger()));
     assertEquals(abcd, bcd.union(abc.toBitSet()));
     assertEquals(abcd, bcd.union(abc.toEnumSet()));
     assertEquals(abcd, bcd.union(abc.toLong()));
+    assertEquals(abcd, bcd.union(abc.toSet()));
+    assertEquals(abcd, bcd.unionVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
   }
 

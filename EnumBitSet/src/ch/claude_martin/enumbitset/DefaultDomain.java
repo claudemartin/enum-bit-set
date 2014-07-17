@@ -28,12 +28,39 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
+  /** Returns a Domain of the given elements.
+   * <p>
+   * The given collection can be a DefaultDomain, in which case it is returned directly. If it is a
+   * DomainBitSet with a DefaultDomain, then its existing domain is returned. In any other case a
+   * new instance is created.
+   * <p>
+   * The caller must make sure that the domain is a distinct collection with a well defined
+   * iteration order (e.g. List, LinkedHashSet etc.).
+   * 
+   * @throws IllegalArgumentException
+   *           if the given collections contains duplicates.
+   * @return Domain of the given elements. */
+  @SuppressWarnings("unchecked")
+  @Nonnull
+  public static <T> DefaultDomain<T> of(@Nonnull final Collection<? extends T> domain) {
+    requireNonNull(domain, "domain");
+    if (domain instanceof DefaultDomain)
+      return (DefaultDomain<T>) domain;
+    if (domain instanceof DomainBitSet) {
+      final Domain<T> domain2 = ((DomainBitSet<T>) domain).getDomain();
+      if (domain2 instanceof DefaultDomain)
+        return (DefaultDomain<T>) domain2;
+    }
+    return new DefaultDomain<>(domain);
+  }
+
   // Array of all elements in the domain:
   @Nonnull
   private final T[]                 elements;
   // View of the array as a List:
   @Nonnull
   private final List<T>             list;
+
   // Lookup table: element->index
   @Nonnull
   private final HashMap<T, Integer> map;
@@ -47,7 +74,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates. */
   @SuppressWarnings("unchecked")
-  public DefaultDomain(@Nonnull final Collection<? extends T> domain) {
+  private DefaultDomain(@Nonnull final Collection<? extends T> domain) {
     this.elements = (T[]) new Object[domain.size()];
     this.map = new HashMap<>((int) (1.5 * domain.size()));
     this.list = asList(this.elements);
