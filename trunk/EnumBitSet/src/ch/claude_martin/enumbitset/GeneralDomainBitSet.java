@@ -27,7 +27,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   public static <X> GeneralDomainBitSet<X> allOf(final LinkedHashSet<X> domain) {
-    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(domain);
     return result;
   }
@@ -40,7 +40,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   public static <X> GeneralDomainBitSet<X> allOf(final List<X> domain) {
-    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(domain);
     return result;
   }
@@ -65,7 +65,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
   public static <X> GeneralDomainBitSet<X> noneOf(final LinkedHashSet<X> domain) {
-    return new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
   }
 
   /** Creates an empty set with the given domain.
@@ -76,7 +76,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
   public static <X> GeneralDomainBitSet<X> noneOf(final List<X> domain) {
-    return new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
   }
 
   /** Creates an empty set with the given domain.
@@ -102,7 +102,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @return New GeneralDomainBitSet of given domain and elements. */
   public static <T> GeneralDomainBitSet<T> of(final LinkedHashSet<T> domain,
       final Collection<T> initialSet) {
-    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(initialSet);
     return result;
   }
@@ -117,7 +117,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The elements to be contained.
    * @return New GeneralDomainBitSet of given domain and elements. */
   public static <T> GeneralDomainBitSet<T> of(final List<T> domain, final Collection<T> initialSet) {
-    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(new DefaultDomain<>(domain));
+    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(initialSet);
     return result;
   }

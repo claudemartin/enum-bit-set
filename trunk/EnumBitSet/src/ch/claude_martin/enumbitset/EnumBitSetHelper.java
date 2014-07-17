@@ -61,7 +61,7 @@ import java.util.EnumSet;
  * @param <E>
  *          The Enum-Type. */
 public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> extends Comparable<E>,
-Serializable {
+    Serializable {
 
   /** Bitmask for <code>this</code>. The value is based on the ordinal.
    * 

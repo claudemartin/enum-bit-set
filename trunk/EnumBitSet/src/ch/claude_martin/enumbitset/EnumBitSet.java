@@ -59,7 +59,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @param <E>
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
 public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implements DomainBitSet<E>,
-Collection<E> {
+    Collection<E> {
 
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
    * 
@@ -460,9 +460,9 @@ Collection<E> {
     // EnumBitSetHelper. The default implementation can be used, because the type is only generic.
     // This can be asserted by this:
     assert this.isEmpty()
-    || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
+        || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
     assert set.isEmpty()
-    || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
+        || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
     return (Set<Pair<EnumBitSetHelper<?>, E, Y>>) (Object) DomainBitSet.super.cross(set);
   }
 
@@ -488,7 +488,7 @@ Collection<E> {
       return true;
     if (other instanceof EnumBitSet)
       return this.enumType == ((EnumBitSet<E>) other).enumType
-      && this.bitset.equals(((EnumBitSet<E>) other).bitset);
+          && this.bitset.equals(((EnumBitSet<E>) other).bitset);
     if (other instanceof DomainBitSet)
       return this.ofEqualDomain((DomainBitSet<E>) other)
           && this.ofEqualElements((DomainBitSet<E>) other);
@@ -627,11 +627,13 @@ Collection<E> {
    *          Another set.
    * @return <code> this &#x2229; set</code> */
   @Override
-  public DomainBitSet<E> intersect(final Iterable<E> set) {
+  public EnumBitSet<E> intersect(final Iterable<E> set) {
     if (requireNonNull(set) instanceof EnumBitSet)
       return this.intersect(((EnumBitSet<E>) set).bitset);
-    final EnumSet<E> result = this.bitset.clone();
-    set.forEach(result::remove);
+    final EnumSet<E> result = EnumSet.noneOf(this.enumType);
+    for (final E e : set)
+      if (this.contains(e))
+        result.add(e);
     return new EnumBitSet<>(this.enumType, result);
   }
 
@@ -838,7 +840,7 @@ Collection<E> {
    *          Another set.
    * @return <code>this &#x2216; mask</code> */
   @Override
-  public DomainBitSet<E> minus(final Iterable<E> set) {
+  public EnumBitSet<E> minus(final Iterable<E> set) {
     if (requireNonNull(set) instanceof EnumBitSet)
       return this.intersect(((EnumBitSet<E>) set).bitset);
     final EnumBitSet<E> result = this.clone();
@@ -1042,22 +1044,6 @@ Collection<E> {
     return this.bitset.toString();
   }
 
-  /** Throws an exception if e is not of the correct type for this enum set.
-   * 
-   * @param e
-   *          the element to be checked.
-   * @throws ClassCastException
-   *           Throws ClassCastException if e is not of the correct type. */
-  public void typeCheck(final E e) throws ClassCastException {
-    // This is equivalent to the nonvisible method: this.bitset.typeCheck(e);
-    final Class<?> eClass = e.getClass();
-    // note that this would be faster:
-    // if (eClass != elementType && eClass.getSuperclass() != elementType)
-    // But the API only guarantees that this works:
-    if (eClass.getDeclaringClass() != this.enumType)
-      throw new ClassCastException(eClass + " != " + this.enumType);
-  }
-
   /** Returns a new EnumBitSet containing all elements that are in <code>this</code> or the given
    * <code>mask</code>.
    * 
@@ -1127,7 +1113,7 @@ Collection<E> {
   }
 
   @Override
-  public DomainBitSet<E> union(final Iterable<E> set) {
+  public EnumBitSet<E> union(final Iterable<E> set) {
     if (set instanceof EnumBitSet)
       return this.union(((EnumBitSet<E>) set).bitset);
     final EnumSet<E> clone = this.bitset.clone();

@@ -296,6 +296,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * Note that the returned set is immutable.
    * 
    * @return The {@link Domain} of this set. */
+  @Nonnull
   public Domain<T> getDomain();
 
   /** Returns an Optional that might contain the element at the specified position.
