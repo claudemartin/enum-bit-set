@@ -420,6 +420,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          set.
    * @throws IllegalArgumentException
    *           if the given domain contains less elements.
+   * @see #zipWithPosition()
+   * @see #map(Domain, Function)
    * @return new set, using the given domain. */
   @SuppressWarnings("unchecked")
   @Nonnull
@@ -447,6 +449,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @see Stream#map(Function)
    * @throws IllegalArgumentException
    *           if the mapper returns illegal elements.
+   * @see #zipWithPosition()
+   * @see #map(Domain)
    * @return new set, using the given domain. */
   @Nonnull
   @CheckReturnValue
