@@ -1,15 +1,12 @@
 package ch.claude_martin.enumbitset;
 
+import static ch.claude_martin.enumbitset.TestUtilities.*;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -17,6 +14,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -51,22 +50,8 @@ public class EnumBitSetTest {
   }
 
   static final List<Class<? extends EnumBitSetHelper<?>>> enums = asList(Element.class,
-      Planet.class, Alphabet.class,
-      Rank.class, Suit.class);
-
-  static void expect(final Class<? extends Throwable> expected, final String msg,
-      final Runnable... r) {
-    for (final Runnable runnable : r) {
-      try {
-        runnable.run();
-        fail(msg);
-      } catch (final Exception e) {
-        // expected
-        if (!expected.isAssignableFrom(e.getClass()))
-          throw e;
-      }
-    }
-  }
+                                                                    Planet.class, Alphabet.class,
+                                                                    Rank.class, Suit.class);
 
   @Test
   public void testAddedToArray() {
@@ -183,7 +168,7 @@ public class EnumBitSetTest {
 
     bitset = BitSetUtilities.asBitSet(BigInteger.ZERO);
     assertTrue(bitset.isEmpty());
-    expect(IllegalArgumentException.class, "negative integer is not a mask!",
+    expectIAE("negative integer is not a mask!",
         () -> BitSetUtilities.asBitSet(BigInteger.valueOf(-1)));
 
     final BigInteger mask = Element.H.others().toBigInteger();
@@ -219,19 +204,70 @@ public class EnumBitSetTest {
   }
 
   @Test
-  public void testAsEnumBitSetLongType() throws Exception {
-    final EnumBitSet<Alphabet> set = EnumBitSet.asEnumBitSet(0b0110L, Alphabet.class);
-    assertFalse(set.contains(Alphabet.A));// index 0
-    assertTrue(set.contains(Alphabet.B));// index 1
-    assertTrue(set.contains(Alphabet.C));// index 2
-    assertFalse(set.contains(Alphabet.D));// index 3
+  public void testAsEnumBitSet() {
+    Consumer<EnumBitSet<Alphabet>> check = s -> {
+      assertFalse(s.contains(Alphabet.A));
+      assertTrue(s.contains(Alphabet.B));
+      assertTrue(s.contains(Alphabet.C));
+      assertFalse(s.contains(Alphabet.D));
+    };
+    {
+      final BigInteger mask = BigInteger.valueOf(0b1001_0110L);
+      check.accept(EnumBitSet.asEnumBitSet(mask, Alphabet.class));
+      expectIAE("negative BitInteger",
+          () -> EnumBitSet.asEnumBitSet(BigInteger.valueOf(-1), Alphabet.class));
+    }
+    {
+      final BitSet bs = new BitSet();
+      bs.set(1);
+      bs.set(2);
+      check.accept(EnumBitSet.asEnumBitSet(bs, Alphabet.class));
+    }
+    {
+      final Collection<Alphabet> c = new ArrayList<>(4);
+      c.add(Alphabet.B);
+      c.add(Alphabet.C);
+      check.accept(EnumBitSet.asEnumBitSet(c, Alphabet.class));
+    }
+    {
+      final EnumSet<Alphabet> es = EnumSet.noneOf(Alphabet.class);
+      es.add(Alphabet.B);
+      es.add(Alphabet.C);
+      check.accept(EnumBitSet.asEnumBitSet(es, Alphabet.class));
+    }
+    {
+      final long mask = 0b0110L;
+      check.accept(EnumBitSet.asEnumBitSet(mask, Alphabet.class));
+    }
   }
 
   @Test
   public void testAsEnumSet() {
-    final EnumSet<Element> set = Element.Xe.toEnumSet();
-    assertEquals(1, set.size());
-    assertTrue(Element.Xe.elementOf(set));
+    Consumer<EnumSet<Alphabet>> check = s -> {
+      assertFalse(s.contains(Alphabet.A));
+      assertTrue(s.contains(Alphabet.B));
+      assertTrue(s.contains(Alphabet.C));
+      assertFalse(s.contains(Alphabet.D));
+    };
+    {
+      final BigInteger mask = BigInteger.valueOf(0b1001_0110L);
+      check.accept(EnumBitSet.asEnumSet(mask, Alphabet.class));
+      expectIAE("negative BitInteger",
+          () -> EnumBitSet.asEnumSet(BigInteger.valueOf(-1), Alphabet.class));
+    }
+    {
+      final BitSet bs = new BitSet();
+      bs.set(1);
+      bs.set(2);
+      check.accept(EnumBitSet.asEnumSet(bs, Alphabet.class));
+    }
+    {
+      check.accept(EnumBitSet.asEnumSet(Alphabet.B, Alphabet.C));
+    }
+    {
+      final long mask = 0b0110L;
+      check.accept(EnumBitSet.asEnumSet(mask, Alphabet.class));
+    }
   }
 
   @Test
@@ -242,6 +278,8 @@ public class EnumBitSetTest {
     assertTrue(set.contains(Alphabet.B));
     assertTrue(set.contains(Alphabet.C));
     assertFalse(set.contains(Alphabet.D));
+    expectIAE("negative BitInteger",
+        () -> EnumBitSet.asEnumSet(BigInteger.valueOf(-1), Alphabet.class));
   }
 
   @Test
@@ -403,9 +441,8 @@ public class EnumBitSetTest {
     assertTrue(Element.C.elementOf(-1));
     assertTrue(Element.Sm.elementOf(-1));
     // Eu has ordinal 64 and can't be in any 64bit mask:
-    expect(RuntimeException.class, "Element.Eu should have ordinal 64",
-        () -> Element.Eu.elementOf(-1));
-
+    expectMT64EE("Element.Eu should have ordinal 64", () -> Element.Eu.elementOf(-1L));
+    expectMT64EE("Element.R > 64", () -> Element.R.elementOf(0L));
   }
 
   @Test
@@ -433,6 +470,7 @@ public class EnumBitSetTest {
     final EnumBitSet<Element> c = Element.C.toEnumBitSet();
     assertTrue(c.equals(c));
     assertTrue(c.equals(c.clone()));
+    assertTrue(c.equals(DomainBitSet.noneOf(c.getDomain()).union(c)));
     assertTrue(c.clone().equals(c));
     // A BitSet is *not* a Set:
     assertFalse(c.equals(c.toSet()));
@@ -445,8 +483,8 @@ public class EnumBitSetTest {
     for (final Class cls : enums) {
       final EnumBitSet<?> allOf = EnumBitSet.allOf(cls);
 
-      expect(IndexOutOfBoundsException.class, "expected: IndexOutOfBoundsException",
-          () -> allOf.getBit(-1), () -> allOf.getBit(allOf.size()));
+      expectIOOBE("expected: IndexOutOfBoundsException", () -> allOf.getBit(-1),
+          () -> allOf.getBit(allOf.size()));
 
       for (final Enum e : allOf)
         assertTrue(allOf.getBit(e.ordinal()));
@@ -457,6 +495,20 @@ public class EnumBitSetTest {
   public void testGetEnumTypeSize() throws Exception {
     assertEquals(26, EnumBitSet.noneOf(Alphabet.class).getEnumTypeSize());
     assertEquals(8, EnumBitSet.allOf(Planet.class).getEnumTypeSize());
+  }
+
+  @Test
+  public void testHashCode() throws Exception {
+    final EnumBitSet<Alphabet> a = EnumBitSet.of(Alphabet.A);
+    final EnumBitSet<Alphabet> ab = Alphabet.B.union(a);
+    assertEquals(a.hashCode(), a.hashCode());
+    assertEquals(a.hashCode(), a.clone().hashCode());
+    assertEquals(ab.hashCode(), ab.hashCode());
+    assertEquals(ab.hashCode(), ab.clone().hashCode());
+
+    assertNotEquals(a.hashCode(), a.union(15L));
+    assertNotEquals(a.hashCode(), a.map(Element.class).hashCode());
+    assertNotEquals(a.hashCode(), ab.hashCode());
   }
 
   @Test
@@ -571,8 +623,8 @@ public class EnumBitSetTest {
       // Map all to Xe:
       mapped = abc.map(EnumDomain.of(Element.class), (x) -> Element.Xe);
       assertEquals(Element.Xe.toEnumBitSet(), mapped);
-      expect(IllegalArgumentException.class, "Element -> Alphabet should not be possible!",
-          () -> EnumBitSet.allOf(Element.class).map(EnumDomain.of(Alphabet.class)));
+      expectIAE("Element -> Alphabet should not be possible!", () -> EnumBitSet
+          .allOf(Element.class).map(EnumDomain.of(Alphabet.class)));
     }
     {
       mapped = none.map(Element.class);
@@ -585,8 +637,8 @@ public class EnumBitSetTest {
       mapped = abc.map(Element.class, (x) -> Element.Xe);
       assertEquals(Element.Xe.toEnumBitSet(), mapped);
 
-      expect(IllegalArgumentException.class, "Element -> Alphabet should not be possible!",
-          () -> EnumBitSet.allOf(Element.class).map(Alphabet.class));
+      expectIAE("Element -> Alphabet should not be possible!", () -> EnumBitSet
+          .allOf(Element.class).map(Alphabet.class));
     }
   }
 
@@ -754,6 +806,14 @@ public class EnumBitSetTest {
   }
 
   @Test
+  public void testToArray() throws Exception {
+    Planet[] planets = Planet.class.getEnumConstants();
+    assertArrayEquals(planets, EnumBitSet.allOf(Planet.class).toArray());
+    assertArrayEquals(planets, EnumBitSet.allOf(Planet.class).toArray(new Planet[0]));
+    assertArrayEquals(planets, EnumBitSet.allOf(Planet.class).toArray(new Planet[planets.length]));
+  }
+
+  @Test
   public void testToBigInteger() throws Exception {
     final EnumBitSet<Alphabet> set = Alphabet.A.toEnumBitSet();
     final BigInteger bigInt = set.toBigInteger();
@@ -769,7 +829,7 @@ public class EnumBitSetTest {
   }
 
   @Test
-  public void testToEnumSet() throws Exception {
+  public void testToEnumBitSet() throws Exception {
     final EnumBitSet<Alphabet> set = Alphabet.A.toEnumBitSet();
     final EnumSet<Alphabet> set2 = set.toEnumSet();
     assertEquals(set.toSet(), set2);
@@ -780,6 +840,13 @@ public class EnumBitSetTest {
     set2.add(Alphabet.B);
     assertFalse(set2.equals(set.toSet()));
     assertFalse(set.toSet().equals(set2));
+  }
+
+  @Test
+  public void testToEnumSet() throws Exception {
+    final EnumSet<Element> set3 = Element.Xe.toEnumSet();
+    assertEquals(1, set3.size());
+    assertTrue(Element.Xe.elementOf(set3));
   }
 
   @Test
@@ -861,6 +928,8 @@ public class EnumBitSetTest {
     assertEquals(abcd, bcd.union(abc.toSet()));
     assertEquals(abcd, bcd.unionVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
 
+    expectIAE("negative BigInteger", () -> ab.union(BigInteger.valueOf(-5)));
+    expectIAE("too large BigInteger", () -> ab.union(BigInteger.valueOf(Long.MAX_VALUE)));
   }
 
   @Test
