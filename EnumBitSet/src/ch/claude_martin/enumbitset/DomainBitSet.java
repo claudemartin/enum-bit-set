@@ -556,11 +556,10 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     return StreamSupport.stream(spliterator(), true);
   }
 
-  /** The powerset, sich is the set of all subsets.
+  /** The powerset, which is the set of all subsets.
    * <p>
    * Note: Complexity is <code>O(2<sup>n</sup>)</code>. Don't use this on large sets. However, the
-   * sets returned by the iterator are created on iteration. This is much faster with a
-   * {@link Domain} of 64 or less elements.
+   * sets returned by the iterator are created on iteration.  
    * 
    * @return The powerset of this set. */
   public default Iterable<DomainBitSet<T>> powerset() {
@@ -614,7 +613,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *          The other set
    * @param predicate
    *          Predicate to match the tuples
-   * @return <code>this ⋉ set  = { t | t ∈ <i>this</i>, s ∈ <i>set</i> : <i>predicate</i>(t, s) }</code>.
+   * @return <code>this ⋉ set  = { t | t ∈ <i>this</i>, s ∈ <i>set</i> : <i>predicate</i>(t, s) }</code>
+   *         .
    * @see #cross(DomainBitSet)
    * @see #cross(DomainBitSet, BiConsumer)
    * @see #map(Domain)
