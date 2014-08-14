@@ -559,7 +559,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   /** The powerset, which is the set of all subsets.
    * <p>
    * Note: Complexity is <code>O(2<sup>n</sup>)</code>. Don't use this on large sets. However, the
-   * sets returned by the iterator are created on iteration.  
+   * sets returned by the iterator are created on iteration.
+   * <p>
+   * This is not thread safe and has to be processed sequentially.
    * 
    * @return The powerset of this set. */
   public default Iterable<DomainBitSet<T>> powerset() {
