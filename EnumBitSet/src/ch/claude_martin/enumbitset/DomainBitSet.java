@@ -558,45 +558,61 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** The powerset, which is the set of all subsets.
    * <p>
-   * Note: Complexity is <code>O(2<sup>n</sup>)</code>. Don't use this on large sets. However, the
-   * sets returned by the iterator are created on iteration.
+   * Note: Complexity is <code>O(2<sup>n</sup>)</code>. For sets with more than 64 elements this
+   * would be insanely large. Therefore this is limited to sets with up to 64 elements. However, the
+   * size of the domain does not matter.
    * <p>
    * This is not thread safe and has to be processed sequentially.
    * 
+   * @throws MoreThan64ElementsException
+   *           if this set contains more than 64 elements. This would result in more than 18E18
+   *           subsets.
    * @return The powerset of this set. */
-  public default Iterable<DomainBitSet<T>> powerset() {
+  public default Iterable<DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
     final DomainBitSet<T> empty = DomainBitSet.this.getDomain().factory()
         .apply(Collections.emptySet());
     if (this.isEmpty())
       return new HashSet<>(asList(empty));
 
+    System.out.println(this.size());
+    if (DomainBitSet.this.size() > 64)
+      throw new MoreThan64ElementsException();
+    @SuppressWarnings("unchecked")
+    final T[] array = (T[]) this.toSet().toArray(new Object[this.size()]);
+
     return new Iterable<DomainBitSet<T>>() {
       @Override
       public Iterator<DomainBitSet<T>> iterator() {
         return new Iterator<DomainBitSet<T>>() {
-          final long   size   = 1 << DomainBitSet.this.size();
-          final BitSet bitset = new BitSet(DomainBitSet.this.size());
-          long         i      = 0;
+          /** Size of the returned Iterator. */
+          BigInteger         size    = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+          /** Current state. */
+          BigInteger         i       = BigInteger.ZERO;
+          /** List for items of next result. Used instead of a Set. */
+          final ArrayList<T> tmp     = new ArrayList<>();
+          /** Size of the domain. */
+          final int          domSize = DomainBitSet.this.getDomain().size();
 
           @Override
           public boolean hasNext() {
-            return this.i < this.size;
+            return this.i.compareTo(this.size) < 0;// this.i < this.size;
           }
 
           @Override
           public DomainBitSet<T> next() {
-            if (this.i++ >= this.size)
+            if (!hasNext())
               throw new NoSuchElementException();
 
-            DomainBitSet<T> result = empty.union(this.bitset);
-            for (int j = 0; j < this.bitset.size(); j++) {
-              if (!this.bitset.get(j)) {
-                this.bitset.set(j);
-                break;
-              } else
-                this.bitset.clear(j);
-            }
+            // All bits set to 1 in i indicate that array[x] is in the result.
+            this.tmp.clear();
 
+            for (int x = 0; x < this.domSize; x++)
+              if (this.i.testBit(x))
+                // if (((_i & (1L << x)) != 0))
+                this.tmp.add(array[x]);
+            DomainBitSet<T> result = empty.union(this.tmp);
+            // this.i++;
+            this.i = this.i.add(BigInteger.ONE);
             return result;
           }
         };
