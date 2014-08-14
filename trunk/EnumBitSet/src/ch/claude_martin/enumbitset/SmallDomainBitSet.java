@@ -66,11 +66,15 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param domain
    *          The type of the domain.
    * @return A SmallDomainBitSet containing all elements of the given domain. */
-  public static <T> SmallDomainBitSet<T> allOf(final List<T> domain) {
-    if (domain.size() == 64)
+  public static <T> SmallDomainBitSet<T> allOf(final List<T> domain)
+      throws MoreThan64ElementsException {
+    int size = domain.size();
+    if (size > 64)
+      throw new MoreThan64ElementsException();
+    else if (size == 64)
       return SmallDomainBitSet.<T> of(domain, -1L);
     else
-      return SmallDomainBitSet.<T> of(domain, (1L << domain.size()) - 1L);
+      return SmallDomainBitSet.<T> of(domain, (1L << size) - 1L);
   }
 
   /** Creates a set with the given domain, that contains all elements.
@@ -82,7 +86,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * 
    * @return A SmallDomainBitSet containing all elements of the given domain. */
   @SafeVarargs
-  public static <T> SmallDomainBitSet<T> allOf(final T... domain) {
+  public static <T> SmallDomainBitSet<T> allOf(final T... domain)
+      throws MoreThan64ElementsException {
     return allOf(asList(domain));
   }
 
@@ -93,7 +98,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param domain
    *          The elements of the domain.
    * @return Empty SmallDomainBitSet based on the given domain. */
-  public static <T> SmallDomainBitSet<T> noneOf(final List<T> domain) {
+  public static <T> SmallDomainBitSet<T> noneOf(final List<T> domain)
+      throws MoreThan64ElementsException {
     return SmallDomainBitSet.of(DefaultDomain.of(domain), 0L);
   }
 
@@ -118,7 +124,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param set
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
-  private static <T> SmallDomainBitSet<T> of(final Domain<T> domain, final long set) {
+  private static <T> SmallDomainBitSet<T> of(final Domain<T> domain, final long set)
+      throws MoreThan64ElementsException {
     return new SmallDomainBitSet<>(domain, set);
   }
 
@@ -178,12 +185,14 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private int             hash = 0; // defaults to 0, later it's set to a hash code.
 
-  private SmallDomainBitSet(final Domain<T> domain, final long set) {
+  private SmallDomainBitSet(final Domain<T> domain, final long set) throws MoreThan64ElementsException{
     this.domain = domain;
     this.set = set;
     final int size = this.domain.size();
     // all = Mask for a complete set
-    if (size == 64)
+    if (size > 64)
+        throw new MoreThan64ElementsException();
+    else if (size == 64)
       this.all = -1;
     else
       this.all = (1L << size) - 1L;
