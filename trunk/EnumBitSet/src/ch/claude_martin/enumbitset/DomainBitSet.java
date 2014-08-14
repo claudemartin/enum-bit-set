@@ -1,5 +1,7 @@
 package ch.claude_martin.enumbitset;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.newSetFromMap;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
@@ -7,13 +9,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -549,6 +554,53 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   @Nonnull
   public default Stream<T> parallelStream() {
     return StreamSupport.stream(spliterator(), true);
+  }
+
+  /** The powerset, sich is the set of all subsets.
+   * <p>
+   * Note: Complexity is <code>O(2<sup>n</sup>)</code>. Don't use this on large sets. However, the
+   * sets returned by the iterator are created on iteration. This is much faster with a
+   * {@link Domain} of 64 or less elements.
+   * 
+   * @return The powerset of this set. */
+  public default Iterable<DomainBitSet<T>> powerset() {
+    final DomainBitSet<T> empty = DomainBitSet.this.getDomain().factory()
+        .apply(Collections.emptySet());
+    if (this.isEmpty())
+      return new HashSet<>(asList(empty));
+
+    return new Iterable<DomainBitSet<T>>() {
+      @Override
+      public Iterator<DomainBitSet<T>> iterator() {
+        return new Iterator<DomainBitSet<T>>() {
+          final long   size   = 1 << DomainBitSet.this.size();
+          final BitSet bitset = new BitSet(DomainBitSet.this.size());
+          long         i      = 0;
+
+          @Override
+          public boolean hasNext() {
+            return this.i < this.size;
+          }
+
+          @Override
+          public DomainBitSet<T> next() {
+            if (this.i++ >= this.size)
+              throw new NoSuchElementException();
+
+            DomainBitSet<T> result = empty.union(this.bitset);
+            for (int j = 0; j < this.bitset.size(); j++) {
+              if (!this.bitset.get(j)) {
+                this.bitset.set(j);
+                break;
+              } else
+                this.bitset.clear(j);
+            }
+
+            return result;
+          }
+        };
+      }
+    };
   }
 
   /** Returns a new set with all elements in this set, that have a matching element in the other set.
