@@ -1,14 +1,18 @@
 package ch.claude_martin.enumbitset;
 
+import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Ac;
+import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Ba;
+import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Pr;
+import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Zr;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,10 +22,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 import org.junit.Before;
@@ -61,6 +65,11 @@ public class DomainBitSetTest {
     public boolean equals(Object o) {
       return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
           && this.ofEqualElements((DomainBitSet<T>) o);
+    }
+
+    @Override
+    public int hashCode() {
+      return this.map.hashCode();
     }
 
     @Override
@@ -387,6 +396,24 @@ public class DomainBitSetTest {
       assertEquals(s.toSet(), s.zipWithPosition().map(Pair::_2).collect(toSet));
       assertEquals(s.stream().map(s.getDomain()::indexOf).collect(toSet),
           s.zipWithPosition().map(Pair::_1).collect(toSet));
+    }
+  }
+
+  @Test
+  public void testPowerset() throws Exception {
+    GeneralDomainBitSet<?> genrl = GeneralDomainBitSet.allOf(1, 2, 3);
+    EnumBitSet<?> enum1 = EnumBitSet.allOf(EnumBitSetTest.Suit.class);
+    EnumBitSet<?> enum2 = EnumBitSet.allOf(EnumBitSetTest.Rank.class);
+    EnumBitSet<?> enum3 = EnumBitSet.of(Ac, Ba, Pr, Zr);
+    Object[] zeroTo64 = IntStream.range(0, 64).mapToObj(Integer::valueOf).toArray();
+    SmallDomainBitSet<?> small = SmallDomainBitSet.allOf(zeroTo64);
+    SmallDomainBitSet<?> empty = SmallDomainBitSet.noneOf(small);
+
+    ArrayList<DomainBitSet<?>> powerset = new ArrayList<>();
+    for (DomainBitSet<?> set : asList(genrl, enum1, enum2, enum3, small, empty)) {
+      powerset.clear();
+      set.powerset().forEach(powerset::add);
+      assertEquals(1 << set.size(), powerset.size());
     }
   }
 
