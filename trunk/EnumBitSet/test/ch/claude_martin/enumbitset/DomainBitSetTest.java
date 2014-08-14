@@ -5,11 +5,7 @@ import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Ba;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Pr;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Zr;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -19,11 +15,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Collector.Characteristics;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
@@ -401,20 +400,53 @@ public class DomainBitSetTest {
 
   @Test
   public void testPowerset() throws Exception {
-    GeneralDomainBitSet<?> genrl = GeneralDomainBitSet.allOf(1, 2, 3);
-    EnumBitSet<?> enum1 = EnumBitSet.allOf(EnumBitSetTest.Suit.class);
-    EnumBitSet<?> enum2 = EnumBitSet.allOf(EnumBitSetTest.Rank.class);
-    EnumBitSet<?> enum3 = EnumBitSet.of(Ac, Ba, Pr, Zr);
-    Object[] zeroTo64 = IntStream.range(0, 64).mapToObj(Integer::valueOf).toArray();
-    SmallDomainBitSet<?> small = SmallDomainBitSet.allOf(zeroTo64);
-    SmallDomainBitSet<?> empty = SmallDomainBitSet.noneOf(small);
 
-    ArrayList<DomainBitSet<?>> powerset = new ArrayList<>();
-    for (DomainBitSet<?> set : asList(genrl, enum1, enum2, enum3, small, empty)) {
-      powerset.clear();
-      set.powerset().forEach(powerset::add);
-      assertEquals(1 << set.size(), powerset.size());
+    {
+      GeneralDomainBitSet<?> genrl = GeneralDomainBitSet.allOf(1, 2, 3);
+      EnumBitSet<?> enum1 = EnumBitSet.allOf(EnumBitSetTest.Suit.class);
+      EnumBitSet<?> enum2 = EnumBitSet.allOf(EnumBitSetTest.Rank.class);
+      EnumBitSet<?> enum3 = EnumBitSet.of(Ac, Ba, Pr, Zr);
+      Object[] zeroTo15 = IntStream.rangeClosed(0, 15).mapToObj(Integer::valueOf).toArray();
+      SmallDomainBitSet<?> small1 = SmallDomainBitSet.allOf(zeroTo15);
+      SmallDomainBitSet<?> small2 = SmallDomainBitSet.of(small1.getDomain(), 0b101010L);
+      SmallDomainBitSet<?> empty = SmallDomainBitSet.noneOf(small1);
+
+      ArrayList<DomainBitSet<?>> powerset = new ArrayList<>();
+      for (DomainBitSet<?> set : asList(genrl, enum1, enum2, enum3, small1, small2, empty)) {
+        powerset.clear();
+        set.powerset().forEach(powerset::add);
+//         System.out.println(powerset);
+        // Correct would be this but we don't test such large powersets:
+        // final BigInteger size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+        long size = 1L << set.size();
+        assertEquals(size, powerset.size());
+
+        // Count sets with size 2:
+        List<?> list = StreamSupport
+            .stream(Spliterators.spliterator(set.powerset().iterator(), size, 0), false)
+            .filter(s -> s.size() == 2).collect(Collectors.toList());
+        // Can be calculated in O(1):
+        assertEquals((set.size() * (set.size() - 1)) / 2, list.size());
+      }
     }
+    {
+      // Test powerset of large set (65 or more elements) must fail!
+      Object[] zeroTo64 = IntStream.rangeClosed(0, 64).mapToObj(Integer::valueOf).toArray();
+      DomainBitSet<?> large = GeneralDomainBitSet.allOf(zeroTo64);
+//      final BigInteger size = BigInteger.ONE.shiftLeft(large.size());
+
+      try {
+        large.powerset();
+        fail("powerset of [0..64] is too large!");
+      } catch (MoreThan64ElementsException e) {
+        // expected
+      }
+    }
+    {
+      // TODO actual test with expected powerset. e.g. small2 should be:
+      // [[], [1], [3], [1, 3], [5], [1, 5], [3, 5], [1, 3, 5]]
+    }
+
   }
 
 }
