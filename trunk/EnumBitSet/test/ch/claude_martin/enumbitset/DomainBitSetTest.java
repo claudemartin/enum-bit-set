@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterators;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
@@ -415,7 +418,7 @@ public class DomainBitSetTest {
       for (DomainBitSet<?> set : asList(genrl, enum1, enum2, enum3, small1, small2, empty)) {
         powerset.clear();
         set.powerset().forEach(powerset::add);
-//         System.out.println(powerset);
+        // System.out.println(powerset);
         // Correct would be this but we don't test such large powersets:
         // final BigInteger size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
         long size = 1L << set.size();
@@ -433,7 +436,6 @@ public class DomainBitSetTest {
       // Test powerset of large set (65 or more elements) must fail!
       Object[] zeroTo64 = IntStream.rangeClosed(0, 64).mapToObj(Integer::valueOf).toArray();
       DomainBitSet<?> large = GeneralDomainBitSet.allOf(zeroTo64);
-//      final BigInteger size = BigInteger.ONE.shiftLeft(large.size());
 
       try {
         large.powerset();
@@ -441,11 +443,54 @@ public class DomainBitSetTest {
       } catch (MoreThan64ElementsException e) {
         // expected
       }
+      
+      try {
+        large.powerset(s->{}, true);
+        fail("powerset of [0..64] is too large!");
+      } catch (MoreThan64ElementsException e) {
+        // expected
+      }
+    }
+    
+    {
+      // parallel powerset should be rather fast with 16 elements:
+      Object[] zeroTo63 = IntStream.range(0, 64).mapToObj(Integer::valueOf).toArray();
+      DomainBitSet<?> large = SmallDomainBitSet.noneOf(zeroTo63);
+      large = large.union(0b1000100010001000100010001000100010001000100010001000100010001000L);
+      final AtomicReference<BigInteger> actual = new AtomicReference<>(BigInteger.ZERO);
+      final BigInteger expeted = BigInteger.ONE.shiftLeft(large.size());
+      large.powerset(s->{
+        actual.updateAndGet(i->i.add(BigInteger.ONE));
+      }, true);
+      assertEquals(expeted, actual.get());
     }
     {
-      // TODO actual test with expected powerset. e.g. small2 should be:
-      // [[], [1], [3], [1, 3], [5], [1, 5], [3, 5], [1, 3, 5]]
+      SmallDomainBitSet<Integer> set = SmallDomainBitSet.of(asList(1, 2, 3, 4, 5, 6), 0b101010L);
+      // set.powerset() should be:
+      // {{}, {2}, {4}, {2, 4}, {6}, {2, 6}, {4, 6}, {2, 4, 6}}
+      
+      // sequential:
+      ArrayList<DomainBitSet<Integer>> powerset1 = new ArrayList<>();
+      set.powerset().forEach(powerset1::add);
+      
+      // parallel:
+      List<DomainBitSet<Integer>> powerset2 = Collections.synchronizedList(new ArrayList<>());
+      set.powerset(powerset2::add, true);
+      for (List<DomainBitSet<Integer>> powerset : asList(powerset1, powerset2)) {
+        long size = 1L << set.size();
+        assertEquals(size, powerset.size());
+        
+        assertTrue(powerset.contains(set.intersect(0b000000L)));
+        assertTrue(powerset.contains(set.intersect(0b000010L)));
+        assertTrue(powerset.contains(set.intersect(0b001000L)));
+        assertTrue(powerset.contains(set.intersect(0b001010L)));
+        assertTrue(powerset.contains(set.intersect(0b100000L)));
+        assertTrue(powerset.contains(set.intersect(0b100010L)));
+        assertTrue(powerset.contains(set.intersect(0b101000L)));
+        assertTrue(powerset.contains(set.intersect(0b101010L)));
+      }
     }
+    
 
   }
 
