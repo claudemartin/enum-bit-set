@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
@@ -185,13 +186,14 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private int             hash = 0; // defaults to 0, later it's set to a hash code.
 
-  private SmallDomainBitSet(final Domain<T> domain, final long set) throws MoreThan64ElementsException{
+  private SmallDomainBitSet(final Domain<T> domain, final long set)
+      throws MoreThan64ElementsException {
     this.domain = domain;
     this.set = set;
     final int size = this.domain.size();
     // all = Mask for a complete set
     if (size > 64)
-        throw new MoreThan64ElementsException();
+      throw new MoreThan64ElementsException();
     else if (size == 64)
       this.all = -1;
     else
@@ -343,6 +345,26 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     return this.size() == other.size() && this.stream().allMatch(other::contains);
   }
 
+  /** The powerset, which is the set of all subsets.
+   * <p>
+   * Note: Complexity is <code>O(2<sup>n</sup>)</code>. This takes very long for large sets.
+   * <p>
+   * This is not thread safe and has to be processed sequentially.
+   * @see #powerset(Consumer, boolean)
+   * @return The powerset of this set. */
+  @SuppressWarnings("unchecked")
+  public Iterable<SmallDomainBitSet<T>> powerset() {
+    return (Iterable<SmallDomainBitSet<T>>) DomainBitSet.super.powerset();
+  }
+
+  /**
+   * {@inheritDoc}
+   * @see #powerset()
+   */
+  public void powerset(final Consumer<DomainBitSet<T>> consumer, boolean blocking) {
+    DomainBitSet.super.powerset(consumer, blocking);
+  }
+  
   @Override
   public int size() {
     return Long.bitCount(this.set);

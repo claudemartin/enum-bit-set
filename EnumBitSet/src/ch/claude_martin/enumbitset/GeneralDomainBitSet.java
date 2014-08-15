@@ -176,7 +176,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     final int size = this.domain.size();
     if (size > 64)
       throw new MoreThan64ElementsException();
-    if (mask >>> size > 0)
+    if ((size < 63) && (mask >>> size) > 0)
       throw new IllegalArgumentException("Mask cotains more elements than the domain.");
   }
 
@@ -353,6 +353,11 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   @Override
   public Stream<T> parallelStream() {
     return this.set.parallelStream();
+  }
+  
+  @SuppressWarnings("unchecked")
+  public Iterable<GeneralDomainBitSet<T>> powerset() throws MoreThan64ElementsException {
+    return (Iterable<GeneralDomainBitSet<T>>) DomainBitSet.super.powerset();
   }
 
   @Override

@@ -893,6 +893,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public Stream<E> parallelStream() {
     return this.bitset.parallelStream();
   }
+  
+  @SuppressWarnings("unchecked")
+  public Iterable<EnumBitSet<E>> powerset() throws MoreThan64ElementsException {
+    return (Iterable<EnumBitSet<E>>) DomainBitSet.super.powerset();
+  }
 
   /** {@inheritDoc} */
   @Override

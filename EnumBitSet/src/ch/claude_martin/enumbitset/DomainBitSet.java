@@ -1,7 +1,6 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.newSetFromMap;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
@@ -18,12 +17,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -567,14 +571,17 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @throws MoreThan64ElementsException
    *           if this set contains more than 64 elements. This would result in more than 18E18
    *           subsets.
-   * @return The powerset of this set. */
-  public default Iterable<DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
+   * @return The powerset of this set.
+   * 
+   * @see #powerset(Consumer, boolean)
+   *  */
+  // This always returns sets of the exact same type as this set.
+  public default Iterable<? extends DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
     final DomainBitSet<T> empty = DomainBitSet.this.getDomain().factory()
         .apply(Collections.emptySet());
     if (this.isEmpty())
       return new HashSet<>(asList(empty));
 
-    System.out.println(this.size());
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
     @SuppressWarnings("unchecked")
@@ -584,10 +591,13 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
       @Override
       public Iterator<DomainBitSet<T>> iterator() {
         return new Iterator<DomainBitSet<T>>() {
-          /** Size of the returned Iterator. */
+          /** Size of the returned Iterator. Max value: 2<sup>64</sup> ~ 1.8E19 */
           BigInteger         size    = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
-          /** Current state. */
+          // long size = 1L << DomainBitSet.this.size();
+          /** Current state. The domain can hold more than 64 elements, therefore we need a
+           * BigInteger. */
           BigInteger         i       = BigInteger.ZERO;
+          // long i = 0L;
           /** List for items of next result. Used instead of a Set. */
           final ArrayList<T> tmp     = new ArrayList<>();
           /** Size of the domain. */
@@ -595,7 +605,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
           @Override
           public boolean hasNext() {
-            return this.i.compareTo(this.size) < 0;// this.i < this.size;
+            return this.i.compareTo(this.size) < 0;
+            // return this.i < this.size;
           }
 
           @Override
@@ -608,16 +619,60 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
             for (int x = 0; x < this.domSize; x++)
               if (this.i.testBit(x))
-                // if (((_i & (1L << x)) != 0))
+                // if (((this.i & (1L << x)) != 0))
                 this.tmp.add(array[x]);
             DomainBitSet<T> result = empty.union(this.tmp);
-            // this.i++;
             this.i = this.i.add(BigInteger.ONE);
+            // this.i++;
             return result;
           }
         };
       }
     };
+  }
+
+  /** Pass all subsets to a given consumer.
+   * <p>
+   * The consumer must be thread-safe. This will process all possible subsets concurrently, using an
+   * {@link ExecutorService}. For better performance this uses SmallDomainBitSet only.
+   * 
+   * @see #powerset()
+   * 
+   * @param consumer
+   *          to process each subset
+   * @param blocking
+   *          if true this will block until all are processed
+   * 
+   * @throws MoreThan64ElementsException
+   *           if this set contains more than 64 elements. This would result in more than 18E18
+   *           subsets. */
+  public default void powerset(final Consumer<DomainBitSet<T>> consumer, boolean blocking) throws MoreThan64ElementsException {
+    if (DomainBitSet.this.size() > 64)
+      throw new MoreThan64ElementsException();
+    final ExecutorService pool = Executors.newWorkStealingPool();
+    final Domain<T> domain = getDomain();
+    final Pair<?, Integer, T>[] pairs = this.zipWithPosition().toArray(Pair[]::new);
+    final int domSize = DomainBitSet.this.getDomain().size();
+    BigInteger size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+    BigInteger i = BigInteger.ZERO;
+    while (i.compareTo(size) < 0) {
+      final BigInteger _i = i;
+      pool.execute(() -> {
+        long mask = 0L;
+        for (int x = 0; x < domSize; x++)
+          if (_i.testBit(x))
+            mask |= 1L << pairs[x]._1();
+        consumer.accept(SmallDomainBitSet.of(domain, mask));;
+      });
+      i = i.add(BigInteger.ONE);
+    }
+    pool.shutdown();
+    if(blocking)
+      try {
+        pool.awaitTermination(1, TimeUnit.DAYS);
+      } catch (InterruptedException e) {
+       Thread.currentThread().interrupt();
+      }
   }
 
   /** Returns a new set with all elements in this set, that have a matching element in the other set.
