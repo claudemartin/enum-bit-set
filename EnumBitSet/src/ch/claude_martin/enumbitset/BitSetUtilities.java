@@ -174,8 +174,6 @@ public final class BitSetUtilities {
    * 
    * @param <T>
    *          Type of elements.
-   * @param <D>
-   *          Type of DomainBitSet.
    * @param domain
    *          the {@link Domain} to create the {@link DomainBitSet}.
    * @see Domain#factory()
