@@ -172,12 +172,12 @@ public final class BitSetUtilities {
 
   /** Collector to convert a {@link Stream} to a {@link DomainBitSet}.
    * 
-   * @param bitsetFactory
-   *          Creates an empty bitset.
    * @param <T>
    *          Type of elements.
    * @param <D>
    *          Type of DomainBitSet.
+   * @param domain
+   *          the {@link Domain} to create the {@link DomainBitSet}.
    * @see Domain#factory()
    * @see Collectors#toCollection(Supplier)
    * @return New Collector to collect elements into a DomainBitSet. */
