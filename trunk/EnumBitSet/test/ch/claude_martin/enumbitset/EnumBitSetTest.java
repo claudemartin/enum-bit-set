@@ -265,8 +265,7 @@ public class EnumBitSetTest {
       check.accept(EnumBitSet.asEnumSet(Alphabet.B, Alphabet.C));
     }
     {
-      final long mask = 0b0110L;
-      check.accept(EnumBitSet.asEnumSet(mask, Alphabet.class));
+      check.accept(EnumBitSet.asEnumSet(0b0110L, Alphabet.class));
     }
   }
 
