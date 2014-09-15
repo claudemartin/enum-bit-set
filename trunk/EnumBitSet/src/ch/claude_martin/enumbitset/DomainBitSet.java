@@ -22,8 +22,6 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -217,8 +215,10 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
   @Nonnull
   @CheckReturnValue
   public default <Y extends Object> Set<Pair<Object, T, Y>> cross(@Nonnull final DomainBitSet<Y> set) {
+    requireNonNull(set, "set");
     final HashSet<Pair<Object, T, Y>> result = new HashSet<>(this.size() * set.size());
-    this.cross(set, Pair.curry(result::add)::apply);
+    // this.cross(set, Pair.curry(result::add)::apply);
+    this.cross(set, (x, y) -> result.add(Pair.of(x, y)));
     return result;
   }
 
