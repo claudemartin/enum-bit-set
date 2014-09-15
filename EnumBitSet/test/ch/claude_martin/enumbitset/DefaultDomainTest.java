@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 @SuppressWarnings("static-method")
 public class DefaultDomainTest {
 
@@ -96,6 +98,7 @@ public class DefaultDomainTest {
   }
 
   @SuppressWarnings({ "rawtypes" })
+  @SuppressFBWarnings("GC_UNRELATED_TYPES")
   @Test
   public final void testIndexOfObject() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
