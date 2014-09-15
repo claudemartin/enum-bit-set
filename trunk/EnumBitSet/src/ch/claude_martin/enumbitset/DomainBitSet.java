@@ -422,8 +422,6 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * 
    * @param domain
    *          The new domain
-   * @param mapper
-   *          function to map from T to S.
    * @param <S>
    *          Type of given domain. It has to be the same size or larger than the domain of this
    *          set.
