@@ -310,7 +310,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
 
   /** Returns an Optional that might contain the element at the specified position.
    * <p>
-   * The inverse has to be done in the domain: <br/>
+   * The inverse has to be done in the domain: <br>
    * <code>mySet.{@linkplain #getDomain()}.{@linkplain Domain#indexOf(Object) indexOf(element)};</code>
    * 
    * @param index
