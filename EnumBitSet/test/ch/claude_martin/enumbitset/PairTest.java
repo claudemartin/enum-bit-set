@@ -7,11 +7,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.function.Function;
 
 import org.junit.Test;
 
@@ -29,15 +33,22 @@ public class PairTest {
     assertTrue(p == p.clone());
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Test
   public final void testCurry() {
-    final Pair p = Pair.of("foo", 42);
-    final Object snd1 = p.applyTo(Pair.curry(x -> x.second));
-    final Object snd2 = Pair.uncurry((a, b) -> b).apply(p);
-    final Object snd3 = p.applyTo(Pair.curry(Pair::_2));
+    final Pair<Serializable, String, Integer> p = Pair.of("foo", 42);
+    final Integer snd1 = p.applyTo(Pair.curry(x -> x.second));
+    final Integer snd2 = Pair.uncurry((String a, Integer b) -> b).apply(p);
+    final Integer snd3 = p.applyTo(Pair.curry(Pair::_2));
     assertEquals(snd1, snd2);
     assertEquals(snd1, snd3);
+
+    Set<Pair<Number, Integer, Double>> set = new HashSet<>();
+    // TODO: For some reason I can't use this:
+    // Pair.curry(set::add);
+    // Alternatives:
+    Function<Pair<Number, Integer, Double>, Boolean> add = set::add;
+    Pair.curry(add);
+    Pair.curry((Function<Pair<Number, Integer, Double>, Boolean>) set::add);
   }
 
   @Test

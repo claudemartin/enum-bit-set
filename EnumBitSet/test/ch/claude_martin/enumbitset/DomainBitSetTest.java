@@ -23,6 +23,8 @@ import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
@@ -276,8 +278,9 @@ public class DomainBitSetTest {
     assertTrue(this.none.cross(this.oneTo4).isEmpty());
     assertTrue(this.oneTo4.cross(this.none).isEmpty());
     assertTrue(this.oneTwo.cross(this.twoThree).contains(Pair.of(1, 3)));
-    Set<Pair<Integer, Integer, Integer>> set = new HashSet<>();
-    this.oneTwo.cross(this.twoThree, Pair.curry(set::add)::apply);
+    final Set<Pair<Integer, Integer, Integer>> set = new HashSet<>();
+    // Not sure why the cast is necessary:
+    this.oneTwo.cross(this.twoThree, (x, y) -> set.add(Pair.of(x, y)));
     assertEquals(set, this.oneTwo.cross(this.twoThree));
   }
 
@@ -443,15 +446,16 @@ public class DomainBitSetTest {
       } catch (MoreThan64ElementsException e) {
         // expected
       }
-      
+
       try {
-        large.powerset(s->{}, true);
+        large.powerset(s -> {
+        }, true);
         fail("powerset of [0..64] is too large!");
       } catch (MoreThan64ElementsException e) {
         // expected
       }
     }
-    
+
     {
       // parallel powerset should be rather fast with 16 elements:
       Object[] zeroTo63 = IntStream.range(0, 64).mapToObj(Integer::valueOf).toArray();
@@ -459,8 +463,8 @@ public class DomainBitSetTest {
       large = large.union(0b1000100010001000100010001000100010001000100010001000100010001000L);
       final AtomicReference<BigInteger> actual = new AtomicReference<>(BigInteger.ZERO);
       final BigInteger expeted = BigInteger.ONE.shiftLeft(large.size());
-      large.powerset(s->{
-        actual.updateAndGet(i->i.add(BigInteger.ONE));
+      large.powerset(s -> {
+        actual.updateAndGet(i -> i.add(BigInteger.ONE));
       }, true);
       assertEquals(expeted, actual.get());
     }
@@ -468,18 +472,18 @@ public class DomainBitSetTest {
       SmallDomainBitSet<Integer> set = SmallDomainBitSet.of(asList(1, 2, 3, 4, 5, 6), 0b101010L);
       // set.powerset() should be:
       // {{}, {2}, {4}, {2, 4}, {6}, {2, 6}, {4, 6}, {2, 4, 6}}
-      
+
       // sequential:
       ArrayList<DomainBitSet<Integer>> powerset1 = new ArrayList<>();
       set.powerset().forEach(powerset1::add);
-      
+
       // parallel:
       List<DomainBitSet<Integer>> powerset2 = Collections.synchronizedList(new ArrayList<>());
       set.powerset(powerset2::add, true);
       for (List<DomainBitSet<Integer>> powerset : asList(powerset1, powerset2)) {
         long size = 1L << set.size();
         assertEquals(size, powerset.size());
-        
+
         assertTrue(powerset.contains(set.intersect(0b000000L)));
         assertTrue(powerset.contains(set.intersect(0b000010L)));
         assertTrue(powerset.contains(set.intersect(0b001000L)));
@@ -490,7 +494,6 @@ public class DomainBitSetTest {
         assertTrue(powerset.contains(set.intersect(0b101010L)));
       }
     }
-    
 
   }
 

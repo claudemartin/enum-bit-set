@@ -59,6 +59,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
   public static <TT, TX extends TT, TY extends TT, R> BiFunction<TX, TY, R> curry(
       @Nonnull final Function<Pair<TT, TX, TY>, R> f) {
+    requireNonNull(f, "curry: function must not be null");
     return (x, y) -> f.apply(Pair.of(x, y));
   }
 
@@ -115,18 +116,16 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * @see #curry(Function)
    * @see #applyTo(BiFunction)
-   * @param <TT>
-   *          Common type
    * @param <TX>
-   *          Type of first element. Extends TT.
+   *          Type of first element.
    * @param <TY>
-   *          Type of second element. Extends TT.
+   *          Type of second element.
    * @param <R>
    *          Return type of <i>f</i>.
    * @param f
    *          A BiFunction that takes two elements.
    * @return A Function that takes a pair and applies both elements on the given Function. */
-  public static <TT, TX extends TT, TY extends TT, R> Function<Pair<TT, TX, TY>, R> uncurry(
+  public static <TX, TY, R> Function<Pair<?, TX, TY>, R> uncurry(
       @Nonnull final BiFunction<TX, TY, R> f) {
     return (p) -> f.apply(p.first, p.second);
   }
