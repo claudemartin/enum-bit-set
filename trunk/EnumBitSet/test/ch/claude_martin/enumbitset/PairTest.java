@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.junit.Test;
@@ -43,8 +44,7 @@ public class PairTest {
     assertEquals(snd1, snd3);
 
     Set<Pair<Number, Integer, Double>> set = new HashSet<>();
-    // TODO: For some reason I can't use this:
-    // Pair.curry(set::add);
+    Pair.curry(set::add);
     // Alternatives:
     Function<Pair<Number, Integer, Double>, Boolean> add = set::add;
     Pair.curry(add);
