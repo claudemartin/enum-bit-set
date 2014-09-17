@@ -7,14 +7,17 @@ import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 
 import java.lang.ref.Reference;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -45,22 +48,41 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
+   * <p>
+   * Note: The compiler should be able to infer all types. If not then a lambda should be used
+   * instead. The returned value is a {@link BiFunction}, not function that allows partial
+   * application. For that it would have to return {@code Function<A, Function<B, C>>} instead of
+   * {@code BiFunction<A, B, C>}.
+   * 
+   * <p>
+   * Example:<br>
+   * Given the following set:<br>
+   * {@code Set<Pair<A, B, C>> set = new HashSet<>();} <br>
+   * We can <i>curry</i> the <i>add</i> method:<br>
+   * {@code Pair.curry(set::add)}<br>
+   * This is equivalent to this lambda: <br>
+   * {@code (a, b) -> set.add(Pair.of(a, b))}
+   * 
    * @see #uncurry(BiFunction)
    * @param <TT>
-   *          Common type
+   *          Common type. This isn't actually used.
    * @param <TX>
    *          Type of first element. Extends TT.
    * @param <TY>
    *          Type of second element. Extends TT.
+   * @param <P>
+   *          Actual type of the Pair.
    * @param <R>
-   *          Return type of <i>f</i>.
+   *          Return type of the given function <i>f</i>.
    * @param f
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
-  public static <TT, TX extends TT, TY extends TT, R> BiFunction<TX, TY, R> curry(
-      @Nonnull final Function<Pair<TT, TX, TY>, R> f) {
+  @SuppressWarnings("unchecked")
+  public static//
+  <TT, TX extends TT, TY extends TT, P extends Pair<TT, TX, TY>, R> //
+  BiFunction<TX, TY, R> curry(@Nonnull final Function<P, R> f) {
     requireNonNull(f, "curry: function must not be null");
-    return (x, y) -> f.apply(Pair.of(x, y));
+    return (x, y) -> f.apply((P) Pair.of(x, y));
   }
 
   /** This creates the Pair and checks the types of both values.
@@ -285,7 +307,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
       final Function<Object, String> f = (o) -> {
         return o.getClass().isArray() || o instanceof Iterable || o instanceof Reference
             || o instanceof Optional ? o.getClass().getSimpleName() //
-                : o.toString();
+            : o.toString();
       };
       this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
     }

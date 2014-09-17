@@ -279,7 +279,7 @@ public class DomainBitSetTest {
     assertTrue(this.oneTo4.cross(this.none).isEmpty());
     assertTrue(this.oneTwo.cross(this.twoThree).contains(Pair.of(1, 3)));
     final Set<Pair<Integer, Integer, Integer>> set = new HashSet<>();
-    // Not sure why the cast is necessary:
+    // this.oneTwo.cross(this.twoThree, Pair.curry(set::add)::apply);
     this.oneTwo.cross(this.twoThree, (x, y) -> set.add(Pair.of(x, y)));
     assertEquals(set, this.oneTwo.cross(this.twoThree));
   }
