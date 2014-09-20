@@ -1,5 +1,6 @@
 package ch.claude_martin.enumbitset;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,7 +17,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.junit.Test;
 
@@ -36,19 +36,37 @@ public class PairTest {
 
   @Test
   public final void testCurry() {
-    final Pair<Serializable, String, Integer> p = Pair.of("foo", 42);
-    final Integer snd1 = p.applyTo(Pair.curry(x -> x.second));
-    final Integer snd2 = Pair.uncurry((String a, Integer b) -> b).apply(p);
-    final Integer snd3 = p.applyTo(Pair.curry(Pair::_2));
-    assertEquals(snd1, snd2);
-    assertEquals(snd1, snd3);
+    { // Basic test of curry and uncurry.
+      final Pair<Serializable, String, Integer> p = Pair.of("foo", 42);
+      final Integer snd1 = p.applyTo(Pair.curry(x -> x.second));
+      final Integer snd2 = Pair.uncurry((String a, Integer b) -> b).apply(p);
+      final Integer snd3 = p.applyTo(Pair.curry(Pair::_2));
+      assertEquals(snd1, snd2);
+      assertEquals(snd1, snd3);
+    }
+    {
+      final Pair<Serializable, String, Integer> p = Pair.of("bla", 1);
+      final Set<Pair<Serializable, String, Integer>> set = new HashSet<>();
+      final BiFunction<String, Integer, Boolean> add = Pair.curry(set::add);
+      p.applyTo(add);
+      assertEquals(new HashSet<>(asList(p)), set);
 
-    Set<Pair<Number, Integer, Double>> set = new HashSet<>();
-    Pair.curry(set::add);
-    // Alternatives:
-    Function<Pair<Number, Integer, Double>, Boolean> add = set::add;
-    Pair.curry(add);
-    Pair.curry((Function<Pair<Number, Integer, Double>, Boolean>) set::add);
+      final BiFunction<String, Integer, Boolean> contains = Pair.curry(set::contains);
+      // Three ways to see if 'set' contains 'p':
+      assertTrue(contains.apply(p.first, p.second));
+      assertTrue(p.applyTo(contains));
+      assertTrue(Pair.uncurry(contains).apply(p));
+    }
+    { // With more complex types:
+      Domain<? extends Number> domain = DefaultDomain.of(asList(1,2,3));
+      List<? super Integer> list = new ArrayList<>(asList(1,2,3));
+      Pair<Object, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
+      
+      final Set<Pair<Object, Domain<? extends Number>, List<? super Integer>>> set = new HashSet<>();
+      final BiFunction<Domain<? extends Number>, List<? super Integer>, Boolean> add = Pair.curry(set::add);
+      p.applyTo(add);
+      assertEquals(new HashSet<>(asList(p)), set);
+    }
   }
 
   @Test
