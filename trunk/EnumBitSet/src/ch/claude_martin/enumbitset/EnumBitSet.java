@@ -521,17 +521,24 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @see #getEnumTypeSize()
    * @return <code>Domain</code> with all enum elements. */
   @Override
-  @SuppressFBWarnings(value = "DC_DOUBLECHECK", justification = "Doublecheck works since Java 1.5.")
+  @SuppressFBWarnings(value = "DC_DOUBLECHECK", justification = "see comments below")
   public Domain<E> getDomain() {
-    if (null == this.domain)
+    Domain<E> dom = this.domain;
+    if (null == dom)
       synchronized (this.mutex) {
-        if (null == this.domain) {
-          this.domain = EnumDomain.of(this.enumType);
-          assert this.enumTypeSize == -1 || this.enumTypeSize == this.domain.size();
-          this.enumTypeSize = this.domain.size();
+        dom = this.domain;
+        if (null == dom) {
+          // The following could be inlined:
+          dom = EnumDomain.of(this.enumType);
+          // 'dom' should now reference a valid (fully initialized) domain.
+          // The extra variable 'dom' and the fact that EnumDomain.of() is synchronized
+          // should make sure that no invalid object is returned.
+          assert this.enumTypeSize == -1 || this.enumTypeSize == dom.size();
+          this.enumTypeSize = dom.size();
+          this.domain = dom;
         }
       }
-    return this.domain;
+    return dom;
   }
 
   /** The enum type class that defines the available enum elements. This is the class returned by
