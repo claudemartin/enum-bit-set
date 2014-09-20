@@ -18,6 +18,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
 /** A collection of utility methods for {@link DomainBitSet}s.
@@ -110,6 +111,40 @@ public final class BitSetUtilities {
     if (bitset.isEmpty())
       return 0L;
     return bitset.toLongArray()[0];
+  }
+
+  /** Returns the Cartesian Product. This makes it easy to use some common supertype of both types.
+   * <p>
+   * Example: If the types are {@link Integer} and {@link Double} then the supertype {@link Number}
+   * can be used.
+   * 
+   * <p>
+   * The returned set has a size of <code>this.size() * set.size()</code>. The given type has to be
+   * a super type of both other types.
+   * 
+   * @param <C>
+   *          A common base type.
+   * @param <T1>
+   *          The type of the elements in the first set.
+   * @param <T2>
+   *          The type of the elements in the second set.
+   * @param set1
+   *          A set.
+   * @param set2
+   *          Another set.
+   * @return the Cartesian Product.
+   * @see DomainBitSet#cross(DomainBitSet)
+   * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
+  @SuppressWarnings({ "cast", "rawtypes", "unchecked" })
+  @Nonnull
+  @CheckReturnValue
+  public static <C, T1 extends C, T2 extends C> Set<Pair<C, T1, T2>> cross(
+      @Nonnull final DomainBitSet<T2> set1, @Nonnull final DomainBitSet<T2> set2, Class<C> type) {
+    requireNonNull(set1, "set1");
+    requireNonNull(set2, "set2");
+    requireNonNull(type, "type");
+    Set result = set1.cross(set2);
+    return (Set<Pair<C, T1, T2>>) result;
   }
 
   /** Returns the intersection of two sets.
