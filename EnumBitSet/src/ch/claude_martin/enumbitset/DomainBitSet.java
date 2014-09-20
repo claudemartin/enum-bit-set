@@ -211,7 +211,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @param set
    *          Another set.
    * @return the Cartesian Product.
-   * @see #semijoin(DomainBitSet, BiPredicate) */
+   * @see #semijoin(DomainBitSet, BiPredicate)
+   * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class) */
   @Nonnull
   @CheckReturnValue
   public default <Y extends Object> Set<Pair<Object, T, Y>> cross(@Nonnull final DomainBitSet<Y> set) {
@@ -234,13 +235,14 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * A BiFunction can be used by passing <code>::apply</code> as consumer.<br>
    * Example: <code>Pair.curry(mySet::add)::apply</code>.
    * 
-   * @see #cross(DomainBitSet)
    * @param <Y>
    *          The type of the elements in the given set.
    * @param set
    *          Another set.
    * @param consumer
    *          A function to consume two elements.
+   * @see #cross(DomainBitSet)
+   * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class)
    * @see #semijoin(DomainBitSet, BiPredicate) */
   public default <Y> void cross(@Nonnull final DomainBitSet<Y> set,
       @Nonnull final BiConsumer<T, Y> consumer) {
@@ -571,8 +573,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    *           subsets.
    * @return The powerset of this set.
    * 
-   * @see #powerset(Consumer, boolean)
-   *  */
+   * @see #powerset(Consumer, boolean) */
   // This always returns sets of the exact same type as this set.
   public default Iterable<? extends DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
     final DomainBitSet<T> empty = DomainBitSet.this.getDomain().factory()
@@ -644,7 +645,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @throws MoreThan64ElementsException
    *           if this set contains more than 64 elements. This would result in more than 18E18
    *           subsets. */
-  public default void powerset(final Consumer<DomainBitSet<T>> consumer, boolean blocking) throws MoreThan64ElementsException {
+  public default void powerset(final Consumer<DomainBitSet<T>> consumer, boolean blocking)
+      throws MoreThan64ElementsException {
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
     final ExecutorService pool = Executors.newWorkStealingPool();
@@ -660,16 +662,16 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
         for (int x = 0; x < domSize; x++)
           if (_i.testBit(x))
             mask |= 1L << pairs[x]._1();
-        consumer.accept(SmallDomainBitSet.of(domain, mask));;
+        consumer.accept(SmallDomainBitSet.of(domain, mask));
       });
       i = i.add(BigInteger.ONE);
     }
     pool.shutdown();
-    if(blocking)
+    if (blocking)
       try {
         pool.awaitTermination(1, TimeUnit.DAYS);
       } catch (InterruptedException e) {
-       Thread.currentThread().interrupt();
+        Thread.currentThread().interrupt();
       }
   }
 

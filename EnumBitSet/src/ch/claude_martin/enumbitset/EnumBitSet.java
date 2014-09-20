@@ -450,8 +450,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          The type of the elements in the given set.
    * @param set
    *          Another set.
-   * @see DomainBitSet#cross(DomainBitSet, BiConsumer)
    * @see DomainBitSet#cross(DomainBitSet)
+   * @see DomainBitSet#cross(DomainBitSet, BiConsumer)
+   * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class)
    * @return a {@link Set} containing all {@link Pair pairs}. */
   @SuppressWarnings("unchecked")
   public <Y extends Enum<Y> & EnumBitSetHelper<Y>> Set<Pair<EnumBitSetHelper<?>, E, Y>> cross(
