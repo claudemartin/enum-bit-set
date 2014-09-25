@@ -6,7 +6,7 @@ import java.lang.ref.SoftReference;
 import java.util.AbstractList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
@@ -21,10 +21,12 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   private final int           hash;
   private final Class<E>      enumType;
 
-  private static final// domainCache:
-  Map<Class<? extends Enum<?>>, // Maps Enum-Type to Domain
-  SoftReference<// Allows GC to collect unused Domains
-  Domain<? extends Enum<?>>>> domainCache = new HashMap<>();
+  private static final//      domainCache:
+    Map<
+      Class<? extends Enum<?>>, // Maps Enum-Type to Domain
+      SoftReference<// Allows GC to collect unused Domains
+        Domain<? extends Enum<?>>>>
+                              domainCache = new IdentityHashMap<>();
 
   @SuppressWarnings("unchecked")
   static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(final Class<X> enumType) {
