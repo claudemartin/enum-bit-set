@@ -19,8 +19,6 @@ import java.util.stream.Stream;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /** This data structure allows managing enum constants in a mutable set with methods similar to
  * EnumSet and BitSet. This holds a regular EnumSet, but adds more functions to use it as a BitSet.
  * Note that the implementation of EnumSet works like a bit set but it does not share an interface
@@ -384,9 +382,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   private final Class<E>   enumType;
 
-  // Note that those are intentionally not marked as "volatile". Visibility is guaranteed by JMM.
   private int              enumTypeSize = -1;
-  private final Object     mutex        = new Object();
   private Domain<E>        domain       = null;
 
   private EnumBitSet(final Class<E> type) {
@@ -522,24 +518,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @see #getEnumTypeSize()
    * @return <code>Domain</code> with all enum elements. */
   @Override
-  @SuppressFBWarnings(value = "DC_DOUBLECHECK", justification = "see comments below")
   public Domain<E> getDomain() {
-    Domain<E> dom = this.domain;
-    if (null == dom)
-      synchronized (this.mutex) {
-        dom = this.domain;
-        if (null == dom) {
-          // The following could be inlined:
-          dom = EnumDomain.of(this.enumType);
-          // 'dom' should now reference a valid (fully initialized) domain.
-          // The extra variable 'dom' and the fact that EnumDomain.of() is synchronized
-          // should make sure that no invalid object is returned.
-          assert this.enumTypeSize == -1 || this.enumTypeSize == dom.size();
-          this.enumTypeSize = dom.size();
-          this.domain = dom;
-        }
-      }
-    return dom;
+    if (null == this.domain)
+      this.domain = EnumDomain.of(this.enumType);
+    return this.domain;
   }
 
   /** The enum type class that defines the available enum elements. This is the class returned by
@@ -557,13 +539,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * 
    * @return Number of constants of the enum type. */
   public int getEnumTypeSize() {
-    if (this.enumTypeSize == -1) {
-      this.getDomain(); // This also sets this.enumTypeSize!
-      synchronized (this.mutex) {
-        // JMM guarantees visibility:
-        return this.enumTypeSize;
-      }
-    }
+    if (this.enumTypeSize == -1)
+      this.enumTypeSize = this.getDomain().size(); 
     return this.enumTypeSize;
   }
 
@@ -901,7 +878,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public Stream<E> parallelStream() {
     return this.bitset.parallelStream();
   }
-  
+
   @SuppressWarnings("unchecked")
   public Iterable<EnumBitSet<E>> powerset() throws MoreThan64ElementsException {
     return (Iterable<EnumBitSet<E>>) DomainBitSet.super.powerset();
