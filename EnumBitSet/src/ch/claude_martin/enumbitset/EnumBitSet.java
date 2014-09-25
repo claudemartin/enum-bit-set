@@ -378,12 +378,12 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
         requireNonNull(to)));
   }
 
-  private final EnumSet<E> bitset;
+  private final EnumSet<E>   bitset;
 
-  private final Class<E>   enumType;
+  private final Class<E>     enumType;
 
-  private int              enumTypeSize = -1;
-  private Domain<E>        domain       = null;
+  private int                enumTypeSize = -1;
+  private volatile Domain<E> domain       = null;
 
   private EnumBitSet(final Class<E> type) {
     this(type, EnumSet.noneOf(type));
@@ -540,7 +540,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return Number of constants of the enum type. */
   public int getEnumTypeSize() {
     if (this.enumTypeSize == -1)
-      this.enumTypeSize = this.getDomain().size(); 
+      this.enumTypeSize = this.getDomain().size();
     return this.enumTypeSize;
   }
 
