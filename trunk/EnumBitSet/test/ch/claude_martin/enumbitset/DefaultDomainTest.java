@@ -8,6 +8,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -114,12 +115,13 @@ public class DefaultDomainTest {
 
   @Test
   public final void testOf() {
+    assertSame(domainABC, DefaultDomain.of(GeneralDomainBitSet.of(domainABC, domainABC)));
     final DomainBitSet<Character> ac = domainABC.factory().apply(asList('A', 'C'));
-    assertSame(domainABC, DefaultDomain.of(GeneralDomainBitSet.of(domainABC, ac.toSet())));
+    assertSame(domainABC, ac.getDomain());
     assertSame(ac.getDomain(), DefaultDomain.of(ac.getDomain()));
 
     try {
-      DefaultDomain.of(null);
+      DefaultDomain.of((Collection<?>) null);
       fail("DefaultDomain.of(null) should fail");
     } catch (final NullPointerException e) {
       // expected

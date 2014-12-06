@@ -3,13 +3,7 @@ package ch.claude_martin.enumbitset;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-import java.util.AbstractList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
@@ -28,6 +22,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
+  private static final long          serialVersionUID = -1159105301120332006L;
+
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  private static final DefaultDomain EMPTY_DOMAIN     = new DefaultDomain(Collections.EMPTY_LIST);
+
   /** Returns a Domain of the given elements.
    * <p>
    * The given collection can be a DefaultDomain, in which case it is returned directly. If it is a
@@ -44,13 +43,31 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   @Nonnull
   public static <T> DefaultDomain<T> of(@Nonnull final Collection<? extends T> domain) {
     requireNonNull(domain, "domain");
+
     if (domain instanceof DefaultDomain)
       return (DefaultDomain<T>) domain;
+
+    if (domain.isEmpty())
+      return EMPTY_DOMAIN;
+
     if (domain instanceof DomainBitSet) {
       final Domain<T> domain2 = ((DomainBitSet<T>) domain).getDomain();
-      if (domain2 instanceof DefaultDomain)
+      if (domain2 instanceof DefaultDomain && domain.size() == domain2.size())
         return (DefaultDomain<T>) domain2;
     }
+
+    return new DefaultDomain<>(domain);
+  }
+
+  /** Internal use only! */
+  @SafeVarargs
+  @Nonnull
+  static <T> DefaultDomain<T> of(@Nonnull final T... domain) {
+    requireNonNull(domain, "domain");
+
+    if (domain.length == 0)
+      return EMPTY_DOMAIN;
+
     return new DefaultDomain<>(domain);
   }
 
@@ -74,33 +91,27 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates. */
   @SuppressWarnings("unchecked")
-  private DefaultDomain(@Nonnull final Collection<? extends T> domain) {
-    this.elements = (T[]) new Object[domain.size()];
-    this.map = new HashMap<>((int) (1.5 * domain.size()));
-    this.list = asList(this.elements);
+  private DefaultDomain(@Nonnull final Collection<? extends T> domain) throws IllegalArgumentException {
+    this(domain.toArray((T[]) new Object[requireNonNull(domain, "domain").size()]));
+  }
+
+  /** Internal use only!
+   * 
+   * @param domain
+   *          The elements of the domain. */
+  @SafeVarargs
+  private DefaultDomain(@Nonnull final T... domain) {
+    this.elements = domain;
+    this.map = new HashMap<>((int) (1.5 * domain.length));
+    this.list = asList(domain);
     int i = 0;
     for (final T t : domain) {
       this.elements[i] = requireNonNull(t);
       this.map.put(t, i);
       i++;
     }
-    if (this.map.size() != domain.size())
+    if (this.map.size() != domain.length)
       throw new IllegalArgumentException("The domain must not contain duplicates.");
-  }
-
-  @Override
-  public boolean add(final T e) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean addAll(final Collection<? extends T> c) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void clear() {
-    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -128,7 +139,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   public Function<Collection<T>, DomainBitSet<T>> factory() {
     if (this.size() <= 64)
       return (s) -> SmallDomainBitSet.of(this, s);
-      return (s) -> GeneralDomainBitSet.of(this, s);
+    return (s) -> GeneralDomainBitSet.of(this, s);
   }
 
   @Override
@@ -163,21 +174,6 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   }
 
   @Override
-  public boolean remove(final Object o) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean removeAll(final Collection<?> c) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public boolean retainAll(final Collection<?> c) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public int size() {
     return this.elements.length;
   }
@@ -196,4 +192,30 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   public <X> X[] toArray(@Nonnull final X[] a) {
     return super.toArray(a);
   }
+
+  /** This proxy class is used to serialize DefaultDomain instances. */
+  private static class SerializationProxy<T> implements java.io.Serializable {
+    private static final long serialVersionUID = -7898910202865145301L;
+    @Nonnull
+    private final T[]         elements;
+
+    public SerializationProxy(@Nonnull final T[] elements) {
+      this.elements = elements;
+    }
+
+    private Object readResolve() {
+      return DefaultDomain.of(this.elements);
+    }
+
+  }
+
+  private Object writeReplace() {
+    return new SerializationProxy<>(this.elements);
+  }
+
+  @SuppressWarnings({ "static-method", "unused" })
+  private void readObject(java.io.ObjectInputStream stream) throws java.io.InvalidObjectException {
+    throw new java.io.InvalidObjectException("Proxy required");
+  }
+
 }

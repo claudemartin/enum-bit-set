@@ -6,18 +6,11 @@ import static java.util.Spliterator.NONNULL;
 import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 
+import java.io.Serializable;
 import java.lang.ref.Reference;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -45,14 +38,14 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *          The type of the second element. Extends &lt;T&gt;.
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
-public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable {
+public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable, Serializable {
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
    * <p>
    * Note: The compiler should be able to infer all types. If not then a lambda should be used
-   * instead. The returned value is a {@link BiFunction}, not function that allows partial
-   * application. For that it would have to return {@code Function<A, Function<B, C>>} instead of
-   * {@code BiFunction<A, B, C>}.
+   * instead (see example below). The returned value is a {@link BiFunction}, not a function that
+   * allows partial application. For that it would have to return
+   * {@code Function<A, Function<B, C>>} instead of {@code BiFunction<A, B, C>}.
    * 
    * <p>
    * Example:<br>
@@ -71,7 +64,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param <TY>
    *          Type of second element. Extends TT.
    * @param <P>
-   *          Actual type of the Pair.
+   *          Actual type of the Pair. This is exactly {@code Pair<TT, TX, TY>}.
    * @param <R>
    *          Return type of the given function <i>f</i>.
    * @param f
@@ -149,6 +142,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @return A Function that takes a pair and applies both elements on the given Function. */
   public static <TX, TY, R> Function<Pair<?, TX, TY>, R> uncurry(
       @Nonnull final BiFunction<TX, TY, R> f) {
+    requireNonNull(f, "uncurry: function must not be null");
     return (p) -> f.apply(p.first, p.second);
   }
 
@@ -167,7 +161,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   public final Y second;
 
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
-  private String string = null;
+  private transient String string = null;
 
   private Pair(@Nonnull final X first, @Nonnull final Y second) {
     this.first = requireNonNull(first);
@@ -307,7 +301,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
       final Function<Object, String> f = (o) -> {
         return o.getClass().isArray() || o instanceof Iterable || o instanceof Reference
             || o instanceof Optional ? o.getClass().getSimpleName() //
-            : o.toString();
+                : o.toString();
       };
       this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
     }

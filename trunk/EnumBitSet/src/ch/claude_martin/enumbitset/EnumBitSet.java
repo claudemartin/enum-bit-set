@@ -4,13 +4,7 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -58,6 +52,7 @@ import javax.annotation.Nonnull;
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
 public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implements DomainBitSet<E>,
     Collection<E> {
+  private static final long serialVersionUID = -7833695756979160691L;
 
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
    * 
@@ -389,7 +384,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     this(type, EnumSet.noneOf(type));
   }
 
-  private EnumBitSet(final Class<E> type, final EnumSet<E> set) {
+  EnumBitSet(@Nonnull final Class<E> type, @Nonnull final EnumSet<E> set) {
     this.enumType = requireNonNull(type);
     this.bitset = requireNonNull(set);
   }
@@ -520,7 +515,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @Override
   public Domain<E> getDomain() {
     if (null == this.domain)
-      this.domain = EnumDomain.of(this.enumType);
+      return this.domain = EnumDomain.of(this.enumType);
     return this.domain;
   }
 
@@ -879,6 +874,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     return this.bitset.parallelStream();
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public Iterable<EnumBitSet<E>> powerset() throws MoreThan64ElementsException {
     return (Iterable<EnumBitSet<E>>) DomainBitSet.super.powerset();
@@ -1144,5 +1140,33 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @Override
   public Stream<Pair<Object, Integer, E>> zipWithPosition() {
     return this.stream().map(e -> Pair.of(e.ordinal(), e));
+  }
+
+  /** This proxy class is used to serialize EnumBitSet instances. */
+  private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
+      java.io.Serializable {
+    private static final long serialVersionUID = 7134313027153728022L;
+
+    private final Class<E>    enumType;
+    private final EnumSet<E>  bitset;
+
+    public SerializationProxy(final Class<E> enumType, final EnumSet<E> bitset) {
+      this.enumType = enumType;
+      this.bitset = bitset;
+    }
+
+    private Object readResolve() {
+      return new EnumBitSet<>(this.enumType, this.bitset);
+    }
+  }
+
+  private Object writeReplace() {
+    return new SerializationProxy<>(this.enumType, this.bitset);
+  }
+
+  @SuppressWarnings({ "static-method", "unused" })
+  private void readObject(final java.io.ObjectInputStream stream) 
+      throws java.io.InvalidObjectException {
+    throw new java.io.InvalidObjectException("Proxy required");
   }
 }
