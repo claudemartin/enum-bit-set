@@ -5,18 +5,11 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -30,6 +23,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *          of T. */
 @Immutable
 public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
+  private static final long serialVersionUID = 671939884938912745L;
+
   private static final class Itr<T> implements Iterator<T> {
     private final Domain<T> dom;
     private int             pos = 0;
@@ -69,7 +64,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @return A SmallDomainBitSet containing all elements of the given domain. */
   public static <T> SmallDomainBitSet<T> allOf(final List<T> domain)
       throws MoreThan64ElementsException {
-    int size = domain.size();
+    final int size = domain.size();
     if (size > 64)
       throw new MoreThan64ElementsException();
     else if (size == 64)
@@ -177,16 +172,16 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     return of(domain, asList(set));
   }
 
-  private final Domain<T> domain;
+  private final Domain<T>      domain;
 
-  private final long      set;
+  private final long           set;
 
-  private final long      all;
+  private transient final long all;
 
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
-  private int             hash = 0; // defaults to 0, later it's set to a hash code.
+  private transient int        hash = 0; // defaults to 0, later it's set to a hash code.
 
-  private SmallDomainBitSet(final Domain<T> domain, final long set)
+  SmallDomainBitSet(@Nonnull final Domain<T> domain, @Nonnull final long set)
       throws MoreThan64ElementsException {
     this.domain = domain;
     this.set = set;
@@ -350,21 +345,23 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * Note: Complexity is <code>O(2<sup>n</sup>)</code>. This takes very long for large sets.
    * <p>
    * This is not thread safe and has to be processed sequentially.
+   * 
    * @see #powerset(Consumer, boolean)
    * @return The powerset of this set. */
+  @Override
   @SuppressWarnings("unchecked")
   public Iterable<SmallDomainBitSet<T>> powerset() {
     return (Iterable<SmallDomainBitSet<T>>) DomainBitSet.super.powerset();
   }
 
-  /**
-   * {@inheritDoc}
-   * @see #powerset()
-   */
-  public void powerset(final Consumer<DomainBitSet<T>> consumer, boolean blocking) {
+  /** {@inheritDoc}
+   * 
+   * @see #powerset() */
+  @Override
+  public void powerset(@Nonnull final Consumer<DomainBitSet<T>> consumer, final boolean blocking) {
     DomainBitSet.super.powerset(consumer, blocking);
   }
-  
+
   @Override
   public int size() {
     return Long.bitCount(this.set);
@@ -416,7 +413,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> union(final BigInteger mask) {
+  @Nonnull
+  public DomainBitSet<T> union(@Nonnull final BigInteger mask) {
     return new SmallDomainBitSet<>(this.domain, this.set | this.checkMask(asLong(mask)));
   }
 
@@ -443,5 +441,32 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   @Override
   public Stream<Pair<Object, Integer, T>> zipWithPosition() {
     return this.stream().map(e -> Pair.of(this.domain.indexOf(e), e));
+  }
+
+  /** This proxy class is used to serialize SmallDomainBitSet instances. */
+  private static class SerializationProxy<T> implements java.io.Serializable {
+    private static final long serialVersionUID = -4553759789742727112L;
+
+    private final Domain<T>   domain;
+    private final long        set;
+
+    public SerializationProxy(@Nonnull final Domain<T> domain, @Nonnull final long set) {
+      this.domain = domain;
+      this.set = set;
+    }
+
+    private Object readResolve() {
+      return new SmallDomainBitSet<>(this.domain, this.set);
+    }
+  }
+
+  private Object writeReplace() {
+    return new SerializationProxy<>(this.domain, this.set);
+  }
+
+  @SuppressWarnings({ "static-method", "unused" })
+  private void readObject(final java.io.ObjectInputStream stream)
+      throws java.io.InvalidObjectException {
+    throw new java.io.InvalidObjectException("Proxy required");
   }
 }

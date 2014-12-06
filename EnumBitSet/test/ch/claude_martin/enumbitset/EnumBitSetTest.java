@@ -5,6 +5,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -955,5 +959,40 @@ public class EnumBitSetTest {
       s.zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second.ordinal()));
       assertEquals(s.size(), s.zipWithPosition().count());
     }
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @Test
+  public void testSerialize() throws Exception {
+    for (final Class c : asList(Alphabet.class, Element.class, Suit.class)) {
+      final EnumBitSet all = EnumBitSet.allOf(c);
+      final EnumBitSet none = EnumBitSet.noneOf(c);
+      final EnumBitSet<? extends Enum<?>> some = EnumBitSet.allOf(c);
+      some.removeIf(x -> x.ordinal() % 3 == 0);
+      
+      for (final EnumBitSet set : asList(all, none)) {
+
+        final byte[] data;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+          try (ObjectOutputStream obj = new ObjectOutputStream(out)) {
+            obj.writeObject(set);
+            data = out.toByteArray();
+          }
+        }
+
+        final EnumBitSet set2;
+
+        try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
+          try (ObjectInputStream obj = new ObjectInputStream(in)) {
+            set2 = (EnumBitSet) obj.readObject();
+          }
+        }
+
+        assertNotSame(set, set2);
+        assertEquals(set, set2);
+        assertSame(set.getDomain(), set2.getDomain());
+      }
+    }
+
   }
 }

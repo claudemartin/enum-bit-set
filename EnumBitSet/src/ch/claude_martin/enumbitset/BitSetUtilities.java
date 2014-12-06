@@ -3,13 +3,7 @@ package ch.claude_martin.enumbitset;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -135,16 +129,16 @@ public final class BitSetUtilities {
    * @return the Cartesian Product.
    * @see DomainBitSet#cross(DomainBitSet)
    * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
-  @SuppressWarnings({ "cast", "rawtypes", "unchecked" })
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Nonnull
   @CheckReturnValue
   public static <C, T1 extends C, T2 extends C> Set<Pair<C, T1, T2>> cross(
-      @Nonnull final DomainBitSet<T2> set1, @Nonnull final DomainBitSet<T2> set2, Class<C> type) {
+      @Nonnull final DomainBitSet<T2> set1, @Nonnull final DomainBitSet<T2> set2,
+      @Nonnull final Class<C> type) {
     requireNonNull(set1, "set1");
     requireNonNull(set2, "set2");
     requireNonNull(type, "type");
-    Set result = set1.cross(set2);
-    return (Set<Pair<C, T1, T2>>) result;
+    return (Set) set1.cross(set2);
   }
 
   /** Returns the intersection of two sets.

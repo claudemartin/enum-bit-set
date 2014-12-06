@@ -3,23 +3,9 @@ package ch.claude_martin.enumbitset;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
+import java.io.Serializable;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -58,7 +44,7 @@ import javax.annotation.Nonnull;
  *          A type that all elements in the domain share.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
-public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
+public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
 
   /** Creates a set with the given domain, that contains all elements.
    * 
@@ -215,9 +201,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class) */
   @Nonnull
   @CheckReturnValue
-  public default <Y extends Object> Set<Pair<Object, T, Y>> cross(@Nonnull final DomainBitSet<Y> set) {
+  public default <Y> Set<Pair<?, T, Y>> cross(@Nonnull final DomainBitSet<Y> set) {
     requireNonNull(set, "set");
-    final HashSet<Pair<Object, T, Y>> result = new HashSet<>(this.size() * set.size());
+    final HashSet<Pair<?, T, Y>> result = new HashSet<>(this.size() * set.size());
     // this.cross(set, Pair.curry(result::add)::apply);
     this.cross(set, (x, y) -> result.add(Pair.of(x, y)));
     return result;
@@ -620,7 +606,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
               if (this.i.testBit(x))
                 // if (((this.i & (1L << x)) != 0))
                 this.tmp.add(array[x]);
-            DomainBitSet<T> result = empty.union(this.tmp);
+            final DomainBitSet<T> result = empty.union(this.tmp);
             this.i = this.i.add(BigInteger.ONE);
             // this.i++;
             return result;
@@ -645,7 +631,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
    * @throws MoreThan64ElementsException
    *           if this set contains more than 64 elements. This would result in more than 18E18
    *           subsets. */
-  public default void powerset(final Consumer<DomainBitSet<T>> consumer, boolean blocking)
+  public default void powerset(final Consumer<DomainBitSet<T>> consumer, final boolean blocking)
       throws MoreThan64ElementsException {
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
@@ -653,7 +639,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     final Domain<T> domain = getDomain();
     final Pair<?, Integer, T>[] pairs = this.zipWithPosition().toArray(Pair[]::new);
     final int domSize = DomainBitSet.this.getDomain().size();
-    BigInteger size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+    final BigInteger size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
     BigInteger i = BigInteger.ZERO;
     while (i.compareTo(size) < 0) {
       final BigInteger _i = i;
@@ -670,7 +656,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable {
     if (blocking)
       try {
         pool.awaitTermination(1, TimeUnit.DAYS);
-      } catch (InterruptedException e) {
+      } catch (final InterruptedException e) {
         Thread.currentThread().interrupt();
       }
   }

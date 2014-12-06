@@ -43,6 +43,7 @@ import ch.claude_martin.enumbitset.EnumBitSetTest.Rank;
 public class DomainBitSetTest {
 
   static final class TestBitSet<T> implements DomainBitSet<T> {
+    private static final long serialVersionUID = 4499003906629450439L;
 
     public static <T> TestBitSet<T> of(Domain<T> domain, Collection<T> set) {
       Map<Integer, T> m = set.stream().map(x -> Pair.of(domain.indexOf(x), x))

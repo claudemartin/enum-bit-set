@@ -6,12 +6,12 @@ import static ch.claude_martin.enumbitset.GeneralDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -26,8 +26,10 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
+import ch.claude_martin.enumbitset.EnumBitSetTest.Suit;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressWarnings("static-method")
@@ -618,5 +620,34 @@ public class GeneralDomainBitSetTest {
       s.complement().zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
       assertEquals(s.size(), s.zipWithPosition().count());
     }
+  }
+
+  @SuppressWarnings({ "rawtypes" })
+  @Test
+  public void testSerialize() throws Exception {
+
+    for (final DomainBitSet set : asList(this.none, this.oneTo4, this.oneTwo, this.twoThree,
+        this.threeFour)) {
+
+      final byte[] data;
+      try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        try (ObjectOutputStream obj = new ObjectOutputStream(out)) {
+          obj.writeObject(set);
+          data = out.toByteArray();
+        }
+      }
+
+      final DomainBitSet set2;
+
+      try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
+        try (ObjectInputStream obj = new ObjectInputStream(in)) {
+          set2 = (DomainBitSet) obj.readObject();
+        }
+      }
+      
+      assertNotSame(set, set2);
+      assertEquals(set, set2);
+    }
+
   }
 }

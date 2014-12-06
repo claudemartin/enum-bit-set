@@ -3,19 +3,17 @@ package ch.claude_martin.enumbitset;
 import static java.util.Arrays.asList;
 
 import java.lang.ref.SoftReference;
-import java.util.AbstractList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
+import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
 final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E> implements
     Domain<E> {
+  private static final long serialVersionUID = 3225868883383217275L;
+  
   // Array of all elements in the domain:
   private final E[]           elements;                     // index == ordinal
   private final int           hash;
@@ -144,4 +142,28 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
     return super.toArray(a);
   }
 
+  /** This proxy class is used to serialize EnumDomain instances. */
+  private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
+      java.io.Serializable {
+    private static final long serialVersionUID = 6062818650132433646L;
+    
+    private final Class<E>    enumType;
+
+    public SerializationProxy(@Nonnull final Class<E> enumType) {
+      this.enumType = enumType;
+    }
+
+    private Object readResolve() {
+      return EnumDomain.of(this.enumType);
+    }
+  }
+
+  private Object writeReplace() {
+    return new SerializationProxy<>(this.enumType);
+  }
+
+  @SuppressWarnings({ "static-method", "unused" })
+  private void readObject(java.io.ObjectInputStream stream) throws java.io.InvalidObjectException {
+    throw new java.io.InvalidObjectException("Proxy required");
+  }
 }
