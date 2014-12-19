@@ -631,8 +631,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @throws MoreThan64ElementsException
    *           if this set contains more than 64 elements. This would result in more than 18E18
    *           subsets. */
-  public default void powerset(final Consumer<DomainBitSet<T>> consumer, final boolean blocking)
+  public default void powerset(@Nonnull final Consumer<DomainBitSet<T>> consumer, final boolean blocking)
       throws MoreThan64ElementsException {
+    requireNonNull(consumer, "consumer");
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
     final ExecutorService pool = Executors.newWorkStealingPool();

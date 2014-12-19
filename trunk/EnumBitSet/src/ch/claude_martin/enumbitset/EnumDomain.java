@@ -1,6 +1,7 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
+import static java.util.Objects.requireNonNull;
 
 import java.lang.ref.SoftReference;
 import java.util.*;
@@ -15,8 +16,10 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   private static final long serialVersionUID = 3225868883383217275L;
   
   // Array of all elements in the domain:
+  @Nonnull
   private final E[]           elements;                     // index == ordinal
   private final int           hash;
+  @Nonnull
   private final Class<E>      enumType;
 
   private static final//      domainCache:
@@ -27,7 +30,8 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
                               domainCache = new IdentityHashMap<>();
 
   @SuppressWarnings("unchecked")
-  static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(final Class<X> enumType) {
+  static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(@Nonnull final Class<X> enumType) {
+    requireNonNull(enumType, "enumType");
     synchronized (domainCache) {
       Domain<X> domain = null;
       final SoftReference<Domain<? extends Enum<?>>> ref = domainCache.get(enumType);
@@ -41,7 +45,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
     }
   }
 
-  private EnumDomain(final Class<E> enumType) {
+  private EnumDomain(@Nonnull final Class<E> enumType) {
     this.enumType = enumType;
     this.elements = enumType.getEnumConstants();
     this.hash = Arrays.hashCode(this.elements);
@@ -92,10 +96,12 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   @Override
+  @Nonnull
   public E get(final int index) {
     return this.elements[index];
   }
-
+  
+  @Nonnull
   Class<E> getEnumType() {
     return this.enumType;
   }
@@ -146,7 +152,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
       java.io.Serializable {
     private static final long serialVersionUID = 6062818650132433646L;
-    
+    @Nonnull  
     private final Class<E>    enumType;
 
     public SerializationProxy(@Nonnull final Class<E> enumType) {
