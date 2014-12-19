@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -26,11 +27,12 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   private static final long serialVersionUID = 671939884938912745L;
 
   private static final class Itr<T> implements Iterator<T> {
+    @Nonnull
     private final Domain<T> dom;
     private int             pos = 0;
     private long            next;
 
-    public Itr(final Domain<T> d, final long mask) {
+    public Itr(@Nonnull final Domain<T> d, final long mask) {
       this.dom = d;
       this.next = mask;
       while (this.next != 0L && (this.next & 1L) == 0L) {
@@ -64,6 +66,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @return A SmallDomainBitSet containing all elements of the given domain. */
   public static <T> SmallDomainBitSet<T> allOf(final List<T> domain)
       throws MoreThan64ElementsException {
+    requireNonNull(domain, "domain");
     final int size = domain.size();
     if (size > 64)
       throw new MoreThan64ElementsException();
@@ -135,6 +138,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final Collection<T> set) {
+    requireNonNull(domain, "domain");
+    requireNonNull(set, "set");
     int i = 0;
     long mask = 0L;
     for (final T t : domain) {
@@ -168,7 +173,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
   @SafeVarargs
-  public static <T> SmallDomainBitSet<T> of(final List<T> domain, final T... set) {
+  public static <T> SmallDomainBitSet<T> of(@Nonnull final List<T> domain, @Nonnull final T... set) {
     return of(domain, asList(set));
   }
 
@@ -196,7 +201,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     this.checkMask(set);
   }
 
-  private long arrayToLong(final T[] arr) {
+  private long arrayToLong(@Nonnull final T[] arr) {
     return this.itrToLong(Arrays.asList(arr));
   }
 
@@ -259,11 +264,13 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   @Override
   public DomainBitSet<T> intersect(final BitSet s) {
+    requireNonNull(s, "s");
     return new SmallDomainBitSet<>(this.domain, this.set & this.checkMask(asLong(s)));
   }
 
   @Override
   public DomainBitSet<T> intersect(final Iterable<T> s) {
+    requireNonNull(s, "s");
     return new SmallDomainBitSet<>(this.domain, this.set & this.itrToLong(s));
   }
 
@@ -274,6 +281,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   @Override
   public DomainBitSet<T> intersectVarArgs(@SuppressWarnings("unchecked") final T... elements) {
+    requireNonNull(elements, "elements");
     return new SmallDomainBitSet<>(this.domain, this.set & this.arrayToLong(elements));
   }
 
@@ -288,6 +296,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   private long itrToLong(final Iterable<T> itr) {
+    requireNonNull(itr, "itr");
     long result = 0;
     for (final T t : itr) {
       final int index = this.domain.indexOf(t);
@@ -330,10 +339,9 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   @Override
   public boolean ofEqualElements(final DomainBitSet<T> other) {
+    requireNonNull(other, "other");
     if (this == other)
       return true;
-    if (other == null)
-      return false;
     if (this.isEmpty())
       return other.isEmpty();
     // note: the other SmallDBS could have a different domain, but still contain the same elements!

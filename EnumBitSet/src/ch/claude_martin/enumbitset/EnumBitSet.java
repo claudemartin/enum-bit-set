@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 
+import com.sun.istack.internal.Nullable;
+
 /** This data structure allows managing enum constants in a mutable set with methods similar to
  * EnumSet and BitSet. This holds a regular EnumSet, but adds more functions to use it as a BitSet.
  * Note that the implementation of EnumSet works like a bit set but it does not share an interface
@@ -100,7 +102,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New BitSet, equal to the given EnumSet. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> BitSet asBitSet(final EnumSet<X> set) {
     final BitSet result = new BitSet(64);
-    for (final X e : requireNonNull(set))
+    for (final X e : requireNonNull(set, "set"))
       result.set(e.ordinal());
     return result;
   }
@@ -115,7 +117,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @SafeVarargs
   public static <X extends Enum<X> & EnumBitSetHelper<X>> BitSet asBitSet(final X... set) {
     final BitSet result = new BitSet();
-    for (final X e : requireNonNull(set))
+    for (final X e : requireNonNull(set, "set"))
       result.set(e.ordinal());
     return result;
   }
@@ -131,7 +133,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumBitSet, equal to the given bit mask. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> asEnumBitSet(
       final BigInteger mask, final Class<X> type) {
-    if (requireNonNull(mask).signum() == -1)
+    if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return new EnumBitSet<>(type, asEnumSet(mask, type));
   }
@@ -162,6 +164,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumBitSet, equal to the Collection. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> asEnumBitSet(
       final Collection<X> collection, final Class<X> type) {
+    requireNonNull(collection, "collection");
     final EnumBitSet<X> result = noneOf(type);
     result.addAll(collection);
     return result;
@@ -178,7 +181,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumBitSet, equal to the EnumSet. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> asEnumBitSet(
       final EnumSet<X> set, final Class<X> type) {
-    return new EnumBitSet<>(type, set.clone());
+    return new EnumBitSet<>(type, requireNonNull(set, "set").clone());
   }
 
   /** Creates set of enums from a long.
@@ -206,9 +209,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumSet, equal to the given bit mask. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(
       final BigInteger mask, final Class<X> type) {
-    if (requireNonNull(mask).signum() == -1)
+    if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
-    final EnumSet<X> result = EnumSet.allOf(requireNonNull(type));
+    final EnumSet<X> result = EnumSet.allOf(requireNonNull(type, "type"));
     result.removeIf(e -> e.intersect(mask).equals(BigInteger.ZERO));
     return result;
   }
@@ -225,7 +228,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(final BitSet bitset,
       final Class<X> type) {
     requireNonNull(bitset);
-    final EnumSet<X> result = EnumSet.allOf(requireNonNull(type));
+    final EnumSet<X> result = EnumSet.allOf(requireNonNull(type, "type"));
     result.removeIf(e -> !bitset.get(e.ordinal()));
     return result;
   }
@@ -243,7 +246,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumSet with all elements of the given bit mask. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(final long mask,
       final Class<X> type) throws MoreThan64ElementsException {
-    final EnumSet<X> result = EnumSet.allOf(requireNonNull(type));
+    final EnumSet<X> result = EnumSet.allOf(requireNonNull(type, "type"));
     result.removeIf(e -> (e.bitmask64() & mask) == 0);
     return result;
   }
@@ -280,7 +283,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public static <X extends Enum<X> & EnumBitSetHelper<X>> long asLong(final EnumSet<X> set)
       throws MoreThan64ElementsException {
     long result = 0L;
-    for (final X x : requireNonNull(set))
+    for (final X x : requireNonNull(set, "set"))
       result |= x.bitmask64();
     return result;
   }
@@ -298,7 +301,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public static <X extends Enum<X> & EnumBitSetHelper<X>> long asLong(final X... set)
       throws MoreThan64ElementsException {
     long result = 0;
-    for (final X e : requireNonNull(set))
+    for (final X e : requireNonNull(set, "set"))
       result |= e.bitmask64();// bitmask64() checks index!
     return result;
   }
@@ -312,7 +315,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          The single value that will be contained in the result.
    * @return New EnumBitSet containing nothing but <code>value</code>. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> just(final X value) {
-    final EnumBitSet<X> result = noneOf(requireNonNull(value).getDeclaringClass());
+    final EnumBitSet<X> result = noneOf(requireNonNull(value, "value").getDeclaringClass());
     result.add(value);
     return result;
   }
@@ -341,13 +344,15 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumBitSet containing all given elements.
    * @see #noneOf(Class) */
   @SafeVarargs
-  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> of(final X first,
+  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> of(@Nonnull final X first,
       final X... more) {
-    final EnumBitSet<X> result = noneOf(requireNonNull(first).getDeclaringClass());
+    requireNonNull(first, "first");
+    requireNonNull(more, "more");
+
+    final EnumBitSet<X> result = noneOf(first.getDeclaringClass());
     result.add(first);
-    if (more != null)
-      for (final X x : more)
-        result.add(x);
+    for (final X x : more)
+      result.add(x);
     return result;
   }
 
@@ -369,24 +374,29 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *         specified endpoints */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> range(final X from,
       final X to) {
-    return new EnumBitSet<>(requireNonNull(from).getDeclaringClass(), EnumSet.range(from,
-        requireNonNull(to)));
+    return new EnumBitSet<>(//
+        requireNonNull(from, "from").getDeclaringClass(), //
+        EnumSet.range(from, requireNonNull(to, "to")));
   }
 
+  @Nonnull
   private final EnumSet<E>   bitset;
 
+  @Nonnull
   private final Class<E>     enumType;
 
   private int                enumTypeSize = -1;
+
+  @Nullable
   private volatile Domain<E> domain       = null;
 
-  private EnumBitSet(final Class<E> type) {
+  private EnumBitSet(@Nonnull final Class<E> type) {
     this(type, EnumSet.noneOf(type));
   }
 
   EnumBitSet(@Nonnull final Class<E> type, @Nonnull final EnumSet<E> set) {
-    this.enumType = requireNonNull(type);
-    this.bitset = requireNonNull(set);
+    this.enumType = requireNonNull(type, "type");
+    this.bitset = requireNonNull(set, "set");
   }
 
   /** {@inheritDoc} */
@@ -425,7 +435,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** {@inheritDoc} */
   @Override
   public boolean contains(final Object o) {
-    return this.bitset.contains(requireNonNull(o));
+    return this.bitset.contains(requireNonNull(o, "o"));
   }
 
   /** {@inheritDoc} */
@@ -448,6 +458,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @SuppressWarnings("unchecked")
   public <Y extends Enum<Y> & EnumBitSetHelper<Y>> Set<Pair<EnumBitSetHelper<?>, E, Y>> cross(
       final EnumBitSet<Y> set) {
+    requireNonNull(set, "set");
+
     // This cast is ok because we know that all EnumBitSets always use types that implement
     // EnumBitSetHelper. The default implementation can be used, because the type is only generic.
     // This can be asserted by this:
@@ -463,6 +475,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code>object.getDeclaringClass() == this.enumType</code> */
   @Override
   public boolean domainContains(final E object) {
+    requireNonNull(object, "object");
     return object.getDeclaringClass() == this.enumType;
   }
 
@@ -489,7 +502,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   @Override
   public void forEach(final Consumer<? super E> action) {
-    this.bitset.forEach(requireNonNull(action));
+    requireNonNull(action, "action");
+    this.bitset.forEach(action);
   }
 
   /** {@inheritDoc}
@@ -554,7 +568,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code> this &#x2229; set</code> */
   @Override
   public EnumBitSet<E> intersect(final BigInteger mask) {
-    if (requireNonNull(mask).signum() == -1)
+    if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     final EnumSet<E> clone = this.bitset.clone();
     clone.removeIf(e -> !mask.testBit(e.ordinal()));
@@ -570,6 +584,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code> this &#x2229; set</code> */
   @Override
   public EnumBitSet<E> intersect(final BitSet set) {
+    requireNonNull(set, "set");
     final EnumSet<E> clone = this.bitset.clone();
     clone.removeIf(e -> !set.get(e.ordinal()));
     return new EnumBitSet<>(this.enumType, clone);
@@ -583,6 +598,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @see #complement()
    * @return <code> this &#x2229; set</code> */
   public EnumBitSet<E> intersect(final EnumBitSet<E> set) {
+    requireNonNull(set, "set");
     return this.intersect(set.toEnumSet());
   }
 
@@ -594,6 +610,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          Another set.
    * @return <code> this &#x2229; set</code> */
   public EnumBitSet<E> intersect(final EnumSet<E> set) {
+    requireNonNull(set, "set");
+
     final EnumSet<E> clone = this.bitset.clone();
     clone.retainAll(set);
     return new EnumBitSet<>(this.enumType, clone);
@@ -608,7 +626,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code> this &#x2229; set</code> */
   @Override
   public EnumBitSet<E> intersect(final Iterable<E> set) {
-    if (requireNonNull(set) instanceof EnumBitSet)
+    if (requireNonNull(set, "set") instanceof EnumBitSet)
       return this.intersect(((EnumBitSet<E>) set).bitset);
     final EnumSet<E> result = EnumSet.noneOf(this.enumType);
     for (final E e : set)
@@ -642,6 +660,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code> this &#x2229; set</code> */
   @Override
   public EnumBitSet<E> intersectVarArgs(@SuppressWarnings("unchecked") final E... set) {
+    requireNonNull(set, "set");
+
     final EnumSet<E> clone = this.bitset.clone();
     clone.retainAll(asList(set));
     return new EnumBitSet<>(this.enumType, clone);
@@ -680,7 +700,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @CheckReturnValue
   public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(
       @Nonnull final Class<S> newEnumType) {
-    requireNonNull(newEnumType, "enumType");
+    requireNonNull(newEnumType, "newEnumType");
     if (this.enumType == newEnumType)
       return (EnumBitSet<S>) this.clone();
     final Domain<S> d = EnumDomain.of(newEnumType);
@@ -707,7 +727,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @CheckReturnValue
   public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(
       @Nonnull final Class<S> newEnumType, @Nonnull final Function<E, S> mapper) {
-    requireNonNull(newEnumType, "enumType");
+    requireNonNull(newEnumType, "newEnumType");
     requireNonNull(mapper, "mapper");
     final EnumBitSet<S> result = noneOf(newEnumType);
     this.forEach(e -> result.add(mapper.apply(e)));
@@ -745,6 +765,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code>this &#x2216; mask</code> */
   @Override
   public EnumBitSet<E> minus(final BigInteger mask) {
+    requireNonNull(mask, "mask");
+
     // A\B = A & ~B
     // So one might think that this works:
     // this.toBigInteger().and(mask.not());
@@ -775,8 +797,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code>this &#x2216; set</code> */
   @Override
   public EnumBitSet<E> minus(final BitSet set) {
+    requireNonNull(set, "set");
+
     final EnumBitSet<E> result = this.clone();
-    if (set == null || set.isEmpty())
+    if (set.isEmpty())
       return result;
     result.removeAll(asEnumSet(set, this.enumType));
     return result;
@@ -790,8 +814,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          Another set.
    * @return <code>this &#x2216; set</code> */
   public EnumBitSet<E> minus(final EnumBitSet<E> set) {
+    requireNonNull(set, "set");
+
     final EnumBitSet<E> result = this.clone();
-    if (set == null || set.isEmpty())
+    if (set.isEmpty())
       return result;
     result.removeAll(set);
     return result;
@@ -805,8 +831,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          Another set.
    * @return <code>this &#x2216; set</code> */
   public EnumBitSet<E> minus(final EnumSet<E> set) {
+    requireNonNull(set, "set");
+
     final EnumBitSet<E> result = this.clone();
-    if (requireNonNull(set).isEmpty())
+    if (set.isEmpty())
       return result;
     result.removeAll(set);
     return result;
@@ -821,7 +849,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code>this &#x2216; mask</code> */
   @Override
   public EnumBitSet<E> minus(final Iterable<E> set) {
-    if (requireNonNull(set) instanceof EnumBitSet)
+    if (requireNonNull(set, "set") instanceof EnumBitSet)
       return this.intersect(((EnumBitSet<E>) set).bitset);
     final EnumBitSet<E> result = this.clone();
     set.forEach(result.bitset::remove);
@@ -854,8 +882,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @Override
   @SuppressWarnings("unchecked")
   public EnumBitSet<E> minusVarArgs(final E... set) {
+    requireNonNull(set, "set");
+
     final EnumBitSet<E> result = this.clone();
-    if (set == null || set.length == 0)
+    if (set.length == 0)
       return result;
     result.removeAll(asList(set));
     return result;
@@ -863,7 +893,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   @Override
   public boolean ofEqualDomain(final DomainBitSet<E> set) {
-    if (requireNonNull(set) instanceof EnumBitSet)
+    if (requireNonNull(set, "set") instanceof EnumBitSet)
       return this.enumType == ((EnumBitSet<?>) set).enumType;
     // unlikely but possible:
     return this.getDomain().equals(set.getDomain());
@@ -1040,7 +1070,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *           The bit mask must not have any bits set that are not mapped to an enum constant. */
   @Override
   public EnumBitSet<E> union(final BigInteger mask) {
-    if (requireNonNull(mask).signum() == -1)
+    if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     final EnumBitSet<E> result = this.clone();
     if (mask.signum() == 0)
@@ -1066,6 +1096,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *           The bit set must not have any bits set that are not mapped to an enum constant. */
   @Override
   public EnumBitSet<E> union(final BitSet set) {
+    requireNonNull(set, "set");
+
     // return union(asEnumSet(set, this.enumType));
     final Domain<E> dom = this.getDomain();
     if (-1 != set.nextSetBit(dom.size()))
@@ -1083,6 +1115,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          Another set.
    * @return <code> this &#x222a; set</code> */
   public EnumBitSet<E> union(final EnumBitSet<E> set) {
+    requireNonNull(set, "set");
     return this.union(set.bitset);
   }
 
@@ -1093,6 +1126,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          Another set.
    * @return <code> this &#x222a; set</code> */
   public EnumBitSet<E> union(final EnumSet<E> set) {
+    requireNonNull(set, "set");
+
     final EnumSet<E> clone = this.bitset.clone();
     clone.addAll(set);
     return new EnumBitSet<>(this.enumType, clone);
@@ -1100,7 +1135,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   @Override
   public EnumBitSet<E> union(final Iterable<E> set) {
-    if (set instanceof EnumBitSet)
+    if (requireNonNull(set, "set") instanceof EnumBitSet)
       return this.union(((EnumBitSet<E>) set).bitset);
     final EnumSet<E> clone = this.bitset.clone();
     set.forEach(clone::add);
@@ -1128,6 +1163,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code> this &#x222a; set</code> */
   @Override
   public EnumBitSet<E> unionVarArgs(@SuppressWarnings("unchecked") final E... set) {
+    requireNonNull(set, "set");
+
     final EnumSet<E> clone = this.bitset.clone();
     clone.addAll(asList(set));
     return new EnumBitSet<>(this.enumType, clone);
@@ -1165,7 +1202,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   }
 
   @SuppressWarnings({ "static-method", "unused" })
-  private void readObject(final java.io.ObjectInputStream stream) 
+  private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");
   }

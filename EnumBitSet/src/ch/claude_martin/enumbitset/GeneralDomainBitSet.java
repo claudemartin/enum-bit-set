@@ -189,7 +189,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *           the set is not altered at all. */
   @Override
   public boolean addAll(final Collection<? extends T> c) {
-    c.forEach(this::check);
+    requireNonNull(c, "c").forEach(this::check);
     return this.set.addAll(c);
   }
 
@@ -202,7 +202,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   private void checkMask(final long mask) throws MoreThan64ElementsException,
-  IllegalArgumentException {
+      IllegalArgumentException {
     final int size = this.domain.size();
     if (size > 64)
       throw new MoreThan64ElementsException();
@@ -233,7 +233,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public boolean contains(final Object o) {
-    return this.set.contains(requireNonNull(o));
+    return this.set.contains(requireNonNull(o, "o"));
   }
 
   @Override
@@ -243,7 +243,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public boolean domainContains(final T object) {
-    return this.domain.contains(requireNonNull(object));
+    return this.domain.contains(requireNonNull(object, "object"));
   }
 
   @Override
@@ -280,6 +280,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> intersect(final BitSet other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this, true);
     if (other.isEmpty())
       return result;
@@ -293,6 +294,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> intersect(final Iterable<T> other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this, true);
     other.forEach(t -> {
       this.check(t);
@@ -316,7 +318,9 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  public GeneralDomainBitSet<T> intersectVarArgs(@SuppressWarnings("unchecked") final T... other) {
+  @SuppressWarnings("unchecked")
+  public GeneralDomainBitSet<T> intersectVarArgs(@Nonnull final T... other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     final HashSet<T> hashset = new HashSet<>(asList(other));
     result.set.removeIf(t -> !hashset.contains(t));
@@ -335,11 +339,13 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> minus(final BigInteger mask) {
+    requireNonNull(mask, "mask");
     return this.minus(BitSetUtilities.asBitSet(mask));
   }
 
   @Override
   public GeneralDomainBitSet<T> minus(final BitSet other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     for (int i = other.nextSetBit(0); i >= 0; i = other.nextSetBit(i + 1))
       result.remove(this.domain.get(i));
@@ -348,6 +354,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> minus(final Iterable<T> other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     other.forEach(result::remove);
     return result;
@@ -368,6 +375,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> minusVarArgs(@SuppressWarnings("unchecked") final T... other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     result.removeAll(asList(other));
     return result;
@@ -375,6 +383,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public boolean ofEqualElements(final DomainBitSet<T> other) {
+    requireNonNull(other, "other");
     if (other instanceof GeneralDomainBitSet)
       return this.set.equals(((GeneralDomainBitSet<T>) other).set);
     return this.set.equals(other.toSet());
@@ -487,6 +496,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> union(final BigInteger mask) {
+    requireNonNull(mask, "mask");
     if (0 == mask.signum())
       return new GeneralDomainBitSet<>(this);
     return this.union(BitSetUtilities.asBitSet(mask));
@@ -494,6 +504,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> union(final BitSet other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     for (int i = other.nextSetBit(0); i >= 0; i = other.nextSetBit(i + 1))
       result.add(this.domain.get(i));
@@ -502,6 +513,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> union(final Iterable<T> other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     other.forEach(result::add);
     return result;
@@ -522,6 +534,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public GeneralDomainBitSet<T> unionVarArgs(@SuppressWarnings("unchecked") final T... other) {
+    requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     result.addAll(asList(other));
     return result;

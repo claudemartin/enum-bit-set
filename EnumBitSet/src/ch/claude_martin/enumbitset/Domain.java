@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /** A domain defines the elements that a {@link DomainBitSet} can contain. This is also known as the
@@ -89,11 +90,11 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
 
   /** Domain is immutable and therefore does not support this method. */
   @Override
-  public boolean add(final T e);
+  public boolean add(@Nonnull final T e);
 
   /** Domain is immutable and therefore does not support this method. */
   @Override
-  public boolean addAll(final Collection<? extends T> c);
+  public boolean addAll(@Nonnull final Collection<? extends T> c);
 
   /** Domain is immutable and therefore does not support this method. */
   @Override

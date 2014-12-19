@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -101,7 +102,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    *          The elements of the domain. */
   @SafeVarargs
   private DefaultDomain(@Nonnull final T... domain) {
-    this.elements = domain;
+    this.elements = requireNonNull(domain, "domain");
     this.map = new HashMap<>((int) (1.5 * domain.length));
     this.list = asList(domain);
     int i = 0;
@@ -155,7 +156,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   }
 
   @Override
-  public int indexOf(final Object o) {
+  public int indexOf(@Nullable final Object o) {
     final Integer index = this.map.get(o);
     if (index == null)
       return -1;
@@ -190,7 +191,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
 
   @Override
   public <X> X[] toArray(@Nonnull final X[] a) {
-    return super.toArray(a);
+    return super.toArray(requireNonNull(a, "a"));
   }
 
   /** This proxy class is used to serialize DefaultDomain instances. */

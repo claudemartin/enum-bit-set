@@ -38,7 +38,10 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *          The type of the second element. Extends &lt;T&gt;.
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
-public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable, Serializable {
+public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
+    Serializable {
+  private static final long serialVersionUID = -5888335755613555933L;
+
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
    * 
    * <p>
@@ -101,6 +104,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @return A new pair of the given elements. */
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(
       @Nonnull final Class<TT> commonType, @Nonnull final TX first, @Nonnull final TY second) {
+    requireNonNull(commonType, "commonType");
+    requireNonNull(first, "first");
+    requireNonNull(second, "second");
     if (!commonType.isAssignableFrom(first.getClass())
         || !commonType.isAssignableFrom(second.getClass()))
       throw new ClassCastException();
@@ -151,27 +157,28 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * <p>
    * This is also known as the <i>first coordinate</i> or the <i>left projection</i> of the pair. */
   @Nonnull
-  public final X first;
+  public final X           first;
 
   /** The first value of this pair. Not null.
    * 
    * <p>
    * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
   @Nonnull
-  public final Y second;
+  public final Y           second;
 
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private transient String string = null;
 
   private Pair(@Nonnull final X first, @Nonnull final Y second) {
-    this.first = requireNonNull(first);
-    this.second = requireNonNull(second);
+    this.first = requireNonNull(first, "first");
+    this.second = requireNonNull(second, "second");
   }
 
   /** Scala-style getter for {@link #first}.
    * 
    * @see #first
    * @return the first element (not null). */
+  @Nonnull
   public X _1() {
     return this.first;
   }
@@ -180,6 +187,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * @see #second
    * @return the second element (not null). */
+  @Nonnull
   public Y _2() {
     return this.second;
   }
@@ -195,6 +203,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *           if f is null
    * @return The result of applying this pair to f. */
   public <R> R applyTo(@Nonnull final BiFunction<X, Y, R> f) {
+    requireNonNull(f, "f");
     return f.apply(this.first, this.second);
   }
 
@@ -214,16 +223,17 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param consumer
    *          A consumer of two elements. */
   public void consumeBy(@Nonnull final BiConsumer<X, Y> consumer) {
+    requireNonNull(consumer, "consumer");
     consumer.accept(this.first, this.second);
   }
 
-  /** Compares two pairs for equality (by value comparison). The given object must also be a pair and
-   * contain two elements that are equal to this pair's elements.
+  /** Compares two pairs for equality. The given object must also be a pair and contain two elements
+   * that are equal to this pair's elements.
    * 
    * @return <code>true</code>, iff both first and second are equal. */
   @Override
   public boolean equals(final Object obj) {
-    return obj instanceof Pair //
+    return this == obj || obj instanceof Pair //
         && this.first.equals(((Pair<?, ?, ?>) obj).first) //
         && this.second.equals(((Pair<?, ?, ?>) obj).second);
   }

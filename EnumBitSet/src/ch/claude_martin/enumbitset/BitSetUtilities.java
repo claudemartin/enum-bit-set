@@ -56,7 +56,7 @@ public final class BitSetUtilities {
    *          A bit mask, must be positive.
    * @return New BitSet, equal to the given bit mask. */
   public static BitSet asBitSet(@Nonnull final BigInteger mask) {
-    if (requireNonNull(mask).signum() == -1)
+    if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return BitSet.valueOf(reverse(mask.toByteArray()));
   }
@@ -84,6 +84,7 @@ public final class BitSetUtilities {
    *           Only positive values with up to 64 bits are allowed.
    * @return A long value representing the given BigInteger, if it is valid (bit length = 64). */
   public static long asLong(@Nonnull final BigInteger mask) {
+    requireNonNull(mask, "mask");
     if (mask.signum() < 0)
       throw new IllegalArgumentException("Negative value not permitted.");
     if (mask.bitLength() > 64)
