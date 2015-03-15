@@ -4,11 +4,15 @@
 * The DomainBitSet is the interface implemented by EnumBitSet.
 
 # Set operations:
-* intersect
-* union
-* minus (relative complement)
-* complement
-* cross (Cartesian product)
+* `intersect`
+* `union`
+* `minus` (relative complement)
+* `complement`
+* `cross` (Cartesian product)
+* `semijoin` (`cross` with filter)
+* `powerset`
+* `map` elements to different domain
+* `zipWithPosition` 
 
 # Documentation:
 All is documented and the ant build file contains a target "javadoc". Just run it, read the documentation directly in the source code, or read it [online](https://web.archive.org/web/20140624175002/http://claude-martin.ch/enumbitset/doc/).
