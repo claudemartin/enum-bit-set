@@ -73,7 +73,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param f
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("all")
   public static//
   <TT, TX extends TT, TY extends TT, P extends Pair<TT, TX, TY>, R> //
   BiFunction<TX, TY, R> curry(@Nonnull final Function<P, R> f) {
