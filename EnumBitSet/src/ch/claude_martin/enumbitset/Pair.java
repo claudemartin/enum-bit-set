@@ -133,7 +133,22 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     return new Pair<>(first, second);
   }
 
-  /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
+  /** Creates a new pair from an {@link Map.Entry}.
+   * 
+   * @param <TX>
+   *          Type of first element. 
+   * @param <TY>
+   *          Type of second element.
+   * @param entry
+   *          The entry of a map.
+   * @throws NullPointerException
+   *           If the entry or its key or value is <tt>null</tt>.
+   * @return A new pair made of the key and value of the entry. */
+  public static <TX, TY> Pair<Object, TX, TY> of(@Nonnull final Map.Entry<TX, TY> entry) {
+    return new Pair<>(entry.getKey(), entry.getValue());
+  }
+  
+   /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
    * 
    * @see #curry(Function)
    * @see #applyTo(BiFunction)
