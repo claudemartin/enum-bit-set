@@ -184,4 +184,24 @@ public class PairTest {
       fail("Pair.toString failed: " + e);
     }
   }
+
+  @Test
+  public final void testComparing() throws Exception {
+    List<Pair<Number, Integer, Double>> list = new ArrayList<>();
+    Pair<Number, Integer, Double> a = Pair.of(42, Math.PI);
+    list.add(a);
+    Pair<Number, Integer, Double> b = Pair.of(-7, Math.E);
+    list.add(b);
+    Pair<Number, Integer, Double> c = Pair.of(0, Math.sqrt(2));
+    list.add(c);
+    
+    list.sort(Pair.comparingByFirst());
+    assertArrayEquals(new Object[] { b, c, a }, list.toArray());
+    list.sort(Pair.comparingBySecond());
+    assertArrayEquals(new Object[] { c, b, a }, list.toArray());
+    list.sort(Pair.comparingByFirst((x, y) -> Integer.compare(y, x)));
+    assertArrayEquals(new Object[] { a, c, b }, list.toArray());
+    list.sort(Pair.comparingBySecond((x, y) -> Double.compare(y, x)));
+    assertArrayEquals(new Object[] { a, b, c }, list.toArray());
+  }
 }
