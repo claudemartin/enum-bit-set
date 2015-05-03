@@ -11,6 +11,7 @@ import java.lang.ref.Reference;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -136,7 +137,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   /** Creates a new pair from an {@link Map.Entry}.
    * 
    * @param <TX>
-   *          Type of first element. 
+   *          Type of first element.
    * @param <TY>
    *          Type of second element.
    * @param entry
@@ -147,8 +148,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   public static <TX, TY> Pair<Object, TX, TY> of(@Nonnull final Map.Entry<TX, TY> entry) {
     return new Pair<>(entry.getKey(), entry.getValue());
   }
-  
-   /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
+
+  /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
    * 
    * @see #curry(Function)
    * @see #applyTo(BiFunction)
@@ -248,13 +249,21 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @return <code>true</code>, iff both first and second are equal. */
   @Override
   public boolean equals(final Object obj) {
-    if(this == obj) return true;
-    if(obj instanceof Map.Entry) {
+    if (this == obj)
+      return true;
+    if (obj instanceof Map.Entry) {
       @SuppressWarnings("unchecked")
-      Map.Entry<X,Y> e2 = (Map.Entry<X,Y>) obj;
-      return this.first.equals(e2.getKey())  && this.second.equals(e2.getValue());
+      final Map.Entry<X, Y> e2 = (Map.Entry<X, Y>) obj;
+      return this.first.equals(e2.getKey()) && this.second.equals(e2.getValue());
     }
     return false;
+  }
+
+  @Override
+  public void forEach(@Nonnull final Consumer<? super T> consumer) {
+    requireNonNull(consumer, "consumer");
+    consumer.accept(this.first);
+    consumer.accept(this.second);
   }
 
   /** {@inheritDoc} */
@@ -328,22 +337,23 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
       final Function<Object, String> f = (o) -> {
         return o.getClass().isArray() || o instanceof Iterable || o instanceof Reference
             || o instanceof Optional ? o.getClass().getSimpleName() //
-                : o.toString();
+            : o.toString();
       };
       this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
     }
     return this.string;
   }
-  
-  /** Applies <i>first</i> and <i>second</i> to the given format string. 
-   * {@link Map.Entry Map entries} use this format: {@code "%s=%s"}
+
+  /** Applies <i>first</i> and <i>second</i> to the given format string. {@link Map.Entry Map
+   * entries} use this format: {@code "%s=%s"}
+   * 
    * @returns {@code String.format(format, this.first, this.second)} */
   public String toString(final String format) {
     return String.format(format, this.first.toString(), this.second.toString());
   }
 
   // Methods for Map.Entry:
-  
+
   @Override
   public X getKey() {
     return this.first;
@@ -355,60 +365,62 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   }
 
   @Override
-  public Y setValue(Y value) {
+  public Y setValue(final Y value) {
     throw new UnsupportedOperationException("Pair is immutable.");
   }
-  
-  // Same as the static methods of Map.Entry but with more fitting names: 
-  
-  /**
-   * Returns a serializable comparator that compares Pair in natural order on the first element.
+
+  // Same as the static methods of Map.Entry but with more fitting names:
+
+  /** Returns a serializable comparator that compares Pair in natural order on the first element.
    *
-   * @param  <F> the {@link Comparable} type of the first element
-   * @param  <S> the type of the second element
-   * @return a comparator that compares Pair in natural order on key.
-   */
-  public static <F extends Comparable<? super F>, S> Comparator<Map.Entry<F,S>> comparingByFirst() {
-      return Map.Entry.comparingByKey();
+   * @param <F>
+   *          the {@link Comparable} type of the first element
+   * @param <S>
+   *          the type of the second element
+   * @return a comparator that compares Pair in natural order on key. */
+  public static <F extends Comparable<? super F>, S> Comparator<Map.Entry<F, S>> comparingByFirst() {
+    return Map.Entry.comparingByKey();
   }
 
-  /**
-   * Returns a serializable comparator that compares Pair in natural order on the second element.
+  /** Returns a serializable comparator that compares Pair in natural order on the second element.
    *
-   * @param  <F> the  type of the first element
-   * @param  <S> the {@link Comparable} type of the second element
-   * @return a comparator that compares pair in natural order on the second element.
-   */
-  public static <F, S extends Comparable<? super S>> Comparator<Map.Entry<F,S>> comparingBySecond() {
-      return Map.Entry.comparingByValue();
+   * @param <F>
+   *          the type of the first element
+   * @param <S>
+   *          the {@link Comparable} type of the second element
+   * @return a comparator that compares pair in natural order on the second element. */
+  public static <F, S extends Comparable<? super S>> Comparator<Map.Entry<F, S>> comparingBySecond() {
+    return Map.Entry.comparingByValue();
   }
 
-  /**
-   * Returns a serializable comparator that compares Pair by the first element using the given
+  /** Returns a serializable comparator that compares Pair by the first element using the given
    * {@link Comparator}.
    *
-   * @param  <F> the type of the first element
-   * @param  <S> the type of the second element
-   * @param  cmp the {@link Comparator}
-   * @return a comparator that compares Pair by the the first element.
-   */
-  public static <F, S> Comparator<Map.Entry<F, S>> comparingByFirst(Comparator<? super F> cmp) {
+   * @param <F>
+   *          the type of the first element
+   * @param <S>
+   *          the type of the second element
+   * @param cmp
+   *          the {@link Comparator}
+   * @return a comparator that compares Pair by the the first element. */
+  public static <F, S> Comparator<Map.Entry<F, S>> comparingByFirst(final Comparator<? super F> cmp) {
     return Map.Entry.comparingByKey(cmp);
   }
 
-  /**
-   * Returns a comparator that compares Pair by the second element using the given
+  /** Returns a comparator that compares Pair by the second element using the given
    * {@link Comparator}.
    *
-   * <p>The returned comparator is serializable if the specified comparator
-   * is also serializable.
+   * <p>
+   * The returned comparator is serializable if the specified comparator is also serializable.
    *
-   * @param  <F> the type of the first element
-   * @param  <S> the type of the second element
-   * @param  cmp the  {@link Comparator}
-   * @return a comparator that compares Pairs by the second element.
-   */
-  public static <F, S> Comparator<Map.Entry<F, S>> comparingBySecond(Comparator<? super S> cmp) {
+   * @param <F>
+   *          the type of the first element
+   * @param <S>
+   *          the type of the second element
+   * @param cmp
+   *          the {@link Comparator}
+   * @return a comparator that compares Pairs by the second element. */
+  public static <F, S> Comparator<Map.Entry<F, S>> comparingBySecond(final Comparator<? super S> cmp) {
     return Map.Entry.comparingByValue(cmp);
   }
 
