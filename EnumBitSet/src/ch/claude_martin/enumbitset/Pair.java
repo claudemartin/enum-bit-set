@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -39,6 +40,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *          The type of the second element. Extends &lt;T&gt;.
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
+@ParametersAreNonnullByDefault
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
     Serializable, Map.Entry<X, Y> {
   private static final long serialVersionUID = -5888335755613555933L;
@@ -75,9 +77,10 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
   @SuppressWarnings("all")
+  @Nonnull
   public static//
   <TT, TX extends TT, TY extends TT, P extends Pair<TT, TX, TY>, R> //
-  BiFunction<TX, TY, R> curry(@Nonnull final Function<P, R> f) {
+  BiFunction<TX, TY, R> curry(final Function<P, R> f) {
     requireNonNull(f, "curry: function must not be null");
     return (x, y) -> f.apply((P) Pair.of(x, y));
   }
@@ -103,8 +106,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(
-      @Nonnull final Class<TT> commonType, @Nonnull final TX first, @Nonnull final TY second) {
+  @Nonnull
+  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<TT> commonType,
+      final TX first, final TY second) {
     requireNonNull(commonType, "commonType");
     requireNonNull(first, "first");
     requireNonNull(second, "second");
@@ -129,8 +133,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(@Nonnull final TX first,
-      @Nonnull final TY second) {
+  @Nonnull
+  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(//
+      final TX first, final TY second) {
     return new Pair<>(first, second);
   }
 
@@ -145,7 +150,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If the entry or its key or value is <tt>null</tt>.
    * @return A new pair made of the key and value of the entry. */
-  public static <TX, TY> Pair<Object, TX, TY> of(@Nonnull final Map.Entry<TX, TY> entry) {
+  @Nonnull
+  public static <TX, TY> Pair<Object, TX, TY> of(final Map.Entry<TX, TY> entry) {
     return new Pair<>(entry.getKey(), entry.getValue());
   }
 
@@ -162,8 +168,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param f
    *          A BiFunction that takes two elements.
    * @return A Function that takes a pair and applies both elements on the given Function. */
-  public static <TX, TY, R> Function<Pair<?, TX, TY>, R> uncurry(
-      @Nonnull final BiFunction<TX, TY, R> f) {
+  @Nonnull
+  public static <TX, TY, R> Function<Pair<?, TX, TY>, R> uncurry(final BiFunction<TX, TY, R> f) {
     requireNonNull(f, "uncurry: function must not be null");
     return (p) -> f.apply(p.first, p.second);
   }
@@ -185,7 +191,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private transient String string = null;
 
-  private Pair(@Nonnull final X first, @Nonnull final Y second) {
+  private Pair(final X first, final Y second) {
     this.first = requireNonNull(first, "first");
     this.second = requireNonNull(second, "second");
   }
@@ -193,6 +199,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   /** Scala-style getter for {@link #first}.
    * 
    * @see #first
+   * @see #getKey()
    * @return the first element (not null). */
   @Nonnull
   public X _1() {
@@ -202,6 +209,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   /** Scala-style getter for {@link #second}.
    * 
    * @see #second
+   * @see #getValue()
    * @return the second element (not null). */
   @Nonnull
   public Y _2() {
@@ -218,7 +226,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           if f is null
    * @return The result of applying this pair to f. */
-  public <R> R applyTo(@Nonnull final BiFunction<X, Y, R> f) {
+  public <R> R applyTo(final BiFunction<X, Y, R> f) {
     requireNonNull(f, "f");
     return f.apply(this.first, this.second);
   }
@@ -227,6 +235,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * @return <code>this</code> */
   @Override
+  @Nonnull
   public Pair<T, X, Y> clone() {
     return this;
   }
@@ -238,7 +247,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *           if consumer is null
    * @param consumer
    *          A consumer of two elements. */
-  public void consumeBy(@Nonnull final BiConsumer<X, Y> consumer) {
+  public void consumeBy(final BiConsumer<X, Y> consumer) {
     requireNonNull(consumer, "consumer");
     consumer.accept(this.first, this.second);
   }
@@ -260,7 +269,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   }
 
   @Override
-  public void forEach(@Nonnull final Consumer<? super T> consumer) {
+  public void forEach(final Consumer<? super T> consumer) {
     requireNonNull(consumer, "consumer");
     consumer.accept(this.first);
     consumer.accept(this.second);
@@ -305,6 +314,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     return Spliterators.spliterator(this.iterator(), 2, SIZED | IMMUTABLE | ORDERED | NONNULL);
   }
 
+  @Nonnull
   public Stream<T> stream() {
     return StreamSupport.stream(this.spliterator(), false);
   }
@@ -314,6 +324,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * <code>(a, b) &rarr; (b, a)</code>
    * 
    * @return <code>new Pair&lt;&gt;(this.second, this.first)</code> */
+  @Nonnull
   public Pair<T, Y, X> swap() {
     return new Pair<>(this.second, this.first);
   }
@@ -321,6 +332,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   /** This Pair as an array so that first is on index 0 and second is on index 1.
    * 
    * @return <code>new Object[] { this.first, this.second };</code> */
+  @Nonnull
   public Object[] toArray() {
     return new Object[] { this.first, this.second };
   }
@@ -332,6 +344,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
+  @Nonnull
   public String toString() {
     if (null == this.string) {
       final Function<Object, String> f = (o) -> {
@@ -348,22 +361,35 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * entries} use this format: {@code "%s=%s"}
    * 
    * @returns {@code String.format(format, this.first, this.second)} */
+  @Nonnull
   public String toString(final String format) {
+    requireNonNull(format, "format");
     return String.format(format, this.first.toString(), this.second.toString());
   }
 
   // Methods for Map.Entry:
 
+  /** {@inheritDoc}
+   * 
+   * @see #first
+   * @see #_1() */
   @Override
+  @Nonnull
   public X getKey() {
     return this.first;
   }
 
+  /** {@inheritDoc}
+   * 
+   * @see #second
+   * @see #_2() */
   @Override
+  @Nonnull
   public Y getValue() {
     return this.second;
   }
 
+  /** Not supported because Pair is immutable! */
   @Override
   public Y setValue(final Y value) {
     throw new UnsupportedOperationException("Pair is immutable.");
@@ -378,6 +404,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param <S>
    *          the type of the second element
    * @return a comparator that compares Pair in natural order on key. */
+  @Nonnull
   public static <F extends Comparable<? super F>, S> Comparator<Map.Entry<F, S>> comparingByFirst() {
     return Map.Entry.comparingByKey();
   }
@@ -389,6 +416,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param <S>
    *          the {@link Comparable} type of the second element
    * @return a comparator that compares pair in natural order on the second element. */
+  @Nonnull
   public static <F, S extends Comparable<? super S>> Comparator<Map.Entry<F, S>> comparingBySecond() {
     return Map.Entry.comparingByValue();
   }
@@ -403,7 +431,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param cmp
    *          the {@link Comparator}
    * @return a comparator that compares Pair by the the first element. */
+  @Nonnull
   public static <F, S> Comparator<Map.Entry<F, S>> comparingByFirst(final Comparator<? super F> cmp) {
+    requireNonNull(cmp, "cmp");
     return Map.Entry.comparingByKey(cmp);
   }
 
@@ -420,7 +450,9 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param cmp
    *          the {@link Comparator}
    * @return a comparator that compares Pairs by the second element. */
+  @Nonnull
   public static <F, S> Comparator<Map.Entry<F, S>> comparingBySecond(final Comparator<? super S> cmp) {
+    requireNonNull(cmp, "cmp");
     return Map.Entry.comparingByValue(cmp);
   }
 

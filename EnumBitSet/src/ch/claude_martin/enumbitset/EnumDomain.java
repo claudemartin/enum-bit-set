@@ -8,29 +8,30 @@ import java.util.*;
 import java.util.function.Function;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 @Immutable
+@ParametersAreNonnullByDefault
 final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E> implements
     Domain<E> {
-  private static final long serialVersionUID = 3225868883383217275L;
-  
+  private static final long   serialVersionUID = 3225868883383217275L;
+
   // Array of all elements in the domain:
   @Nonnull
-  private final E[]           elements;                     // index == ordinal
+  private final E[]           elements;                                  // index == ordinal
   private final int           hash;
   @Nonnull
   private final Class<E>      enumType;
 
-  private static final//      domainCache:
-    Map<
-      Class<? extends Enum<?>>, // Maps Enum-Type to Domain
+  private static final// domainCache:
+  Map<Class<? extends Enum<?>>, // Maps Enum-Type to Domain
       SoftReference<// Allows GC to collect unused Domains
-        Domain<? extends Enum<?>>>>
-                              domainCache = new IdentityHashMap<>();
+      Domain<? extends Enum<?>>>> domainCache      = new IdentityHashMap<>();
 
   @SuppressWarnings("unchecked")
-  static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(@Nonnull final Class<X> enumType) {
+  static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(final Class<X> enumType) {
     requireNonNull(enumType, "enumType");
     synchronized (domainCache) {
       Domain<X> domain = null;
@@ -45,7 +46,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
     }
   }
 
-  private EnumDomain(@Nonnull final Class<E> enumType) {
+  private EnumDomain(final Class<E> enumType) {
     this.enumType = enumType;
     this.elements = enumType.getEnumConstants();
     this.hash = Arrays.hashCode(this.elements);
@@ -67,7 +68,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   @Override
-  public boolean contains(final Object o) {
+  public boolean contains(@Nullable final Object o) {
     if (o == null)
       return false;
     return o.getClass().getDeclaringClass() == this.getEnumType();
@@ -85,11 +86,10 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
     }
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
   }
-  
-  /**
-   * {@inheritDoc}
-   * <p>Note that this always creates {@link EnumBitSet}s.
-   */
+
+  /** {@inheritDoc}
+   * <p>
+   * Note that this always creates {@link EnumBitSet}s. */
   @Override
   public Function<Collection<E>, DomainBitSet<E>> factory() {
     return (s) -> EnumBitSet.asEnumBitSet(s, this.getEnumType());
@@ -100,7 +100,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   public E get(final int index) {
     return this.elements[index];
   }
-  
+
   @Nonnull
   Class<E> getEnumType() {
     return this.enumType;
@@ -112,7 +112,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   @Override
-  public int indexOf(final Object o) {
+  public int indexOf(@Nullable final Object o) {
     if (o instanceof Enum)
       return ((Enum<?>) o).ordinal();
     return -1;
@@ -129,7 +129,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   @Override
-  public int lastIndexOf(final Object o) {
+  public int lastIndexOf(@Nullable final Object o) {
     return this.indexOf(o);
   }
 
@@ -152,7 +152,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
       java.io.Serializable {
     private static final long serialVersionUID = 6062818650132433646L;
-    @Nonnull  
+    @Nonnull
     private final Class<E>    enumType;
 
     public SerializationProxy(@Nonnull final Class<E> enumType) {
@@ -169,7 +169,8 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   @SuppressWarnings({ "static-method", "unused" })
-  private void readObject(java.io.ObjectInputStream stream) throws java.io.InvalidObjectException {
+  private void readObject(final java.io.ObjectInputStream stream)
+      throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");
   }
 }

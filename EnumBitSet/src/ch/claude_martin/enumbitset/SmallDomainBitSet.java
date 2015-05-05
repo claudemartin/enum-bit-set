@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -23,6 +23,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *          The type of the domain. All elements in the domain must be of type T or of any subtype
  *          of T. */
 @Immutable
+@ParametersAreNonnullByDefault
 public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   private static final long serialVersionUID = 671939884938912745L;
 
@@ -123,6 +124,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param set
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
+  @Nonnull
   private static <T> SmallDomainBitSet<T> of(final Domain<T> domain, final long set)
       throws MoreThan64ElementsException {
     return new SmallDomainBitSet<>(domain, set);
@@ -137,6 +139,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param set
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
+  @Nonnull
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final Collection<T> set) {
     requireNonNull(domain, "domain");
     requireNonNull(set, "set");
@@ -159,6 +162,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param mask
    *          The elements as a bit mask.
    * @return SmallDomainBitSet based on the given domain and bit mask. */
+  @Nonnull
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final long mask) {
     return SmallDomainBitSet.<T> of(DefaultDomain.of(domain), mask);
   }
@@ -173,6 +177,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
   @SafeVarargs
+  @Nonnull
   public static <T> SmallDomainBitSet<T> of(@Nonnull final List<T> domain, @Nonnull final T... set) {
     return of(domain, asList(set));
   }
@@ -186,8 +191,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private transient int        hash = 0; // defaults to 0, later it's set to a hash code.
 
-  SmallDomainBitSet(@Nonnull final Domain<T> domain, @Nonnull final long set)
-      throws MoreThan64ElementsException {
+  SmallDomainBitSet(final Domain<T> domain, final long set) throws MoreThan64ElementsException {
     this.domain = domain;
     this.set = set;
     final int size = this.domain.size();
@@ -246,6 +250,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
+  @Nonnull
   public Domain<T> getDomain() {
     return this.domain;
   }
@@ -253,7 +258,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   @Override
   public int hashCode() {
     if (this.hash == 0)
-      this.hash = this.domain.hashCode() ^ (int) (this.set ^ this.set >>> 32);
+      this.hash = this.domain.hashCode() ^ this.stream().mapToInt(Object::hashCode).sum();
     return this.hash;
   }
 
@@ -366,7 +371,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * 
    * @see #powerset() */
   @Override
-  public void powerset(@Nonnull final Consumer<DomainBitSet<T>> consumer, final boolean blocking) {
+  public void powerset(final Consumer<DomainBitSet<T>> consumer, final boolean blocking) {
     DomainBitSet.super.powerset(consumer, blocking);
   }
 

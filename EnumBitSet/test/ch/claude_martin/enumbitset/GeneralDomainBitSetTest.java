@@ -13,23 +13,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-import ch.claude_martin.enumbitset.EnumBitSetTest.Suit;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 @SuppressWarnings("static-method")
@@ -152,6 +144,14 @@ public class GeneralDomainBitSetTest {
     assertTrue(this.oneTwo.equals(this.oneTwo));
     assertFalse(this.oneTwo.equals(this.twoThree));
     assertTrue(this.oneTwo.clone().equals(this.oneTwo));
+  }
+
+  @Test
+  public void testHashCode() throws Exception {
+    for (final DomainBitSet<Integer> set : asList(this.oneTwo, this.twoThree, this.oneTo4)) {
+      assertEquals(set.hashCode(), set.hashCode());
+      assertEquals(set.hashCode(), SmallDomainBitSet.of(set.getDomain(), set.toLong()).hashCode());
+    }
   }
 
   @Test
@@ -644,7 +644,7 @@ public class GeneralDomainBitSetTest {
           set2 = (DomainBitSet) obj.readObject();
         }
       }
-      
+
       assertNotSame(set, set2);
       assertEquals(set, set2);
     }

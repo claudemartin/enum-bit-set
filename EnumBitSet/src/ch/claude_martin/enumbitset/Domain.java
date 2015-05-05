@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 /** A domain defines the elements that a {@link DomainBitSet} can contain. This is also known as the
@@ -34,6 +34,7 @@ import javax.annotation.concurrent.Immutable;
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
+@ParametersAreNonnullByDefault
 public interface Domain<T> extends List<T>, Set<T>, Serializable {
 
   /** Creates a Domain of the given elements.
@@ -42,7 +43,8 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
    *          Elements of the domain.
    * @return New domain containing all given elements. */
   @SafeVarargs
-  public static <T> Domain<T> of(@Nonnull final T... elements) {
+  @Nonnull
+  public static <T> Domain<T> of(final T... elements) {
     requireNonNull(elements, "elements");
     return DefaultDomain.of(asList(elements));
   }

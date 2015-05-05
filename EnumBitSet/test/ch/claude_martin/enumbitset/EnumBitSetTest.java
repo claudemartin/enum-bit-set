@@ -1,6 +1,8 @@
 package ch.claude_martin.enumbitset;
 
-import static ch.claude_martin.enumbitset.TestUtilities.*;
+import static ch.claude_martin.enumbitset.TestUtilities.expectIAE;
+import static ch.claude_martin.enumbitset.TestUtilities.expectIOOBE;
+import static ch.claude_martin.enumbitset.TestUtilities.expectMT64EE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static org.junit.Assert.*;
@@ -10,15 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -54,8 +48,8 @@ public class EnumBitSetTest {
   }
 
   static final List<Class<? extends EnumBitSetHelper<?>>> enums = asList(Element.class,
-                                                                    Planet.class, Alphabet.class,
-                                                                    Rank.class, Suit.class);
+      Planet.class, Alphabet.class,
+      Rank.class, Suit.class);
 
   @Test
   public void testAddedToArray() {
@@ -209,7 +203,7 @@ public class EnumBitSetTest {
 
   @Test
   public void testAsEnumBitSet() {
-    Consumer<EnumBitSet<Alphabet>> check = s -> {
+    final Consumer<EnumBitSet<Alphabet>> check = s -> {
       assertFalse(s.contains(Alphabet.A));
       assertTrue(s.contains(Alphabet.B));
       assertTrue(s.contains(Alphabet.C));
@@ -247,7 +241,7 @@ public class EnumBitSetTest {
 
   @Test
   public void testAsEnumSet() {
-    Consumer<EnumSet<Alphabet>> check = s -> {
+    final Consumer<EnumSet<Alphabet>> check = s -> {
       assertFalse(s.contains(Alphabet.A));
       assertTrue(s.contains(Alphabet.B));
       assertTrue(s.contains(Alphabet.C));
@@ -508,6 +502,12 @@ public class EnumBitSetTest {
     assertEquals(a.hashCode(), a.clone().hashCode());
     assertEquals(ab.hashCode(), ab.hashCode());
     assertEquals(ab.hashCode(), ab.clone().hashCode());
+
+    final GeneralDomainBitSet<Alphabet> general = GeneralDomainBitSet.of(a.getDomain(), a);
+    assertEquals(a.hashCode(), general.hashCode());
+
+    final SmallDomainBitSet<Alphabet> small = SmallDomainBitSet.of(a.getDomain(), a);
+    assertEquals(a.hashCode(), small.hashCode());
 
     assertNotEquals(a.hashCode(), a.union(15L));
     assertNotEquals(a.hashCode(), a.map(Element.class).hashCode());
@@ -810,7 +810,7 @@ public class EnumBitSetTest {
 
   @Test
   public void testToArray() throws Exception {
-    Planet[] planets = Planet.class.getEnumConstants();
+    final Planet[] planets = Planet.class.getEnumConstants();
     assertArrayEquals(planets, EnumBitSet.allOf(Planet.class).toArray());
     assertArrayEquals(planets, EnumBitSet.allOf(Planet.class).toArray(new Planet[0]));
     assertArrayEquals(planets, EnumBitSet.allOf(Planet.class).toArray(new Planet[planets.length]));
@@ -969,7 +969,7 @@ public class EnumBitSetTest {
       final EnumBitSet none = EnumBitSet.noneOf(c);
       final EnumBitSet<? extends Enum<?>> some = EnumBitSet.allOf(c);
       some.removeIf(x -> x.ordinal() % 3 == 0);
-      
+
       for (final EnumBitSet set : asList(all, none)) {
 
         final byte[] data;

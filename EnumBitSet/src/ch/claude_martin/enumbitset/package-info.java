@@ -6,7 +6,8 @@
  * and to work with bit fields.
  * 
  * <p>
- * Bit sets are by default of type {@link ch.claude_martin.enumbitset.EnumBitSet EnumBitSet}, 
+ * Bit sets containing enums are by default of type 
+ * {@link ch.claude_martin.enumbitset.EnumBitSet EnumBitSet}, 
  * but {@link java.math.BigInteger BigInteger},
  * {@link java.util.BitSet BitSet}, and {@link java.lang.Long long} 
  * can be used as well. Bit masks should not be stored into a database unless 

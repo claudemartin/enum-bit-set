@@ -10,6 +10,11 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.EnumSet;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 /** This extends any enum type with methods for bitwise operations and use in an {@link EnumBitSet}.
  * A set of such enum values can be interpreted as an {@link EnumBitSet enum bit set}, which can be
  * stored to a bit field (i.e. an integer field in a database).
@@ -60,6 +65,7 @@ import java.util.EnumSet;
  * 
  * @param <E>
  *          The Enum-Type. */
+@ParametersAreNonnullByDefault
 public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> extends Comparable<E>,
     Serializable {
 
@@ -70,6 +76,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @see #toEnumSet()
    * @return <code>1&lt;&lt;this.ordinal()</code> */
   @SuppressWarnings("unchecked")
+  @Nonnull
+  @Nonnegative
   public default BigInteger bitmask() {
     return BigInteger.ONE.shiftLeft(((E) this).ordinal());
   }
@@ -98,7 +106,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param bitmask
    *          A bitmask.
    * @return (this.bitmask() &amp; bitmask) != 0 */
-  public default boolean elementOf(final BigInteger bitmask) {
+  public default boolean elementOf(@Nonnegative final BigInteger bitmask) {
     if (requireNonNull(bitmask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return !this.bitmask().and(bitmask).equals(BigInteger.ZERO);
@@ -161,7 +169,10 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param mask
    *          A bit mask, must be positive.
    * @return <code>mask.and(this.bitmask())</code> */
-  public default BigInteger intersect(final BigInteger mask) {
+  @CheckReturnValue
+  @Nonnull
+  @Nonnegative
+  public default BigInteger intersect(@Nonnegative final BigInteger mask) {
     if (requireNonNull(mask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return mask.and(this.bitmask());
@@ -174,6 +185,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param set
    *          A bit set.
    * @return <code>mask &amp; this</code> */
+  @CheckReturnValue
+  @Nonnull
   public default BitSet intersect(final BitSet set) {
     final BitSet result = new BitSet();
     @SuppressWarnings("unchecked")
@@ -190,7 +203,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set.
    * @return <code>set &amp; this.ordinal()</code> */
   @SuppressWarnings({ "unchecked" })
-  // @SafeVarargs
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> intersect(final E... set) {
     if (Arrays.asList(set).contains(this))
       return EnumBitSet.just((E) this);
@@ -205,6 +219,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param set
    *          A set.
    * @return <code>set.clone() &amp; this</code> */
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> intersect(final EnumBitSet<E> set) {
     requireNonNull(set);
     @SuppressWarnings("unchecked")
@@ -222,6 +238,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param set
    *          A set.
    * @return <code>mask.clone() &amp; this</code> */
+  @CheckReturnValue
+  @Nonnull
   public default EnumSet<E> intersect(final EnumSet<E> set) {
     @SuppressWarnings("unchecked")
     final E e = (E) this;
@@ -243,6 +261,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @throws MoreThan64ElementsException
    *           The enum type must not contain more than 64 elements.
    * @return <code>mask &amp; this.bitmask64()</code> */
+  @CheckReturnValue
+  @Nonnull
   public default long intersect(final long mask) throws MoreThan64ElementsException {
     return mask & this.bitmask64();
   }
@@ -264,6 +284,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * 
    * @return A new {@link EnumSet} with all elements except <code>this</code>. */
   @SuppressWarnings("unchecked")
+  @Nonnull
   public default EnumBitSet<E> others() {
     return EnumBitSet.just((E) this).complement();
   }
@@ -273,7 +294,10 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param mask
    *          A bit mask, must be positive.
    * @return <code>mask.andNot(this.bitmask())</code> */
-  public default BigInteger removedFrom(final BigInteger mask) {
+  @CheckReturnValue
+  @Nonnull
+  @Nonnegative
+  public default BigInteger removedFrom(@Nonnegative final BigInteger mask) {
     if (requireNonNull(mask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return mask.andNot(this.bitmask());
@@ -285,6 +309,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set that may contain <code>this</code>.
    * @return <code>set \ this</code> */
   @SuppressWarnings("unchecked")
+  @CheckReturnValue
+  @Nonnull
   public default BitSet removedFrom(final BitSet set) {
     if (requireNonNull(set).isEmpty())
       return new BitSet();
@@ -300,7 +326,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @return A new {@link EnumSet} with all given enums, except <code>this</code>. A copy of the set
    *         is returned even if <code>this</code> is not present. */
   @SuppressWarnings("unchecked")
-  // @SafeVarargs
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> removedFrom(final E... set) {
     if (set.length == 0)
       return EnumBitSet.noneOf(((Enum<E>) this).getDeclaringClass());
@@ -315,6 +342,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set that may contain <code>this</code>.
    * @return A new {@link EnumBitSet} with all elements of the set, except <code>this</code>. A copy
    *         of the set is returned even if <code>this</code> is not present. */
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> removedFrom(final EnumBitSet<E> set) {
     final EnumBitSet<E> result = requireNonNull(set).clone();
     result.remove(this);
@@ -327,6 +356,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set that may contain <code>this</code>.
    * @return A new {@link EnumSet} with all elements of the set, except <code>this</code>. A copy of
    *         the set is returned even if <code>this</code> is not present. */
+  @CheckReturnValue
+  @Nonnull
   public default EnumSet<E> removedFrom(final EnumSet<E> set) {
     final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
     result.remove(this);
@@ -343,6 +374,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @throws MoreThan64ElementsException
    *           if this element is not one of the first 64 elements.
    * @return <code>mask &amp; ~this.bitmask64()</code> */
+  @CheckReturnValue
+  @Nonnull
   public default long removedFrom(final long mask) throws MoreThan64ElementsException {
     return mask & ~this.bitmask64();
   }
@@ -351,6 +384,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * {@link #bitmask()}.
    * 
    * @return <code>this.bitmask()</code> */
+  @Nonnull
+  @Nonnegative
   public default BigInteger toBigInteger() {
     return this.bitmask();
   }
@@ -359,6 +394,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * 
    * @return A new {@link EnumSet} containing <code>this</code>. */
   @SuppressWarnings("unchecked")
+  @Nonnull
   public default BitSet toBitSet() {
     final E e = (E) this;
     final BitSet result = new BitSet();
@@ -371,6 +407,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * 
    * @return A new {@link EnumSet} containing <code>this</code>. */
   @SuppressWarnings("unchecked")
+  @Nonnull
   public default EnumBitSet<E> toEnumBitSet() {
     return EnumBitSet.just((E) this);
   }
@@ -379,6 +416,7 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * 
    * @return A new {@link EnumSet} containing <code>this</code>. */
   @SuppressWarnings("unchecked")
+  @Nonnull
   public default EnumSet<E> toEnumSet() {
     final E e = (E) this;
     final EnumSet<E> result = EnumSet.noneOf(e.getDeclaringClass());
@@ -408,7 +446,10 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param mask
    *          A bit mask, must be positive.
    * @return <code>mask.or(this.bitmask())</code> */
-  public default BigInteger union(final BigInteger mask) {
+  @CheckReturnValue
+  @Nonnull
+  @Nonnegative
+  public default BigInteger union(@Nonnegative final BigInteger mask) {
     if (requireNonNull(mask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return mask.or(this.bitmask());
@@ -420,6 +461,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set of enum elements.
    * @return A new {@link EnumSet} including all elements of the set and also <code>this</code>. */
   @SuppressWarnings("unchecked")
+  @CheckReturnValue
+  @Nonnull
   public default BitSet union(final BitSet set) {
     final BitSet result = (BitSet) set.clone();
     result.set(((E) this).ordinal(), true);
@@ -437,7 +480,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A list of elements to add.
    * @return Returns a new set containing <code>this</code> and all given elements. */
   @SuppressWarnings("unchecked")
-  // @SafeVarargs
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> union(final E... set) {
     final EnumBitSet<E> result = EnumBitSet.just((E) this);
     result.addAll(asList(set));
@@ -454,6 +498,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set of enum elements.
    * @return <code>mask.clone() | this</code> */
   @SuppressWarnings("unchecked")
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> union(final EnumBitSet<E> set) {
     final EnumBitSet<E> clone = requireNonNull(set).clone();
     clone.add((E) this);
@@ -466,6 +512,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set of enum elements.
    * @return A new {@link EnumSet} including all elements of the set and also <code>this</code>. */
   @SuppressWarnings("unchecked")
+  @CheckReturnValue
+  @Nonnull
   public default EnumSet<E> union(final EnumSet<E> set) {
     final EnumSet<E> result = EnumSet.copyOf(requireNonNull(set));
     result.add((E) this);
@@ -479,6 +527,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @throws MoreThan64ElementsException
    *           Thrown if the enum type contains more than 64 elements.
    * @return this.bitmask64() | mask; */
+  @CheckReturnValue
+  @Nonnull
   public default long union(final long mask) throws MoreThan64ElementsException {
     return this.bitmask64() | mask;
   }
@@ -488,7 +538,10 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    * @param mask
    *          A bit mask, must be positive.
    * @return <code>mask.xor(this.bitmask())</code> */
-  public default BigInteger xor(final BigInteger mask) {
+  @CheckReturnValue
+  @Nonnull
+  @Nonnegative
+  public default BigInteger xor(@Nonnegative final BigInteger mask) {
     if (requireNonNull(mask).signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return mask.xor(this.bitmask());
@@ -501,6 +554,8 @@ public interface EnumBitSetHelper<E extends Enum<E> & EnumBitSetHelper<E>> exten
    *          A set of enum elements.
    * @return <code>set.clone() XOR this</code> */
   @SuppressWarnings("unchecked")
+  @CheckReturnValue
+  @Nonnull
   public default EnumBitSet<E> xor(final EnumBitSet<E> set) {
     final EnumBitSet<E> result = set.clone();
     if (set.contains(this))

@@ -17,15 +17,17 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A bit set with a defined domain (universe). The domain is an ordered set of all elements that are
- * allowed in this bit set.
+ * allowed in this bit set. Null is not allowed as an element of any DomainBitSet.
  * 
  * <p>
- * The methods that return a DomainBitSet&lt;T&gt; are expected to create a new object and not
+ * The methods that return a {@code DomainBitSet<T>} are expected to create a new object and not
  * change the state of this object. The implementation could be mutable or immutable. Mutable
- * implementations should not implement {@link Set}&lt;T&gt;, because the specifications of
+ * implementations should not implement {@code Set<T>}, because the specifications of
  * {@link #equals(Object)} are different.
  * 
  * <p>
@@ -44,6 +46,7 @@ import javax.annotation.Nonnull;
  *          A type that all elements in the domain share.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+@ParametersAreNonnullByDefault
 public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
 
   /** Creates a set with the given domain, that contains all elements.
@@ -53,7 +56,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @param elements
    *          The elements of the domain and the set.
    * @return A new DomainBitSet containing all given elements. */
-  public static <T> DomainBitSet<T> allOf(@Nonnull final List<T> elements) {
+  public static <T> DomainBitSet<T> allOf(final List<T> elements) {
     if (elements.size() > 64)
       return GeneralDomainBitSet.allOf(elements);
     else
@@ -68,7 +71,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *          The elements of the domain and the set.
    * @return A new DomainBitSet containing all given elements. */
   @SafeVarargs
-  public static <T> DomainBitSet<T> allOf(@Nonnull final T... elements) {
+  public static <T> DomainBitSet<T> allOf(final T... elements) {
     if (elements.length > 64)
       return GeneralDomainBitSet.allOf(elements);
     else
@@ -85,7 +88,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @SafeVarargs
   @SuppressWarnings({ "unchecked", "rawtypes" })
   public static DomainBitSet<Enum<?>> createMultiEnumBitSet(
-      @Nonnull final Class<? extends Enum<?>>... enumTypes) {
+      final Class<? extends Enum<?>>... enumTypes) {
     final List<Enum<?>> dom = new LinkedList<>();
     for (final Class type : enumTypes)
       for (final Object e : EnumSet.allOf(type))
@@ -103,7 +106,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @param elements
    *          The elements of the domain.
    * @return A new DomainBitSet containing none of the given elements. */
-  public static <T> DomainBitSet<T> noneOf(@Nonnull final List<T> elements) {
+  public static <T> DomainBitSet<T> noneOf(final List<T> elements) {
     if (elements.size() > 64)
       return GeneralDomainBitSet.noneOf(elements);
     else
@@ -118,7 +121,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *          The elements of the domain.
    * @return A new DomainBitSet containing none of the given elements. */
   @SafeVarargs
-  public static <T> DomainBitSet<T> noneOf(@Nonnull final T... elements) {
+  public static <T> DomainBitSet<T> noneOf(final T... elements) {
     if (elements.length > 64)
       return GeneralDomainBitSet.noneOf(elements);
     else
@@ -157,7 +160,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *           href="#optional-restrictions">optional</a>)
    * @throws NullPointerException
    *           if the specified element is null. */
-  public default boolean contains(@Nonnull final Object o) {
+  public default boolean contains(final Object o) {
     requireNonNull(o);
     for (final T e : this)
       if (o.equals(e))
@@ -179,7 +182,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *           if the specified collection contains one or more null elements, or if the specified
    *           collection is null.
    * @see #contains(Object) */
-  public default boolean containsAll(@Nonnull final Collection<?> c) {
+  public default boolean containsAll(final Collection<?> c) {
     for (final Object e : requireNonNull(c))
       if (!this.contains(e))
         return false;
@@ -198,10 +201,11 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *          Another set.
    * @return the Cartesian Product.
    * @see #semijoin(DomainBitSet, BiPredicate)
+   * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet)
    * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class) */
   @Nonnull
   @CheckReturnValue
-  public default <Y> Set<Pair<?, T, Y>> cross(@Nonnull final DomainBitSet<Y> set) {
+  public default <Y> Set<Pair<?, T, Y>> cross(final DomainBitSet<Y> set) {
     requireNonNull(set, "set");
     final HashSet<Pair<?, T, Y>> result = new HashSet<>(this.size() * set.size());
     // this.cross(set, Pair.curry(result::add)::apply);
@@ -230,8 +234,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @see #cross(DomainBitSet)
    * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class)
    * @see #semijoin(DomainBitSet, BiPredicate) */
-  public default <Y> void cross(@Nonnull final DomainBitSet<Y> set,
-      @Nonnull final BiConsumer<T, Y> consumer) {
+  public default <Y> void cross(final DomainBitSet<Y> set, final BiConsumer<T, Y> consumer) {
     requireNonNull(consumer);
     requireNonNull(set);
     if (set.isEmpty())
@@ -246,7 +249,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @throws NullPointerException
    *           if the object is <tt>null</tt>.
    * @return <tt>true</tt>, iff the domain contains the given object. */
-  public default boolean domainContains(@Nonnull final T object) {
+  public default boolean domainContains(final T object) {
     return this.getDomain().contains(requireNonNull(object));
   }
 
@@ -283,7 +286,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @see BigInteger#testBit(int)
    * @throws IndexOutOfBoundsException
    *           if the specified index is negative or out of bounds. */
-  public boolean getBit(final int bitIndex) throws IndexOutOfBoundsException;
+  public boolean getBit(@Nonnegative final int bitIndex) throws IndexOutOfBoundsException;
 
   /** Returns a distinct list, containing all elements of the domain. There is no guarantee that the
    * set is the same for multiple invocations.
@@ -318,9 +321,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
       return Optional.empty();
   }
 
-  /** Hash code of domain and elements.
-   * <p>
-   * {@inheritDoc} */
+  /** Hash code of domain and elements. The hash code of the domain must be xored with the sum of the
+   * hash codes of all elements:<br>
+   * {@code this.getDomain().hashCode() ^ this.stream().mapToInt(Object::hashCode).sum()} */
   @Override
   public int hashCode();
 
@@ -332,7 +335,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return Intersection of this and the given mask. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull final BigInteger mask);
+  public DomainBitSet<T> intersect(@Nonnegative final BigInteger mask);
 
   /** The intersection of this and a given bit set.
    * 
@@ -342,7 +345,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return Intersection of this and the given bit set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull final BitSet set);
+  public DomainBitSet<T> intersect(final BitSet set);
 
   /** Intersection of this and the given set.
    * 
@@ -353,7 +356,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return Intersection of this and the given collection. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull final Iterable<T> set) throws IllegalArgumentException;
+  public DomainBitSet<T> intersect(final Iterable<T> set) throws IllegalArgumentException;
 
   /** Intersection of this and the given set.
    * 
@@ -366,7 +369,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *           If the domain contains less than 64 elements then some long values are illegal. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> intersect(@Nonnull final long mask) throws MoreThan64ElementsException;
+  public DomainBitSet<T> intersect(final long mask) throws MoreThan64ElementsException;
 
   /** The intersection of this set and a set represented by an array (varargs). The name is different
    * so that it is unambiguous.
@@ -449,8 +452,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return new set, using the given domain. */
   @Nonnull
   @CheckReturnValue
-  public default <S> DomainBitSet<S> map(@Nonnull final Domain<S> domain,
-      @Nonnull final Function<T, S> mapper) {
+  public default <S> DomainBitSet<S> map(final Domain<S> domain, final Function<T, S> mapper) {
     requireNonNull(domain, "domain");
     requireNonNull(mapper, "mapper");
     return this.stream().map(mapper).collect(BitSetUtilities.toDomainBitSet(domain.factory()));
@@ -465,7 +467,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(@Nonnull final BigInteger mask);
+  public DomainBitSet<T> minus(@Nonnegative final BigInteger mask);
 
   /** The relative complement of this set and a set represented by a {@link BitSet}.
    * 
@@ -474,7 +476,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(@Nonnull final BitSet set);
+  public DomainBitSet<T> minus(final BitSet set);
 
   /** The relative complement of this set and another set.
    * 
@@ -483,7 +485,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return The relative complement of this and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> minus(@Nonnull final Iterable<T> set);
+  public DomainBitSet<T> minus(final Iterable<T> set);
 
   /** The relative complement of this set and a set represented by a bit mask.
    * 
@@ -520,7 +522,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @param set
    *          The other set.
    * @return <code>true</code> if both are of equal domains. */
-  public default boolean ofEqualDomain(@Nonnull final DomainBitSet<T> set) {
+  public default boolean ofEqualDomain(final DomainBitSet<T> set) {
     return this.getDomain().equals(set.getDomain());
   }
 
@@ -532,7 +534,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *          The other set.
    * @see Set#equals(Object)
    * @return <code>true</code> if both contain the same elements. */
-  public default boolean ofEqualElements(@Nonnull final DomainBitSet<T> set) {
+  public default boolean ofEqualElements(final DomainBitSet<T> set) {
     return this.toSet().equals(set.toSet());
   }
 
@@ -561,6 +563,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * 
    * @see #powerset(Consumer, boolean) */
   // This always returns sets of the exact same type as this set.
+  @Nonnull
   public default Iterable<? extends DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
     final DomainBitSet<T> empty = DomainBitSet.this.getDomain().factory()
         .apply(Collections.emptySet());
@@ -631,7 +634,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @throws MoreThan64ElementsException
    *           if this set contains more than 64 elements. This would result in more than 18E18
    *           subsets. */
-  public default void powerset(@Nonnull final Consumer<DomainBitSet<T>> consumer, final boolean blocking)
+  public default void powerset(final Consumer<DomainBitSet<T>> consumer, final boolean blocking)
       throws MoreThan64ElementsException {
     requireNonNull(consumer, "consumer");
     if (DomainBitSet.this.size() > 64)
@@ -717,12 +720,47 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
     return StreamSupport.stream(spliterator(), false);
   }
 
+  /** Elemens in an array. The elements are ordered as they appear in the domain. */
+  @Nonnull
+  public default Object[] toArray() {
+    return getDomain().stream().filter(this::contains).toArray();
+  }
+
   /** A representation of the elements in this set as a {@link BigInteger}.
    * 
    * @return The bit mask as a {@link BigInteger}. */
   @Nonnull
   @CheckReturnValue
+  @Nonnegative
   public BigInteger toBigInteger();
+
+  /** Binary string representation of this set.
+   * <p>
+   * The length of the returned string is the same as the amount of enum elements in the enum type.
+   * 
+   * @return A representation of this bit set as a String of 0s and 1s. */
+  @Nonnull
+  public default String toBinaryString() {
+    return this.toBinaryString(this.getDomain().size());
+  }
+
+  /** Binary string representation of this set.
+   * <p>
+   * The length of the returned string is as least as long as <i>width</i>.
+   * 
+   * @param width
+   *          The minimal width of the returned String.
+   * @return A representation of this bit set as a String of 0s and 1s. The length is at least
+   *         <i>width</i>. */
+  @Nonnull
+  public default String toBinaryString(final int width) {
+    final String binary = this.toBigInteger().toString(2);
+    final StringBuilder sb = new StringBuilder(width < 8 ? 8 : width);
+    while (sb.length() < width - binary.length())
+      sb.append('0');
+    sb.append(binary);
+    return sb.toString();
+  }
 
   /** A representation of the elements in this set as a {@link BitSet}.
    * 
@@ -756,7 +794,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return The union of this set and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> union(@Nonnull final BigInteger mask);
+  public DomainBitSet<T> union(@Nonnegative final BigInteger mask);
 
   /** The union of this set and a set represented by a {@link BitSet}.
    * 
@@ -766,7 +804,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return The union of this set and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> union(@Nonnull final BitSet set);
+  public DomainBitSet<T> union(final BitSet set);
 
   /** The union of this set and a set represented by an {@link Iterable iterable} collection.
    * 
@@ -776,7 +814,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @return The union of this set and the given set. */
   @Nonnull
   @CheckReturnValue
-  public DomainBitSet<T> union(@Nonnull final Iterable<T> set);
+  public DomainBitSet<T> union(final Iterable<T> set);
 
   /** The union of this set and a set represented by a bit mask.
    * 

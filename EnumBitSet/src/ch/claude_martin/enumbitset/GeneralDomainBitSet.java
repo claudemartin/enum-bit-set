@@ -10,8 +10,10 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type. */
+@ParametersAreNonnullByDefault
 public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection<T> {
   private static final long serialVersionUID = -1901507799664143152L;
 
@@ -23,7 +25,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   @Nonnull
-  public static <X> GeneralDomainBitSet<X> allOf(@Nonnull final LinkedHashSet<X> domain) {
+  public static <X> GeneralDomainBitSet<X> allOf(final LinkedHashSet<X> domain) {
     requireNonNull(domain, "domain");
     final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(domain);
@@ -38,7 +40,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   @Nonnull
-  public static <X> GeneralDomainBitSet<X> allOf(@Nonnull final List<X> domain) {
+  public static <X> GeneralDomainBitSet<X> allOf(final List<X> domain) {
     requireNonNull(domain, "domain");
     final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(domain);
@@ -54,7 +56,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   @SafeVarargs
   @Nonnull
-  public static <X> GeneralDomainBitSet<X> allOf(@Nonnull final X... domain) {
+  public static <X> GeneralDomainBitSet<X> allOf(final X... domain) {
     requireNonNull(domain, "domain");
     return allOf(asList(domain));
   }
@@ -67,7 +69,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
   @Nonnull
-  public static <X> GeneralDomainBitSet<X> noneOf(@Nonnull final LinkedHashSet<X> domain) {
+  public static <X> GeneralDomainBitSet<X> noneOf(final LinkedHashSet<X> domain) {
     requireNonNull(domain, "domain");
     return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
   }
@@ -80,7 +82,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
   @Nonnull
-  public static <X> GeneralDomainBitSet<X> noneOf(@Nonnull final List<X> domain) {
+  public static <X> GeneralDomainBitSet<X> noneOf(final List<X> domain) {
     requireNonNull(domain, "domain");
     return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
   }
@@ -94,7 +96,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @return Empty GeneralDomainBitSet of given domain. */
   @SafeVarargs
   @Nonnull
-  public static <X> GeneralDomainBitSet<X> noneOf(@Nonnull final X... domain) {
+  public static <X> GeneralDomainBitSet<X> noneOf(final X... domain) {
     requireNonNull(domain, "domain");
     return noneOf(asList(domain));
   }
@@ -109,7 +111,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The elements to be contained.
    * @return New GeneralDomainBitSet of given domain and elements. */
   @Nonnull
-  public static <T> GeneralDomainBitSet<T> of(@Nonnull final LinkedHashSet<T> domain,
+  public static <T> GeneralDomainBitSet<T> of(final LinkedHashSet<T> domain,
       @Nonnull final Collection<T> initialSet) {
     requireNonNull(domain, "domain");
     requireNonNull(initialSet, "initialSet");
@@ -128,8 +130,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The elements to be contained.
    * @return New GeneralDomainBitSet of given domain and elements. */
   @Nonnull
-  public static <T> GeneralDomainBitSet<T> of(@Nonnull final List<T> domain,
-      @Nonnull final Collection<T> initialSet) {
+  public static <T> GeneralDomainBitSet<T> of(final List<T> domain, final Collection<T> initialSet) {
     requireNonNull(domain, "domain");
     requireNonNull(initialSet, "initialSet");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -141,14 +142,14 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   private final Domain<T> domain;
 
-  private GeneralDomainBitSet(@Nonnull final Domain<T> domain) {
+  private GeneralDomainBitSet(final Domain<T> domain) {
     requireNonNull(domain, "domain");
     this.domain = domain;
     this.set = new HashSet<>();
   }
 
   // Only used to deserialize a GeneralDomainBitSet.
-  GeneralDomainBitSet(@Nonnull final Domain<T> domain, @Nonnull final Set<T> set) {
+  GeneralDomainBitSet(final Domain<T> domain, final Set<T> set) {
     requireNonNull(domain, "domain");
     requireNonNull(set, "set");
     this.domain = requireNonNull(domain);
@@ -156,7 +157,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   /** Copy-Constructor that returns an exact clone. */
-  private GeneralDomainBitSet(@Nonnull final GeneralDomainBitSet<T> bitset) {
+  private GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset) {
     requireNonNull(bitset, "bitset");
     this.domain = bitset.domain;
     this.set = new HashSet<>(bitset.set);
@@ -168,8 +169,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * <li>empty=false &rarr; Set if full.</li>
    * </ul> */
   @SuppressWarnings("unused")
-  private GeneralDomainBitSet(@Nonnull final GeneralDomainBitSet<T> bitset,
-      @Nonnull final boolean empty) {
+  private GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset, final boolean empty) {
     requireNonNull(bitset, "bitset");
     requireNonNull(empty, "empty");
     this.domain = bitset.domain;
@@ -206,7 +206,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     final int size = this.domain.size();
     if (size > 64)
       throw new MoreThan64ElementsException();
-    if ((size < 63) && (mask >>> size) > 0)
+    if (size < 63 && mask >>> size > 0)
       throw new IllegalArgumentException("Mask cotains more elements than the domain.");
   }
 
@@ -270,7 +270,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public int hashCode() {
-    return this.set.hashCode();
+    return this.domain.hashCode() ^ this.set.hashCode();
   }
 
   @Override
@@ -319,7 +319,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   @SuppressWarnings("unchecked")
-  public GeneralDomainBitSet<T> intersectVarArgs(@Nonnull final T... other) {
+  public GeneralDomainBitSet<T> intersectVarArgs(final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     final HashSet<T> hashset = new HashSet<>(asList(other));

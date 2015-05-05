@@ -8,6 +8,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -22,6 +23,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
+@ParametersAreNonnullByDefault
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   private static final long          serialVersionUID = -1159105301120332006L;
 
@@ -42,7 +44,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @return Domain of the given elements. */
   @SuppressWarnings("unchecked")
   @Nonnull
-  public static <T> DefaultDomain<T> of(@Nonnull final Collection<? extends T> domain) {
+  public static <T> DefaultDomain<T> of(final Collection<? extends T> domain) {
     requireNonNull(domain, "domain");
 
     if (domain instanceof DefaultDomain)
@@ -63,7 +65,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   /** Internal use only! */
   @SafeVarargs
   @Nonnull
-  static <T> DefaultDomain<T> of(@Nonnull final T... domain) {
+  static <T> DefaultDomain<T> of(final T... domain) {
     requireNonNull(domain, "domain");
 
     if (domain.length == 0)
@@ -92,7 +94,8 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates. */
   @SuppressWarnings("unchecked")
-  private DefaultDomain(@Nonnull final Collection<? extends T> domain) throws IllegalArgumentException {
+  private DefaultDomain(@Nonnull final Collection<? extends T> domain)
+      throws IllegalArgumentException {
     this(domain.toArray((T[]) new Object[requireNonNull(domain, "domain").size()]));
   }
 
@@ -101,7 +104,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @param domain
    *          The elements of the domain. */
   @SafeVarargs
-  private DefaultDomain(@Nonnull final T... domain) {
+  private DefaultDomain(final T... domain) {
     this.elements = requireNonNull(domain, "domain");
     this.map = new HashMap<>((int) (1.5 * domain.length));
     this.list = asList(domain);
@@ -190,7 +193,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   }
 
   @Override
-  public <X> X[] toArray(@Nonnull final X[] a) {
+  public <X> X[] toArray(final X[] a) {
     return super.toArray(requireNonNull(a, "a"));
   }
 
@@ -215,7 +218,8 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   }
 
   @SuppressWarnings({ "static-method", "unused" })
-  private void readObject(java.io.ObjectInputStream stream) throws java.io.InvalidObjectException {
+  private void readObject(final java.io.ObjectInputStream stream)
+      throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");
   }
 

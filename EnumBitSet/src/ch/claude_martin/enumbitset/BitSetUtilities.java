@@ -13,11 +13,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** A collection of utility methods for {@link DomainBitSet}s.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+@ParametersAreNonnullByDefault
 public final class BitSetUtilities {
 
   /** Creates a BigInteger of a given bit set. The value is a positive value with the same "value" as
@@ -26,7 +29,9 @@ public final class BitSetUtilities {
    * @param bitset
    *          A bit set.
    * @return The bit mask. */
-  public static BigInteger asBigInteger(@Nonnull final BitSet bitset) {
+  @Nonnull
+  @Nonnegative
+  public static BigInteger asBigInteger(final BitSet bitset) {
     if (requireNonNull(bitset).isEmpty())
       return BigInteger.ZERO;
     final BigInteger result = new BigInteger(1, reverse(bitset.toByteArray()));
@@ -39,6 +44,7 @@ public final class BitSetUtilities {
    * @param mask
    *          A long value that represents a bit set.
    * @return Positive (unsigned) value. */
+  @Nonnegative
   public static BigInteger asBigInteger(final long mask) {
     if (mask >= 0)// Positive already:
       return BigInteger.valueOf(mask);
@@ -55,7 +61,7 @@ public final class BitSetUtilities {
    * @param mask
    *          A bit mask, must be positive.
    * @return New BitSet, equal to the given bit mask. */
-  public static BitSet asBitSet(@Nonnull final BigInteger mask) {
+  public static BitSet asBitSet(@Nonnegative final BigInteger mask) {
     if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return BitSet.valueOf(reverse(mask.toByteArray()));
@@ -72,6 +78,7 @@ public final class BitSetUtilities {
    * @param mask
    *          A bit mask.
    * @return A BitSet that represents the given set. */
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> BitSet asBitSet(final long mask) {
     return BitSet.valueOf(new long[] { mask });
   }
@@ -83,7 +90,7 @@ public final class BitSetUtilities {
    * @throws IllegalArgumentException
    *           Only positive values with up to 64 bits are allowed.
    * @return A long value representing the given BigInteger, if it is valid (bit length = 64). */
-  public static long asLong(@Nonnull final BigInteger mask) {
+  public static long asLong(@Nonnegative final BigInteger mask) {
     requireNonNull(mask, "mask");
     if (mask.signum() < 0)
       throw new IllegalArgumentException("Negative value not permitted.");
@@ -100,12 +107,36 @@ public final class BitSetUtilities {
    * @throws IllegalArgumentException
    *           Only bit sets with using up to 64 bits are allowed.
    * @return A long value representing the given bit set. */
-  public static long asLong(@Nonnull final BitSet bitset) {
+  public static long asLong(final BitSet bitset) {
     if (bitset.length() > 64)
       throw new IllegalArgumentException("The bitset contains more than 64 elements.");
     if (bitset.isEmpty())
       return 0L;
     return bitset.toLongArray()[0];
+  }
+
+  /** Returns the Cartesian Product of two sets with the same kind of elements. Use
+   * {@link #cross(DomainBitSet, DomainBitSet, Class)} if they are not of the same type.
+   * <p>
+   * The returned set has a size of <code>this.size() * set.size()</code>.
+   * 
+   * @param <T>
+   *          The type of all elements.
+   * @param set1
+   *          A set.
+   * @param set2
+   *          Another set.
+   * @return the Cartesian Product.
+   * @see #cross(DomainBitSet, DomainBitSet, Class)
+   * @see DomainBitSet#cross(DomainBitSet)
+   * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @Nonnull
+  @CheckReturnValue
+  public static <T> Set<Pair<T, T, T>> cross(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
+    requireNonNull(set1, "set1");
+    requireNonNull(set2, "set2");
+    return (Set) set1.cross(set2);
   }
 
   /** Returns the Cartesian Product. This makes it easy to use some common supertype of both types.
@@ -134,8 +165,7 @@ public final class BitSetUtilities {
   @Nonnull
   @CheckReturnValue
   public static <C, T1 extends C, T2 extends C> Set<Pair<C, T1, T2>> cross(
-      @Nonnull final DomainBitSet<T2> set1, @Nonnull final DomainBitSet<T2> set2,
-      @Nonnull final Class<C> type) {
+      final DomainBitSet<T2> set1, final DomainBitSet<T2> set2, final Class<C> type) {
     requireNonNull(set1, "set1");
     requireNonNull(set2, "set2");
     requireNonNull(type, "type");
@@ -153,7 +183,9 @@ public final class BitSetUtilities {
    * @see java.util.function.BinaryOperator
    * @see DomainBitSet#intersect(Iterable)
    * @return The intersection of both sets. */
-  public static <T> DomainBitSet<T> intersect(@Nonnull final DomainBitSet<T> set1,
+  @CheckReturnValue
+  @Nonnull
+  public static <T> DomainBitSet<T> intersect(final DomainBitSet<T> set1,
       @Nonnull final DomainBitSet<T> set2) {
     return set1.intersect(set2);
   }
@@ -179,8 +211,9 @@ public final class BitSetUtilities {
    * @see java.util.function.BinaryOperator
    * @see DomainBitSet#minus(Iterable)
    * @return The relative complement of both sets. */
-  public static <T> DomainBitSet<T> minus(@Nonnull final DomainBitSet<T> set1,
-      @Nonnull final DomainBitSet<T> set2) {
+  @CheckReturnValue
+  @Nonnull
+  public static <T> DomainBitSet<T> minus(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     return set1.minus(set2);
   }
 
@@ -209,7 +242,10 @@ public final class BitSetUtilities {
    * @see Domain#factory()
    * @see Collectors#toCollection(Supplier)
    * @return New Collector to collect elements into a DomainBitSet. */
+  @CheckReturnValue
+  @Nonnull
   public static <T> Collector<T, Set<T>, DomainBitSet<T>> toDomainBitSet(final Domain<T> domain) {
+    requireNonNull(domain, "domain");
     return toDomainBitSet(domain.factory());
   }
 
@@ -223,8 +259,11 @@ public final class BitSetUtilities {
    *          Type of DomainBitSet.
    * @see Collectors#toCollection(Supplier)
    * @return New Collector to collect elements into a DomainBitSet. */
+  @CheckReturnValue
+  @Nonnull
   public static <T, D extends DomainBitSet<T>> Collector<T, Set<T>, D> toDomainBitSet(
       final Function<Collection<T>, D> bitsetFactory) {
+    requireNonNull(bitsetFactory, "bitsetFactory");
     return new Collector<T, Set<T>, D>() {
 
       @Override
@@ -267,6 +306,8 @@ public final class BitSetUtilities {
    * @see DomainBitSet#zipWithPosition()
    * 
    * @return a Collector */
+  @CheckReturnValue
+  @Nonnull
   public static <T> Collector<Pair<Object, Integer, T>, ?, TreeMap<Integer, T>> toTreeMap() {
     // Note: A collision should not occur, unless this is applied to an invalid stream.
     return Collectors.toMap(Pair::_1, Pair::_2, (u, v) -> {
@@ -285,6 +326,8 @@ public final class BitSetUtilities {
    * @see java.util.function.BinaryOperator
    * @see DomainBitSet#union(Iterable)
    * @return The union of both sets. */
+  @CheckReturnValue
+  @Nonnull
   public static <T> DomainBitSet<T> union(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     return set1.union(set2);
   }

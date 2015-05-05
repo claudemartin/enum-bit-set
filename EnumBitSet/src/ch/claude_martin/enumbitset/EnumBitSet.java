@@ -11,7 +11,9 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnegative;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.sun.istack.internal.Nullable;
 
@@ -52,8 +54,9 @@ import com.sun.istack.internal.Nullable;
  * 
  * @param <E>
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
+@ParametersAreNonnullByDefault
 public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implements DomainBitSet<E>,
-    Collection<E> {
+Collection<E> {
   private static final long serialVersionUID = -7833695756979160691L;
 
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
@@ -76,6 +79,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param set
    *          A set of enum constants.
    * @return A BigInteger that represents the given set as a bit mask. */
+  @Nonnegative
   public static <X extends Enum<X> & EnumBitSetHelper<X>> BigInteger asBigInteger(
       final EnumSet<X> set) {
     return BitSetUtilities.asBigInteger(asBitSet(set));
@@ -89,6 +93,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          A set of enum constants.
    * @return A BigInteger that represents the given set as a bit mask. */
   @SafeVarargs
+  @Nonnegative
   public static <X extends Enum<X> & EnumBitSetHelper<X>> BigInteger asBigInteger(final X... set) {
     return BitSetUtilities.asBigInteger(asBitSet(set));
   }
@@ -131,8 +136,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param type
    *          The class of the parameter elements and of the set.
    * @return New EnumBitSet, equal to the given bit mask. */
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> asEnumBitSet(
-      final BigInteger mask, final Class<X> type) {
+      @Nonnegative final BigInteger mask, final Class<X> type) {
     if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     return new EnumBitSet<>(type, asEnumSet(mask, type));
@@ -207,8 +213,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param type
    *          The class of the parameter elements and of the set
    * @return New EnumSet, equal to the given bit mask. */
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(
-      final BigInteger mask, final Class<X> type) {
+      @Nonnegative final BigInteger mask, final Class<X> type) {
     if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     final EnumSet<X> result = EnumSet.allOf(requireNonNull(type, "type"));
@@ -225,6 +232,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param type
    *          The class of the parameter elements and of the set.
    * @return New EnumSet, equal to the given BitSet. */
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(final BitSet bitset,
       final Class<X> type) {
     requireNonNull(bitset);
@@ -266,6 +274,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return an EnumSet initially containing the specified elements. This is equal to:
    *         <code>EnumSet.of(first, rest)</code>. */
   @SafeVarargs
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumSet<X> asEnumSet(final X first,
       final X... rest) {
     return EnumSet.of(first, rest);
@@ -314,6 +323,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param value
    *          The single value that will be contained in the result.
    * @return New EnumBitSet containing nothing but <code>value</code>. */
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> just(final X value) {
     final EnumBitSet<X> result = noneOf(requireNonNull(value, "value").getDeclaringClass());
     result.add(value);
@@ -329,6 +339,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param type
    *          Enum type.
    * @return EnumBitSet containing no elements. */
+  @Nonnull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> noneOf(final Class<X> type) {
     return new EnumBitSet<>(type);
   }
@@ -344,7 +355,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return New EnumBitSet containing all given elements.
    * @see #noneOf(Class) */
   @SafeVarargs
-  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> of(@Nonnull final X first,
+  @Nonnull
+  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> of(final X first,
       final X... more) {
     requireNonNull(first, "first");
     requireNonNull(more, "more");
@@ -372,8 +384,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *           if {@code from.compareTo(to) > 0}
    * @return an enum set initially containing all of the elements in the range defined by the two
    *         specified endpoints */
-  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> range(final X from,
-      final X to) {
+  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> range(//
+      final X from, final X to) {
     return new EnumBitSet<>(//
         requireNonNull(from, "from").getDeclaringClass(), //
         EnumSet.range(from, requireNonNull(to, "to")));
@@ -390,11 +402,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @Nullable
   private volatile Domain<E> domain       = null;
 
-  private EnumBitSet(@Nonnull final Class<E> type) {
+  private EnumBitSet(final Class<E> type) {
     this(type, EnumSet.noneOf(type));
   }
 
-  EnumBitSet(@Nonnull final Class<E> type, @Nonnull final EnumSet<E> set) {
+  EnumBitSet(final Class<E> type, final EnumSet<E> set) {
     this.enumType = requireNonNull(type, "type");
     this.bitset = requireNonNull(set, "set");
   }
@@ -419,6 +431,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   /** Returns a copy of this set. */
   @Override
+  @Nonnull
   public EnumBitSet<E> clone() {
     return new EnumBitSet<>(this.enumType, this.bitset.clone());
   }
@@ -456,6 +469,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class)
    * @return a {@link Set} containing all {@link Pair pairs}. */
   @SuppressWarnings("unchecked")
+  @Nonnull
   public <Y extends Enum<Y> & EnumBitSetHelper<Y>> Set<Pair<EnumBitSetHelper<?>, E, Y>> cross(
       final EnumBitSet<Y> set) {
     requireNonNull(set, "set");
@@ -464,9 +478,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     // EnumBitSetHelper. The default implementation can be used, because the type is only generic.
     // This can be asserted by this:
     assert this.isEmpty()
-        || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
+    || EnumBitSetHelper.class.isAssignableFrom(this.iterator().next().getClass());
     assert set.isEmpty()
-        || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
+    || EnumBitSetHelper.class.isAssignableFrom(set.iterator().next().getClass());
     return (Set<Pair<EnumBitSetHelper<?>, E, Y>>) (Object) DomainBitSet.super.cross(set);
   }
 
@@ -493,7 +507,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
       return true;
     if (other instanceof EnumBitSet)
       return this.enumType == ((EnumBitSet<E>) other).enumType
-          && this.bitset.equals(((EnumBitSet<E>) other).bitset);
+      && this.bitset.equals(((EnumBitSet<E>) other).bitset);
     if (other instanceof DomainBitSet)
       return this.ofEqualDomain((DomainBitSet<E>) other)
           && this.ofEqualElements((DomainBitSet<E>) other);
@@ -537,6 +551,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * {@link Enum#getDeclaringClass()}.
    * 
    * @return The declaring class of all elements in this set. */
+  @Nonnull
   public Class<E> getEnumType() {
     return this.enumType;
   }
@@ -547,6 +562,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * This is equal to <code>{@link #getDomain()}.size()</code>, but possibly faster.
    * 
    * @return Number of constants of the enum type. */
+  @Nonnegative
   public int getEnumTypeSize() {
     if (this.enumTypeSize == -1)
       this.enumTypeSize = this.getDomain().size();
@@ -556,7 +572,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
-    return this.enumType.hashCode() ^ this.bitset.hashCode();
+    return this.getDomain().hashCode() ^ this.bitset.hashCode();
   }
 
   /** Returns a new EnumBitSet containing all elements that are in <code>this</code> and the given
@@ -698,8 +714,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @SuppressWarnings("unchecked")
   @Nonnull
   @CheckReturnValue
-  public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(
-      @Nonnull final Class<S> newEnumType) {
+  public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(final Class<S> newEnumType) {
     requireNonNull(newEnumType, "newEnumType");
     if (this.enumType == newEnumType)
       return (EnumBitSet<S>) this.clone();
@@ -725,8 +740,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return new set, using the given enum type. */
   @Nonnull
   @CheckReturnValue
-  public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(
-      @Nonnull final Class<S> newEnumType, @Nonnull final Function<E, S> mapper) {
+  public <S extends Enum<S> & EnumBitSetHelper<S>> EnumBitSet<S> map(final Class<S> newEnumType,
+      final Function<E, S> mapper) {
     requireNonNull(newEnumType, "newEnumType");
     requireNonNull(mapper, "mapper");
     final EnumBitSet<S> result = noneOf(newEnumType);
@@ -740,10 +755,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * 
    * @see #map(Class, Function) */
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  @Nonnull
   @Override
-  public <S> DomainBitSet<S> map(@Nonnull final Domain<S> newDomain,
-      @Nonnull final Function<E, S> mapper) {
+  public <S> DomainBitSet<S> map(final Domain<S> newDomain, final Function<E, S> mapper) {
     requireNonNull(newDomain, "newDomain");
     requireNonNull(mapper, "mapper");
     if (newDomain instanceof EnumDomain) {
@@ -813,6 +826,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param set
    *          Another set.
    * @return <code>this &#x2216; set</code> */
+  @Nonnull
   public EnumBitSet<E> minus(final EnumBitSet<E> set) {
     requireNonNull(set, "set");
 
@@ -830,6 +844,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @param set
    *          Another set.
    * @return <code>this &#x2216; set</code> */
+  @Nonnull
   public EnumBitSet<E> minus(final EnumSet<E> set) {
     requireNonNull(set, "set");
 
@@ -983,36 +998,6 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
       return BitSetUtilities.asBigInteger(this.toBitSet());
   }
 
-  /** Binary string representation of this set.
-   * <p>
-   * The length of the returned string is the same as the amount of enum elements in the enum type.
-   * 
-   * @return A representation of this {@link EnumBitSet} as a String of 0s and 1s. */
-  public String toBinaryString() {
-    return this.toBinaryString(this.getEnumTypeSize());
-  }
-
-  /** Binary string representation of this set.
-   * <p>
-   * The length of the returned string is as least as long as <i>width</i>.
-   * <p>
-   * Example: Use this if you have an enum type with less than 64 elements but you want to use a bit
-   * field with 64 bits. <code>this.toBinaryString(64)</code> will already have the appropriate
-   * length.
-   * 
-   * @param width
-   *          The minimal width of the returned String.
-   * @return A representation of this {@link EnumBitSet} as a String of 0s and 1s. The length is at
-   *         least <i>width</i>. */
-  public String toBinaryString(final int width) {
-    final String binary = this.toBigInteger().toString(2);
-    final StringBuilder sb = new StringBuilder(width < 8 ? 8 : width);
-    while (sb.length() < width - binary.length())
-      sb.append('0');
-    sb.append(binary);
-    return sb.toString();
-  }
-
   /** Returns a new BitSet that represents this set.
    * 
    * @return A representation of this {@link EnumBitSet} as a {@link BitSet}; */
@@ -1027,6 +1012,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** Copy of the underlying EnumSet.
    * 
    * @return <code>bitset.clone()</code> */
+  @Nonnull
   public EnumSet<E> toEnumSet() {
     return this.bitset.clone();
   }
@@ -1069,7 +1055,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @throws IllegalArgumentException
    *           The bit mask must not have any bits set that are not mapped to an enum constant. */
   @Override
-  public EnumBitSet<E> union(final BigInteger mask) {
+  public EnumBitSet<E> union(@Nonnegative final BigInteger mask) {
     if (requireNonNull(mask, "mask").signum() == -1)
       throw new IllegalArgumentException("The mask must not be negative!");
     final EnumBitSet<E> result = this.clone();
@@ -1181,7 +1167,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   /** This proxy class is used to serialize EnumBitSet instances. */
   private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
-      java.io.Serializable {
+  java.io.Serializable {
     private static final long serialVersionUID = 7134313027153728022L;
 
     private final Class<E>    enumType;
