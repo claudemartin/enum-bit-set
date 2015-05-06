@@ -56,7 +56,7 @@ import com.sun.istack.internal.Nullable;
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
 @ParametersAreNonnullByDefault
 public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implements DomainBitSet<E>,
-Collection<E> {
+    Collection<E> {
   private static final long serialVersionUID = -7833695756979160691L;
 
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
@@ -507,7 +507,7 @@ Collection<E> {
       return true;
     if (other instanceof EnumBitSet)
       return this.enumType == ((EnumBitSet<E>) other).enumType
-      && this.bitset.equals(((EnumBitSet<E>) other).bitset);
+          && this.bitset.equals(((EnumBitSet<E>) other).bitset);
     if (other instanceof DomainBitSet)
       return this.ofEqualDomain((DomainBitSet<E>) other)
           && this.ofEqualElements((DomainBitSet<E>) other);
@@ -1167,7 +1167,7 @@ Collection<E> {
 
   /** This proxy class is used to serialize EnumBitSet instances. */
   private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
-  java.io.Serializable {
+      java.io.Serializable {
     private static final long serialVersionUID = 7134313027153728022L;
 
     private final Class<E>    enumType;
