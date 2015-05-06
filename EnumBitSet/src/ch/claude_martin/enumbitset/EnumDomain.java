@@ -21,7 +21,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   // Array of all elements in the domain:
   @Nonnull
   private final E[]           elements;                                  // index == ordinal
-  private final int           hash;
+  private int                 hash             = 0;                      // lazy!
   @Nonnull
   private final Class<E>      enumType;
 
@@ -49,7 +49,6 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   private EnumDomain(final Class<E> enumType) {
     this.enumType = enumType;
     this.elements = enumType.getEnumConstants();
-    this.hash = Arrays.hashCode(this.elements);
   }
 
   @Override
@@ -71,7 +70,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   public boolean contains(@Nullable final Object o) {
     if (o == null)
       return false;
-    return o.getClass().getDeclaringClass() == this.getEnumType();
+    return o.getClass() == this.enumType || o.getClass().getSuperclass() == this.enumType;
   }
 
   @Override
@@ -80,10 +79,8 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
       return true;
     if (obj == null || !(obj instanceof Domain) || this.hashCode() != obj.hashCode())
       return false;
-    if (obj instanceof EnumDomain) {
-      final EnumDomain<?> ed = (EnumDomain<?>) obj;
-      return this.getEnumType() == ed.getEnumType();
-    }
+    if (obj instanceof EnumDomain)
+      return this.getEnumType() == ((EnumDomain<?>) obj).getEnumType();
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
   }
 
@@ -108,6 +105,8 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
 
   @Override
   public int hashCode() {
+    if (this.hash == 0)
+      this.hash = Arrays.hashCode(this.elements);
     return this.hash;
   }
 
