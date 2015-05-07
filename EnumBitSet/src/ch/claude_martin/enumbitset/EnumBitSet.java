@@ -59,6 +59,22 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     Collection<E> {
   private static final long serialVersionUID = -7833695756979160691L;
 
+  /** Returns the actual enum type. If the class is the anonymous type of an enum constant that
+   * extends its own type then the supertype is returned.
+   * 
+   * @param type
+   *          Type of some enum
+   * @return The actual type
+   * @see Enum#getDeclaringClass() */
+  @SuppressWarnings("unchecked")
+  private static <X extends Enum<X> & EnumBitSetHelper<X>> Class<X> getActualEnumType(
+      final Class<X> type) {
+    final Class<? super X> zuper = type.getSuperclass();
+    if (zuper == Enum.class)
+      return type;
+    return (Class<X>) zuper;
+  }
+
   /** Creates an EnumBitSet containing all of the elements in the specified element type.
    * 
    * @see #of(Enum, Enum...)
@@ -69,7 +85,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    *          Enum type.
    * @return EnumBitSet containing all elements. */
   public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> allOf(final Class<X> type) {
-    return new EnumBitSet<>(type, EnumSet.allOf(type));
+    return new EnumBitSet<>(type, EnumSet.allOf(getActualEnumType(type)));
   }
 
   /** Convert EnumSet to BitInteger.
@@ -403,11 +419,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   private volatile Domain<E> domain       = null;
 
   private EnumBitSet(final Class<E> type) {
-    this(type, EnumSet.noneOf(type));
+    this(type, EnumSet.noneOf(getActualEnumType(type)));
   }
 
   EnumBitSet(final Class<E> type, final EnumSet<E> set) {
-    this.enumType = requireNonNull(type, "type");
+    this.enumType = getActualEnumType(requireNonNull(type, "type"));
     this.bitset = requireNonNull(set, "set");
   }
 
@@ -547,10 +563,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
     return this.domain;
   }
 
-  /** The enum type class that defines the available enum elements. This is the class returned by
-   * {@link Enum#getDeclaringClass()}.
+  /** The declaring enum type that defines the available enum elements.
+   * <p>
+   * Note that an enum constant could use an anonymous inner type, which extends the declaring type.
    * 
-   * @return The declaring class of all elements in this set. */
+   * @return The enum type of all elements in this set. */
   @Nonnull
   public Class<E> getEnumType() {
     return this.enumType;

@@ -68,9 +68,9 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
 
   @Override
   public boolean contains(@Nullable final Object o) {
-    if (o == null)
-      return false;
-    return o.getClass() == this.enumType || o.getClass().getSuperclass() == this.enumType;
+    if (o instanceof Enum)
+      return ((Enum<?>) o).getDeclaringClass() == this.enumType;
+    return false;
   }
 
   @Override

@@ -21,7 +21,10 @@ import org.junit.Test;
 @SuppressWarnings("static-method")
 public class EnumBitSetTest {
   static enum Alphabet implements EnumBitSetHelper<Alphabet> {
-    A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
+    A {
+    // A is actually of some inner type that extends "Alphabet"!
+    },
+    B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z;
   }
 
   public enum Element implements EnumBitSetHelper<Element> {
@@ -74,10 +77,15 @@ public class EnumBitSetTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testAllOf() throws Exception {
     assertEquals(26, EnumBitSet.allOf(Alphabet.class).size());
     assertFalse(EnumBitSet.allOf(Element.class).isEmpty());
+
+    // Type of A is an anonymous type that extends "Alphabet":
+    assertEquals(26, EnumBitSet.allOf((Class<Alphabet>) Alphabet.A.getClass()).size());
+    // This wouldn't work with EnumSet, but EnumBitSet simply uses the supertype.
   }
 
   @Test
@@ -721,10 +729,15 @@ public class EnumBitSetTest {
     assertEquals(d, bcd.minusVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void testNoneOf() throws Exception {
     assertEquals(0, EnumBitSet.noneOf(Alphabet.class).size());
     assertTrue(EnumBitSet.noneOf(Element.class).isEmpty());
+
+    // Type of A is an anonymous type that extends "Alphabet":
+    assertTrue(EnumBitSet.noneOf((Class<Alphabet>) Alphabet.A.getClass()).isEmpty());
+    // This wouldn't work with EnumSet, but EnumBitSet simply uses the supertype.
   }
 
   @Test
