@@ -42,7 +42,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 @Immutable
 @ParametersAreNonnullByDefault
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
-    Serializable, Map.Entry<X, Y> {
+    Serializable, Map.Entry<X, Y>, Comparable<Pair<T, X, Y>> {
   private static final long serialVersionUID = -5888335755613555933L;
 
   /** Converts a {@link Function function on pairs} to a {@link BiFunction function on two elements}.
@@ -136,7 +136,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   @Nonnull
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(//
       final TX first, final TY second) {
-    return new Pair<>(first, second);
+    return new Pair<>(requireNonNull(first, "first"), requireNonNull(second, "second"));
   }
 
   /** Creates a new pair from an {@link Map.Entry}.
@@ -152,7 +152,10 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @return A new pair made of the key and value of the entry. */
   @Nonnull
   public static <TX, TY> Pair<Object, TX, TY> of(final Map.Entry<TX, TY> entry) {
-    return new Pair<>(entry.getKey(), entry.getValue());
+    requireNonNull(entry, "entry");
+    return new Pair<>(//
+        requireNonNull(entry.getKey(), "key"), //
+        requireNonNull(entry.getValue(), "value"));
   }
 
   /** Converts a {@link BiFunction function on two elements} to a {@link Function function on pairs}.
@@ -181,7 +184,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   @Nonnull
   public final X           first;
 
-  /** The first value of this pair. Not null.
+  /** The second value of this pair. Not null.
    * 
    * <p>
    * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
@@ -192,8 +195,10 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   private transient String string = null;
 
   private Pair(final X first, final Y second) {
-    this.first = requireNonNull(first, "first");
-    this.second = requireNonNull(second, "second");
+    assert null != first : "first == null";
+    assert null != second : "second == null";
+    this.first = first;
+    this.second = second;
   }
 
   /** Scala-style getter for {@link #first}.
@@ -360,7 +365,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   /** Applies <i>first</i> and <i>second</i> to the given format string. {@link Map.Entry Map
    * entries} use this format: {@code "%s=%s"}
    * 
-   * @returns {@code String.format(format, this.first, this.second)} */
+   * @returns {@code String.format(format, this.first.toString(), this.second.toString())} */
   @Nonnull
   public String toString(final String format) {
     requireNonNull(format, "format");
@@ -454,6 +459,20 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   public static <F, S> Comparator<Map.Entry<F, S>> comparingBySecond(final Comparator<? super S> cmp) {
     requireNonNull(cmp, "cmp");
     return Map.Entry.comparingByValue(cmp);
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private final static Comparator<Pair> comparator = (Comparator) getComparator();
+
+  private static <A extends Comparable<A>, B extends Comparable<B>> Comparator<Pair<?, A, B>> getComparator() {
+    return Comparator
+        .<Pair<?, A, B>, A> comparing(Pair::_1, Comparator.naturalOrder())
+        .thenComparing(Comparator.<Pair<?, A, B>, B> comparing(Pair::_2, Comparator.naturalOrder()));
+  }
+
+  @Override
+  public int compareTo(final Pair<T, X, Y> o) {
+    return Objects.compare(this, o, comparator);
   }
 
 }

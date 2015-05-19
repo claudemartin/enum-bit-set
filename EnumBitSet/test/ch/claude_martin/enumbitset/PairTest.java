@@ -1,21 +1,10 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 
 import org.junit.Test;
@@ -39,7 +28,7 @@ public class PairTest {
     { // Basic test of curry and uncurry.
       final Pair<Serializable, String, Integer> p = Pair.of("foo", 42);
       final Integer snd1 = p.applyTo(Pair.curry(x -> x.second));
-      final Integer snd2 = Pair.uncurry((String a, Integer b) -> b).apply(p);
+      final Integer snd2 = Pair.uncurry((final String a, final Integer b) -> b).apply(p);
       final Integer snd3 = p.applyTo(Pair.curry(Pair::_2));
       assertEquals(snd1, snd2);
       assertEquals(snd1, snd3);
@@ -58,9 +47,9 @@ public class PairTest {
       assertTrue(Pair.uncurry(contains).apply(p));
     }
     { // With more complex types:
-      Domain<? extends Number> domain = DefaultDomain.of(asList(1,2,3));
-      List<? super Integer> list = new ArrayList<>(asList(1,2,3));
-      Pair<Object, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
+      final Domain<? extends Number> domain = DefaultDomain.of(asList(1,2,3));
+      final List<? super Integer> list = new ArrayList<>(asList(1,2,3));
+      final Pair<Object, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
       
       final Set<Pair<Object, Domain<? extends Number>, List<? super Integer>>> set = new HashSet<>();
       final BiFunction<Domain<? extends Number>, List<? super Integer>, Boolean> add = Pair.curry(set::add);
@@ -186,13 +175,26 @@ public class PairTest {
   }
 
   @Test
+  public final void testCompareTo() throws Exception {
+    final Pair<Comparable<?>, Integer, String> a = Pair.of(5, "A");
+    final Pair<Comparable<?>, Integer, String> b = Pair.of(-7, "B");
+    final Pair<Comparable<?>, Integer, String> c = Pair.of(5, "C");
+
+    final Object[] array = asList(a, b, c).stream().sorted().toArray();
+    // b, a, c
+    assertSame(b, array[0]);
+    assertSame(a, array[1]);
+    assertSame(c, array[2]);
+  }
+
+  @Test
   public final void testComparing() throws Exception {
-    List<Pair<Number, Integer, Double>> list = new ArrayList<>();
-    Pair<Number, Integer, Double> a = Pair.of(42, Math.PI);
+    final List<Pair<Number, Integer, Double>> list = new ArrayList<>();
+    final Pair<Number, Integer, Double> a = Pair.of(42, Math.PI);
     list.add(a);
-    Pair<Number, Integer, Double> b = Pair.of(-7, Math.E);
+    final Pair<Number, Integer, Double> b = Pair.of(-7, Math.E);
     list.add(b);
-    Pair<Number, Integer, Double> c = Pair.of(0, Math.sqrt(2));
+    final Pair<Number, Integer, Double> c = Pair.of(0, Math.sqrt(2));
     list.add(c);
     
     list.sort(Pair.comparingByFirst());
