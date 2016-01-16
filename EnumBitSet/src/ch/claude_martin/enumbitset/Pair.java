@@ -7,20 +7,18 @@ import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 
 import java.io.Serializable;
-import java.lang.ref.Reference;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /** An immutable, ordered pair (2-tuple) of two non-null elements. This can be used in a Cartesian
  * product.
@@ -191,9 +189,6 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   @Nonnull
   public final Y           second;
 
-  @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
-  private transient String string = null;
-
   private Pair(final X first, final Y second) {
     assert null != first : "first == null";
     assert null != second : "second == null";
@@ -343,29 +338,22 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   }
 
   /** Returns a string representation of this Pair.
-   * <p>
-   * This could lead to recursion in rare cases. Pairs, Collections, Arrays, References etc. are
-   * always represented by their type. But this can still lead to a {@link StackOverflowError}.
    * 
+   * @see #toString(String)
+   * @see BitSetUtilities#deepToString(Object, int)
    * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
   @Nonnull
   public String toString() {
-    if (null == this.string) {
-      final Function<Object, String> f = (o) -> {
-        return o.getClass().isArray() || o instanceof Iterable || o instanceof Reference
-            || o instanceof Optional ? o.getClass().getSimpleName() //
-            : o.toString();
-      };
-      this.string = "Pair(" + f.apply(this.first) + ", " + f.apply(this.second) + ")";
-    }
-    return this.string;
+    return this.toString("Pair(%s, %s)");
   }
 
   /** Applies <i>first</i> and <i>second</i> to the given format string. {@link Map.Entry Map
    * entries} use this format: {@code "%s=%s"}
    * 
-   * @returns {@code String.format(format, this.first.toString(), this.second.toString())} */
+   * @see BitSetUtilities#deepToString(Object, int)
+   * 
+   * @returns A string representation, based on the given format. */
   @Nonnull
   public String toString(final String format) {
     requireNonNull(format, "format");
@@ -473,6 +461,54 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   @Override
   public int compareTo(final Pair<T, X, Y> o) {
     return Objects.compare(this, o, comparator);
+  }
+
+  /** This pair as a {@link Map}. The <i>first</i> element is mapped to <code>false</code> and the
+   * <i>second</i> to <code>true</code>, which is the natural order of the boolean values. */
+  @Nonnull
+  public Map<Boolean, T> toMap() {
+    final Pair<Map.Entry<Boolean, T>, Map.Entry<Boolean, T>, Map.Entry<Boolean, T>> entries;
+    entries = of(of(false, Pair.this.first), of(true, Pair.this.second));
+    return new AbstractMap<Boolean, T>() {
+      @Override
+      public T get(final Object key) {
+        if (Boolean.FALSE.equals(key))
+          return Pair.this.first;
+        if (Boolean.TRUE.equals(key))
+          return Pair.this.second;
+        return null;
+      }
+
+      @Override
+      public Set<Map.Entry<Boolean, T>> entrySet() {
+        return new AbstractSet<Map.Entry<Boolean, T>>() {
+          @Override
+          public Iterator<java.util.Map.Entry<Boolean, T>> iterator() {
+            return entries.iterator();
+          }
+
+          @Override
+          public int size() {
+            return 2;
+          }
+        };
+      }
+
+      @Override
+      public int size() {
+        return 2;
+      }
+    };
+  }
+
+  /** Converts a {@link Map} to a {@link Pair}. The <i>first</i> value must be mapped to
+   * <code>false</code>, the <i>second</i> to <code>true</code>, which is the natural order for
+   * boolean values.
+   * 
+   * @see Collectors#partitioningBy(java.util.function.Predicate) */
+  public static <T> Pair<T, T, T> ofMap(final Map<Boolean, ? extends T> map) {
+    requireNonNull(map, "map");
+    return of(map.get(false), map.get(true));
   }
 
 }

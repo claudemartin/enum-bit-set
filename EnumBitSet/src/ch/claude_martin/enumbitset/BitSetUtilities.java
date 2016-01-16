@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -331,4 +332,134 @@ public final class BitSetUtilities {
   public static <T> DomainBitSet<T> union(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     return set1.union(set2);
   }
+
+  /** Returns a string representation of the object. All arrays and iterables are processed as such.
+   * In case of loops in the object graph this will return a partial result, but will not throw a
+   * {@link StackOverflowError}. This should only be used for debugging.
+   * 
+   * @param object
+   *          the object to be converted to string.
+   * @param timeout
+   *          timeout in milliseconds
+   * @return A character sequence that represents the given object. */
+  @SuppressWarnings("deprecation")
+  @Nonnull
+  public static CharSequence deepToString(final Object object, @Nonnegative final int timeout) {
+    if (timeout < 0)
+      throw new IllegalArgumentException("timeout");
+    if (timeout == 0)
+      return deepToString(object);
+    final StringBuilder buffer = new StringBuilder();
+    final Set<Object> dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
+    final Thread thread = new Thread(() -> deepToString(object, buffer, dejavu), "deepToString");
+    thread.setDaemon(true);
+    // Ingore everything! This includes interrupted, stack overflow and out of memory.
+    thread.setUncaughtExceptionHandler((t, e) -> { });
+    thread.start();
+    try {
+      thread.join(timeout);
+    } catch (final InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+    thread.interrupt();
+    if(!thread.isAlive())
+      return buffer;
+    thread.stop();
+    return buffer.toString();
+  }
+
+  /** Returns a string representation of the object. All arrays and iterables are processed as such.
+   * In case of loops in the object graph this will return a partial result, but will not throw a
+   * {@link StackOverflowError}. Still, this may not return a result quickly and it may throw other
+   * unchecked exceptions. This should only be used for debugging.
+   * 
+   * @param object
+   *          the object to be converted to string.
+   * @return A character sequence that represents the given object. */
+  public static CharSequence deepToString(final Object object) {
+    final StringBuilder buffer = new StringBuilder();
+    {
+      final Set<Object> dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
+      try {
+        deepToString(object, buffer, dejavu);
+      } catch (OutOfMemoryError | StackOverflowError e) {
+        // at least dejavu can be freed at this point
+      }
+    }
+    return buffer;
+  }
+
+  /** Creates a string representation of the object. If the given set "dejavu" gets too large this
+   * method will stop traversal of the object graph. */
+  private static void deepToString(final Object o, final StringBuilder buffer,
+      final Set<Object> dejavu) {
+    if (Thread.currentThread().isInterrupted()) {
+      Thread.currentThread().interrupt();
+      return;
+    }
+    if (o == null) {
+      buffer.append("null");
+      return;
+    }
+    if (dejavu.size() > 1000) {
+      buffer.append("...");
+      return;
+    }
+    final Class<? extends Object> oClass = o.getClass();
+    final String simpleName = oClass.isSynthetic() && oClass.getSimpleName().contains("$$Lambda$")
+        && oClass.getDeclaredMethods().length == 1
+        ? "λ" : oClass.getSimpleName();
+    if (dejavu.contains(o)) {
+      buffer.append(simpleName);
+      buffer.append('@');
+      buffer.append(Integer.toHexString(System.identityHashCode(o)));
+      return;
+    }
+    dejavu.add(o);
+    if (oClass.isArray()) {
+      if (o instanceof Object[]) {
+        buffer.append('[');
+        for (final Object e : (Object[]) o) {
+          deepToString(e, buffer, dejavu);
+          buffer.append(", ");
+        }
+        buffer.setLength(buffer.length() - 2);
+        buffer.append(']');
+      } else
+        try {
+          buffer.append(
+              Arrays.class.getDeclaredMethod("toString", oClass).invoke(null, o).toString());
+        } catch (final Exception e) {
+          throw new RuntimeException("Can't invoke Arrays.toString(" + simpleName + ")",
+              e);
+        }
+    } else if (o instanceof Pair) {
+      buffer.append("Pair(");
+      deepToString(((Pair<?, ?, ?>) o).first, buffer, dejavu);
+      buffer.append(", ");
+      deepToString(((Pair<?, ?, ?>) o).second, buffer, dejavu);
+      buffer.append(')');
+    } else if (o instanceof Iterable) {
+      buffer.append(simpleName);
+      buffer.append('[');
+      for (final Object e : (Iterable<?>) o) {
+        deepToString(e, buffer, dejavu);
+        buffer.append(", ");
+      }
+      buffer.setLength(buffer.length() - 2);
+      buffer.append(']');
+    } else if (o instanceof AtomicReference) {
+      buffer.append(simpleName);
+      buffer.append('(');
+      deepToString(((AtomicReference<?>) o).get(), buffer, dejavu);
+      buffer.append(')');
+    } else if (o instanceof Optional) {
+      buffer.append(simpleName);
+      buffer.append('[');
+      deepToString(((Optional<?>) o).get(), buffer, dejavu);
+      buffer.append(']');
+    } else
+      buffer.append(o.toString());
+  }
+
 }

@@ -5,9 +5,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
-import java.util.BitSet;
-import java.util.Objects;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -160,4 +161,106 @@ public class BitSetUtilitiesTest {
     }
   }
 
+  private static String deepToString(final Object o) {
+    return BitSetUtilities.deepToString(o).toString();
+  }
+
+  private static String deepToString(final Object o, final int timeout) {
+    return BitSetUtilities.deepToString(o, timeout).toString();
+  }
+
+  @Test(timeout = 1000)
+  public void testDeepToString1() throws Exception {
+    assertEquals("null", deepToString(null).toString());
+    assertEquals("foo", deepToString("foo").toString());
+    assertEquals("[1, 2, 3]", deepToString(new int[] { 1, 2, 3 }).toString());
+
+    assertEquals("null", deepToString(null, 100).toString());
+    assertEquals("foo", deepToString("foo", 100).toString());
+    assertEquals("[1, 2, 3]", deepToString(new int[] { 1, 2, 3 }, 100).toString());
+
+    assertEquals("Pair([1, 2, 3], [x, y, z])",
+        deepToString(Pair.of(new int[] { 1, 2, 3 }, new char[] { 'x', 'y', 'z' })).toString());
+  }
+
+  @Test(timeout = 1000)
+  public void testDeepToString2() throws Exception {
+    final Pair<List<?>, List<Object>, List<Object>> pair;
+    pair = Pair.of(new ArrayList<>(), new ArrayList<>());
+    pair.first.add(pair);
+    pair.second.add(pair);
+    try {
+      deepToString(pair);
+      deepToString(pair, 100);
+    } catch (final AssertionError e) {
+      throw e;
+    } catch (final Throwable e) {
+      fail("Pair.toString failed: " + e);
+    }
+  }
+
+  @Test(timeout = 1000)
+  public void testDeepToString3() throws Exception {
+    final Pair<List<?>, List<Object>, List<Object>> pair;
+    pair = Pair.of(new ArrayList<>(), new ArrayList<>());
+
+    for (int i = 0; i < 100; i++) {
+      pair.first.add("abcd" + i);
+      pair.first.add(GeneralDomainBitSet.allOf(pair.second));
+      pair.first.add(IntStream.range(i, i + 10).toArray());
+      pair.second.add(DoubleStream.of(i / 3d, 2d * i / 7d).toArray());
+      pair.second.add(new Object[] { GeneralDomainBitSet.allOf(pair.first),
+          Pair.of(pair, new char[] { 'x' }) });
+      pair.second.add(new Object() {
+        @Override
+        public String toString() {
+          try {
+            Thread.sleep(100);
+          } catch (final Exception e) {
+          }
+          return "sleepy";
+        }
+      });
+    }
+
+    try {
+      final String string = deepToString(pair, 200);
+      assertTrue(string.contains("abcd0"));
+      assertTrue(string.contains("GeneralDomainBitSet"));
+    } catch (final AssertionError e) {
+      throw e;
+    } catch (final Throwable e) {
+      fail("Pair.toString failed: " + e);
+    }
+  }
+
+  @Test(timeout = 1000)
+  public void testDeepToString4() throws Exception {
+    @SuppressWarnings("unchecked")
+    final Supplier<Iterable<Object>>[] createItr = new Supplier[1];
+    createItr[0] = () -> {
+      return () -> new Iterator<Object>() {
+
+        @Override
+        public Object next() {
+          return createItr[0].get();
+        }
+
+        @Override
+        public boolean hasNext() {
+          return true;
+        }
+      };
+    };
+    final Iterable<Object> iterable = createItr[0].get();
+    try {
+      final String string = deepToString(iterable, 200);
+      assertTrue(string.contains("λ["));
+      assertTrue(string.contains(","));
+    } catch (final AssertionError e) {
+      throw e;
+    } catch (final Throwable e) {
+      fail("Pair.toString failed: " + e);
+    }
+  }
 }

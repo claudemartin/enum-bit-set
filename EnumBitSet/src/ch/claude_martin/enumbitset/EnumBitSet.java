@@ -19,8 +19,8 @@ import com.sun.istack.internal.Nullable;
 
 /** This data structure allows managing enum constants in a mutable set with methods similar to
  * EnumSet and BitSet. This holds a regular EnumSet, but adds more functions to use it as a BitSet.
- * Note that the implementation of EnumSet works like a bit set but it does not share an interface
- * with the type.
+ * Note that the implementation of EnumSet works like a {@link BitSet} but it does not share an
+ * interface with the type.
  * 
  * <p>
  * All information is hidden. But this class offers many more methods compared to {@link EnumSet}.

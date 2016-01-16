@@ -5,7 +5,10 @@ import static org.junit.Assert.*;
 
 import java.io.Serializable;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -161,17 +164,6 @@ public class PairTest {
     assertTrue(string.startsWith(Pair.class.getSimpleName()));
     assertTrue(string.contains(p.first));
     assertTrue(string.contains(p.second.toString()));
-
-    // Recursion:
-    final Pair<Object, ArrayList, ArrayList<Object>> p2 = Pair.of(new ArrayList(),
-        new ArrayList<>());
-    p2.first.add(p2);
-    p2.second.add(p2);
-    try {
-      p2.toString();
-    } catch (final Throwable e) {
-      fail("Pair.toString failed: " + e);
-    }
   }
 
   @Test
@@ -205,5 +197,66 @@ public class PairTest {
     assertArrayEquals(new Object[] { a, c, b }, list.toArray());
     list.sort(Pair.comparingBySecond((x, y) -> Double.compare(y, x)));
     assertArrayEquals(new Object[] { a, b, c }, list.toArray());
+  }
+
+  @Test
+  public final void testToMap() throws Exception {
+    final Pair<String, String, String> p = Pair.of("a", "b");
+    final Map<Boolean, String> map = p.toMap();
+    assertEquals("a", map.get(false));
+    assertEquals("b", map.get(true));
+    assertEquals(2, map.size());
+    try {
+      map.put(true, "x");
+      fail("toMap");
+    } catch (final UnsupportedOperationException e) {
+    }
+    for (final Boolean b : map.keySet()) {
+      assertNotNull(b);
+      assertNotNull(map.get(b));
+    }
+    for (final String s : map.values())
+      assertNotNull(s);
+    for (final Entry<Boolean, String> e : map.entrySet())
+      assertEquals(map.get(e.getKey()), e.getValue());
+  }
+
+  @Test
+  public final void testOfMap() throws Exception {
+    {
+      Pair<String, String, String> p1, p2;
+      p1 = Pair.of("a", "b");
+      p2 = Pair.ofMap(p1.toMap());
+      assertEquals(p1, p2);
+
+      try {
+        Pair.ofMap(null);
+        fail("ofMap(null)");
+      } catch (final NullPointerException e) {
+      }
+
+      final Map<Boolean, String> map = new HashMap<>();
+      try {
+        Pair.ofMap(map);
+        fail("ofMap(null)");
+      } catch (final NullPointerException e) {
+      }
+
+      map.put(false, "a");
+      map.put(true, "b");
+
+      p1 = Pair.ofMap(map);
+      assertEquals(p2, p1);
+    }
+
+    {
+      Pair<List<String>, List<String>, List<String>> p1, p2;
+      p1 = Pair.of(asList("a"), asList("b"));
+      final Map<Boolean, List<String>> map = Stream.of("a", "b")
+          .collect(Collectors.partitioningBy(e -> "b".equals(e)));
+      p2 = Pair.ofMap(map);
+      assertEquals(p1, p2);
+    }
+
   }
 }
