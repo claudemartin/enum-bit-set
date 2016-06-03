@@ -2,6 +2,7 @@ package ch.claude_martin.enumbitset;
 
 import static java.util.Objects.requireNonNull;
 
+import java.lang.reflect.Modifier;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -407,7 +408,8 @@ public final class BitSetUtilities {
     }
     final Class<? extends Object> oClass = o.getClass();
     final String simpleName = oClass.isSynthetic() && oClass.getSimpleName().contains("$$Lambda$")
-        && oClass.getDeclaredMethods().length == 1
+        && Arrays.stream(oClass.getDeclaredMethods())
+            .filter(m -> Modifier.isPublic(m.getModifiers())).count() == 1
         ? "λ" : oClass.getSimpleName();
     if (dejavu.contains(o)) {
       buffer.append(simpleName);
