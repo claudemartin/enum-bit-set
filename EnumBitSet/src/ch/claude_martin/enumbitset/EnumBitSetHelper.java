@@ -26,39 +26,35 @@ import javax.annotation.ParametersAreNonnullByDefault;
  * use the methods of that set.
  * 
  * <p>
- * Examples for usage:
+ * <b><i>Examples for usage:</i></b>
  * 
  * <pre>
- * User permissions:
- * <code>public enum Role { READ, WRITE, EXECUTE }
+ * <b>User permissions:</b><code>
+ * public enum Role implements EnumBitSetHelper&lt;Role> { 
+ *    READ, WRITE, EXECUTE 
+ * }
  * 
  * BigInteger permissions = MyDBAccess.getUserPermissions(currentUser);
  * permissions = Role.READ.removedFrom(permissions);
  * MyDBAccess.setUserPermissions(currentUser, permissions);
  * </code>
- * </pre>
+ *
+ * <b>Planetary composition:</b>
+ * <code>public enum Planet implements EnumBitSetHelper&lt;Planet> { MERCURY, VENUS, EARTH, ... }
+ * public enum Element implements EnumBitSetHelper&lt;Element> { H, He, Li, Be, B, C, N, ... }
  * 
- * <pre>
- * Planetary composition:
- * <code>public enum Planet { MERCURY, VENUS, EARTH, ... }
- * public enum Element { H, He, Li, Be, B, C, N, ... }
- * 
- * final Map&lt;Planet, EnumBitSet&lt;Element&gt;&gt; composition = new HashMap&gt;&gt;();
+ * final Map&lt;Planet, EnumBitSet&lt;Element&gt;&gt; composition = new HashMap&lt;&gt;();
  * final EnumBitSet&lt;Element&gt; mercury = Element.O.union(Element.Na, Element.H, Element.He, Element.K);
  * composition.put(Planet.MERCURY, mercury);
  * </code>
- * </pre>
  * 
- * <pre>
- * Counterexample:
+ * <b>Counterexample:</b>
  * <code>public enum Status { SUBMITTED, REVIEWED, ACCEPTED, PUBLISHED }</code>
  * Each status includes all previous ones (can't be reviewed if not submitted). 
  * A regular integer field is enough to store the status 
  * (e.g. <code>REVIEWED.ordinal()</code>).
  * </pre>
  * <p>
- * Java 8 Beta has still some bugs. It does not allow assert statements and
- * <code>&#64;SafeVarargs</code> in interfaces.
  * 
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a>
