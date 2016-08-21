@@ -15,7 +15,7 @@
 * `zipWithPosition` 
 
 # Documentation:
-All is documented and the ant build file contains a target "javadoc". Just run it, read the documentation directly in the source code, or read it [online](https://web.archive.org/web/20140624175002/http://claude-martin.ch/enumbitset/doc/).
+All is documented and the ant build file contains a target "javadoc". Just run it, read the documentation directly in the source code, or read it [online](http://claude-martin.ch/enumbitset/doc/).
 
 # Java 8 and newer!!
 Note that you can only use this with Java 8 and newer releases of Java.
@@ -61,4 +61,4 @@ union.ifPresent(System.out::println); // [READ, WRITE, DELETE]
 Note: If you think this code looks weird and not like Java then it's because Java 8 has new ways of working with Collections. This project provides a classic Java API and you can use conventional Java practices.
 
 # Outline of EnumBitSetHelper:
-See the javadoc of [EnumBitSetHelper](https://web.archive.org/web/20140624175002/http://claude-martin.ch/enumbitset/doc/index.html?ch/claude_martin/enumbitset/EnumBitSetHelper.html) to see what the interface offers.
+See the javadoc of [EnumBitSetHelper](http://claude-martin.ch/enumbitset/doc/index.html?ch/claude_martin/enumbitset/EnumBitSetHelper.html) to see what the interface offers.
