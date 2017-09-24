@@ -7,7 +7,16 @@ import static java.util.Spliterator.ORDERED;
 import static java.util.Spliterator.SIZED;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -414,9 +423,12 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     return Map.Entry.comparingByValue();
   }
 
-  /** Returns a serializable comparator that compares Pair by the first element using the given
+  /** Returns a comparator that compares Pairs by the first element using the given
    * {@link Comparator}.
    *
+   * <p>
+   * The returned comparator is serializable if the specified comparator is also serializable.
+   * 
    * @param <F>
    *          the type of the first element
    * @param <S>

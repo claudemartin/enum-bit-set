@@ -10,12 +10,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-
-import com.sun.istack.internal.Nullable;
+import javax.annotation.*;
 
 /** This data structure allows managing enum constants in a mutable set with methods similar to
  * EnumSet and BitSet. This holds a regular EnumSet, but adds more functions to use it as a BitSet.
