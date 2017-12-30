@@ -4,16 +4,24 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type. */
-@ParametersAreNonnullByDefault
+@DefaultAnnotationForParameters({ NonNull.class })
 public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection<T> {
   private static final long serialVersionUID = -1901507799664143152L;
 
@@ -24,7 +32,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @param domain
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
-  @Nonnull
+  @NonNull
   public static <X> GeneralDomainBitSet<X> allOf(final LinkedHashSet<X> domain) {
     requireNonNull(domain, "domain");
     final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -39,7 +47,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @param domain
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
-  @Nonnull
+  @NonNull
   public static <X> GeneralDomainBitSet<X> allOf(final List<X> domain) {
     requireNonNull(domain, "domain");
     final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -55,7 +63,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   @SafeVarargs
-  @Nonnull
+  @NonNull
   public static <X> GeneralDomainBitSet<X> allOf(final X... domain) {
     requireNonNull(domain, "domain");
     return allOf(asList(domain));
@@ -68,7 +76,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @param domain
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
-  @Nonnull
+  @NonNull
   public static <X> GeneralDomainBitSet<X> noneOf(final LinkedHashSet<X> domain) {
     requireNonNull(domain, "domain");
     return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -81,7 +89,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @param domain
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
-  @Nonnull
+  @NonNull
   public static <X> GeneralDomainBitSet<X> noneOf(final List<X> domain) {
     requireNonNull(domain, "domain");
     return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -95,7 +103,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
   @SafeVarargs
-  @Nonnull
+  @NonNull
   public static <X> GeneralDomainBitSet<X> noneOf(final X... domain) {
     requireNonNull(domain, "domain");
     return noneOf(asList(domain));
@@ -110,9 +118,9 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @param initialSet
    *          The elements to be contained.
    * @return New GeneralDomainBitSet of given domain and elements. */
-  @Nonnull
+  @NonNull
   public static <T> GeneralDomainBitSet<T> of(final LinkedHashSet<T> domain,
-      @Nonnull final Collection<T> initialSet) {
+      @NonNull final Collection<T> initialSet) {
     requireNonNull(domain, "domain");
     requireNonNull(initialSet, "initialSet");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -129,7 +137,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * @param initialSet
    *          The elements to be contained.
    * @return New GeneralDomainBitSet of given domain and elements. */
-  @Nonnull
+  @NonNull
   public static <T> GeneralDomainBitSet<T> of(final List<T> domain, final Collection<T> initialSet) {
     requireNonNull(domain, "domain");
     requireNonNull(initialSet, "initialSet");
@@ -168,7 +176,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * <li>empty=true &rarr; Set is empty.</li>
    * <li>empty=false &rarr; Set if full.</li>
    * </ul> */
-  @SuppressWarnings("unused")
+  @SuppressFBWarnings("unused")
   private GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset, final boolean empty) {
     requireNonNull(bitset, "bitset");
     requireNonNull(empty, "empty");
@@ -247,7 +255,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   public boolean equals(final Object o) {
     return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
         && this.ofEqualElements((DomainBitSet<T>) o);
@@ -318,7 +326,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   public GeneralDomainBitSet<T> intersectVarArgs(final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
@@ -374,7 +382,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  public GeneralDomainBitSet<T> minusVarArgs(@SuppressWarnings("unchecked") final T... other) {
+  public GeneralDomainBitSet<T> minusVarArgs(@SuppressFBWarnings("unchecked") final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     result.removeAll(asList(other));
@@ -395,7 +403,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   public Iterable<GeneralDomainBitSet<T>> powerset() throws MoreThan64ElementsException {
     return (Iterable<GeneralDomainBitSet<T>>) DomainBitSet.super.powerset();
   }
@@ -533,7 +541,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  public GeneralDomainBitSet<T> unionVarArgs(@SuppressWarnings("unchecked") final T... other) {
+  public GeneralDomainBitSet<T> unionVarArgs(@SuppressFBWarnings("unchecked") final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     result.addAll(asList(other));
@@ -547,7 +555,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     private final Domain<T>   domain;
     private final Set<T>      set;
 
-    public SerializationProxy(@Nonnull final Domain<T> domain, @Nonnull final Set<T> set) {
+    public SerializationProxy(@NonNull final Domain<T> domain, @NonNull final Set<T> set) {
       this.domain = domain;
       this.set = set;
     }
@@ -561,7 +569,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     return new SerializationProxy<>(this.domain, this.set);
   }
 
-  @SuppressWarnings({ "static-method", "unused" })
+  @SuppressFBWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");

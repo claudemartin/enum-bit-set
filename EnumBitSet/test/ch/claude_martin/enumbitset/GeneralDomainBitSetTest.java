@@ -6,14 +6,25 @@ import static ch.claude_martin.enumbitset.GeneralDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -22,9 +33,9 @@ import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressWarnings("static-method")
+@SuppressFBWarnings("static-method")
 public class GeneralDomainBitSetTest {
 
   final GeneralDomainBitSet<Integer> none      = noneOf(1, 2, 3, 4);
@@ -115,10 +126,10 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public <X extends Enum<X>> void testCreateMultiEnumBitSet() {
-    @SuppressWarnings("unchecked")
+    @SuppressFBWarnings("unchecked")
     final GeneralDomainBitSet<X> set = (GeneralDomainBitSet<X>) DomainBitSet.createMultiEnumBitSet(
         Element.class, Planet.class);
-    @SuppressWarnings("unchecked")
+    @SuppressFBWarnings("unchecked")
     final List<X> planets = (List<X>) asList(EnumBitSetTest.Planet.values());
     set.addAll(planets);
     assertEquals(set.size(), planets.size());
@@ -622,7 +633,7 @@ public class GeneralDomainBitSetTest {
     }
   }
 
-  @SuppressWarnings({ "rawtypes" })
+  @SuppressFBWarnings({ "rawtypes" })
   @Test
   public void testSerialize() throws Exception {
 

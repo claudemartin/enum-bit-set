@@ -14,9 +14,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressWarnings("static-method")
+@SuppressFBWarnings("static-method")
 public class DefaultDomainTest {
 
   static final DefaultDomain<Integer>   domain123 = DefaultDomain.of(asList(1, 2, 3));       ;
@@ -38,7 +38,7 @@ public class DefaultDomainTest {
     assertFalse(domainABC.contains('a'));
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressFBWarnings({ "unchecked", "rawtypes" })
   @Test
   public final void testFactory() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
@@ -68,14 +68,13 @@ public class DefaultDomainTest {
 
   }
 
-  @SuppressWarnings({ "rawtypes" })
+  @SuppressFBWarnings({ "rawtypes" })
   @Test
   public final void testGetInt() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
       final Object[] array = d.toArray();
-      for (int i = 0; i < d.size(); i++) {
+      for (int i = 0; i < d.size(); i++)
         assertEquals(array[i], d.get(i));
-      }
     }
     try {
       domain123.get(-1);
@@ -104,9 +103,8 @@ public class DefaultDomainTest {
   public final void testIndexOfObject() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
       final Object[] array = d.toArray();
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0; i < array.length; i++)
         assertEquals(i, d.indexOf(array[i]));
-      }
     }
 
     assertEquals(-1, domain123.indexOf("foo"));

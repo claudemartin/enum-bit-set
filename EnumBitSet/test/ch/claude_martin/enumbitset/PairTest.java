@@ -1,11 +1,25 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,7 +28,7 @@ import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 @SuppressWarnings("static-method")
 @SuppressFBWarnings(value = { "DM_NUMBER_CTOR", "DM_STRING_CTOR" }, justification = "It's part of the test.")
@@ -156,7 +170,7 @@ public class PairTest {
     assertEquals(p.second, array[1]);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressFBWarnings({ "rawtypes", "unchecked" })
   @Test
   public final void testToString() {
     final Pair<?, String, Integer> p = Pair.of("foo", 42);

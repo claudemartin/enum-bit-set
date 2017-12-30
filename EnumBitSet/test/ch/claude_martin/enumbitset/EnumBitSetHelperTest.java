@@ -1,7 +1,11 @@
 package ch.claude_martin.enumbitset;
 
-import static ch.claude_martin.enumbitset.TestUtilities.*;
-import static org.junit.Assert.*;
+import static ch.claude_martin.enumbitset.TestUtilities.expectIAE;
+import static ch.claude_martin.enumbitset.TestUtilities.expectMT64EE;
+import static ch.claude_martin.enumbitset.TestUtilities.expectNPE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import java.util.BitSet;
@@ -10,13 +14,11 @@ import java.util.EnumSet;
 
 import org.junit.Test;
 
-import com.sun.org.apache.xml.internal.serialize.ElementState;
-
-import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressWarnings("static-method")
+@SuppressFBWarnings("static-method")
 public class EnumBitSetHelperTest {
 
   @Test

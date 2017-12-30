@@ -4,7 +4,16 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -14,15 +23,17 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnegative;
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
+import ch.claude_martin.enumbitset.annotations.CheckReturnValue;
+import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.Nonnegative;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
+
 
 /** A collection of utility methods for {@link DomainBitSet}s.
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
-@ParametersAreNonnullByDefault
+@DefaultAnnotationForParameters({ NonNull.class })
 public final class BitSetUtilities {
 
   /** Creates a BigInteger of a given bit set. The value is a positive value with the same "value" as
@@ -31,7 +42,7 @@ public final class BitSetUtilities {
    * @param bitset
    *          A bit set.
    * @return The bit mask. */
-  @Nonnull
+  @NonNull
   @Nonnegative
   public static BigInteger asBigInteger(final BitSet bitset) {
     if (requireNonNull(bitset).isEmpty())
@@ -80,7 +91,7 @@ public final class BitSetUtilities {
    * @param mask
    *          A bit mask.
    * @return A BitSet that represents the given set. */
-  @Nonnull
+  @NonNull
   public static <X extends Enum<X> & EnumBitSetHelper<X>> BitSet asBitSet(final long mask) {
     return BitSet.valueOf(new long[] { mask });
   }
@@ -132,8 +143,8 @@ public final class BitSetUtilities {
    * @see #cross(DomainBitSet, DomainBitSet, Class)
    * @see DomainBitSet#cross(DomainBitSet)
    * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  @Nonnull
+  @SuppressFBWarnings({ "rawtypes", "unchecked" })
+  @NonNull
   @CheckReturnValue
   public static <T> Set<Pair<T, T, T>> cross(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     requireNonNull(set1, "set1");
@@ -163,8 +174,8 @@ public final class BitSetUtilities {
    * @return the Cartesian Product.
    * @see DomainBitSet#cross(DomainBitSet)
    * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
-  @SuppressWarnings({ "rawtypes", "unchecked" })
-  @Nonnull
+  @SuppressFBWarnings({ "rawtypes", "unchecked" })
+  @NonNull
   @CheckReturnValue
   public static <C, T1 extends C, T2 extends C> Set<Pair<C, T1, T2>> cross(
       final DomainBitSet<T2> set1, final DomainBitSet<T2> set2, final Class<C> type) {
@@ -186,9 +197,9 @@ public final class BitSetUtilities {
    * @see DomainBitSet#intersect(Iterable)
    * @return The intersection of both sets. */
   @CheckReturnValue
-  @Nonnull
+  @NonNull
   public static <T> DomainBitSet<T> intersect(final DomainBitSet<T> set1,
-      @Nonnull final DomainBitSet<T> set2) {
+      @NonNull final DomainBitSet<T> set2) {
     return set1.intersect(set2);
   }
 
@@ -214,7 +225,7 @@ public final class BitSetUtilities {
    * @see DomainBitSet#minus(Iterable)
    * @return The relative complement of both sets. */
   @CheckReturnValue
-  @Nonnull
+  @NonNull
   public static <T> DomainBitSet<T> minus(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     return set1.minus(set2);
   }
@@ -245,7 +256,7 @@ public final class BitSetUtilities {
    * @see Collectors#toCollection(Supplier)
    * @return New Collector to collect elements into a DomainBitSet. */
   @CheckReturnValue
-  @Nonnull
+  @NonNull
   public static <T> Collector<T, Set<T>, DomainBitSet<T>> toDomainBitSet(final Domain<T> domain) {
     requireNonNull(domain, "domain");
     return toDomainBitSet(domain.factory());
@@ -262,7 +273,7 @@ public final class BitSetUtilities {
    * @see Collectors#toCollection(Supplier)
    * @return New Collector to collect elements into a DomainBitSet. */
   @CheckReturnValue
-  @Nonnull
+  @NonNull
   public static <T, D extends DomainBitSet<T>> Collector<T, Set<T>, D> toDomainBitSet(
       final Function<Collection<T>, D> bitsetFactory) {
     requireNonNull(bitsetFactory, "bitsetFactory");
@@ -309,7 +320,7 @@ public final class BitSetUtilities {
    * 
    * @return a Collector */
   @CheckReturnValue
-  @Nonnull
+  @NonNull
   public static <T> Collector<Pair<Object, Integer, T>, ?, TreeMap<Integer, T>> toTreeMap() {
     // Note: A collision should not occur, unless this is applied to an invalid stream.
     return Collectors.toMap(Pair::_1, Pair::_2, (u, v) -> {
@@ -329,7 +340,7 @@ public final class BitSetUtilities {
    * @see DomainBitSet#union(Iterable)
    * @return The union of both sets. */
   @CheckReturnValue
-  @Nonnull
+  @NonNull
   public static <T> DomainBitSet<T> union(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
     return set1.union(set2);
   }
@@ -343,8 +354,8 @@ public final class BitSetUtilities {
    * @param timeout
    *          timeout in milliseconds
    * @return A character sequence that represents the given object. */
-  @SuppressWarnings("deprecation")
-  @Nonnull
+  @SuppressFBWarnings("deprecation")
+  @NonNull
   public static CharSequence deepToString(final Object object, @Nonnegative final int timeout) {
     if (timeout < 0)
       throw new IllegalArgumentException("timeout");

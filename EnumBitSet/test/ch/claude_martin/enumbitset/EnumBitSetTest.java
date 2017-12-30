@@ -5,20 +5,36 @@ import static ch.claude_martin.enumbitset.TestUtilities.expectIOOBE;
 import static ch.claude_martin.enumbitset.TestUtilities.expectMT64EE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-@SuppressWarnings("static-method")
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
+
+@SuppressFBWarnings("static-method")
 public class EnumBitSetTest {
   static enum Alphabet implements EnumBitSetHelper<Alphabet> {
     A {
@@ -77,7 +93,7 @@ public class EnumBitSetTest {
     }
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   @Test
   public void testAllOf() throws Exception {
     assertEquals(26, EnumBitSet.allOf(Alphabet.class).size());
@@ -422,7 +438,7 @@ public class EnumBitSetTest {
       assertTrue(e.elementOf(bitset));
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   @Test
   public void testElementOfEnum() {
     assertTrue(Alphabet.P.elementOf(Alphabet.P));
@@ -482,7 +498,7 @@ public class EnumBitSetTest {
     assertFalse(c.toSet().equals(c));
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressFBWarnings({ "unchecked", "rawtypes" })
   @Test
   public void testGetBit() throws Exception {
     for (final Class cls : enums) {
@@ -729,7 +745,7 @@ public class EnumBitSetTest {
     assertEquals(d, bcd.minusVarArgs(Alphabet.A, Alphabet.B, Alphabet.C));
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   @Test
   public void testNoneOf() throws Exception {
     assertEquals(0, EnumBitSet.noneOf(Alphabet.class).size());
@@ -954,7 +970,7 @@ public class EnumBitSetTest {
     assertEquals(BigInteger.valueOf(3), Alphabet.B.xor(BigInteger.ONE));
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressFBWarnings({ "unchecked", "rawtypes" })
   @Test
   public <E extends Enum<E> & EnumBitSetHelper<E>> void testZipWithPosition() throws Exception {
     final List<DomainBitSet<E>> list = new LinkedList<>();
@@ -974,7 +990,7 @@ public class EnumBitSetTest {
     }
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressFBWarnings({ "rawtypes", "unchecked" })
   @Test
   public void testSerialize() throws Exception {
     for (final Class c : asList(Alphabet.class, Element.class, Suit.class)) {

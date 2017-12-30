@@ -5,7 +5,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -13,8 +18,9 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressWarnings("static-method")
+@SuppressFBWarnings("static-method")
 public class BitSetUtilitiesTest {
 
   @Test
@@ -236,7 +242,7 @@ public class BitSetUtilitiesTest {
 
   @Test(timeout = 1000)
   public void testDeepToString4() throws Exception {
-    @SuppressWarnings("unchecked")
+    @SuppressFBWarnings("unchecked")
     final Supplier<Iterable<Object>>[] createItr = new Supplier[1];
     createItr[0] = () -> {
       return () -> new Iterator<Object>() {

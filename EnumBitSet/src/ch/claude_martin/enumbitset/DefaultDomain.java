@@ -3,15 +3,22 @@ package ch.claude_martin.enumbitset;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Spliterator;
 import java.util.function.Function;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
+import com.sun.istack.internal.Nullable;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.Immutable;
+import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** Default implementation of {@link Domain}.
  * <p>
@@ -23,11 +30,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
-@ParametersAreNonnullByDefault
+@DefaultAnnotationForParameters({ NonNull.class })
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   private static final long          serialVersionUID = -1159105301120332006L;
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @SuppressFBWarnings({ "unchecked", "rawtypes" })
   private static final DefaultDomain EMPTY_DOMAIN     = new DefaultDomain(Collections.EMPTY_LIST);
 
   /** Returns a Domain of the given elements.
@@ -42,8 +49,8 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates.
    * @return Domain of the given elements. */
-  @SuppressWarnings("unchecked")
-  @Nonnull
+  @SuppressFBWarnings("unchecked")
+  @NonNull
   public static <T> DefaultDomain<T> of(final Collection<? extends T> domain) {
     requireNonNull(domain, "domain");
 
@@ -64,7 +71,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
 
   /** Internal use only! */
   @SafeVarargs
-  @Nonnull
+  @NonNull
   static <T> DefaultDomain<T> of(final T... domain) {
     requireNonNull(domain, "domain");
 
@@ -75,14 +82,14 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   }
 
   // Array of all elements in the domain:
-  @Nonnull
+  @NonNull
   private final T[]                 elements;
   // View of the array as a List:
-  @Nonnull
+  @NonNull
   private final List<T>             list;
 
   // Lookup table: element->index
-  @Nonnull
+  @NonNull
   private final HashMap<T, Integer> map;
 
   @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
@@ -93,8 +100,8 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * 
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates. */
-  @SuppressWarnings("unchecked")
-  private DefaultDomain(@Nonnull final Collection<? extends T> domain)
+  @SuppressFBWarnings("unchecked")
+  private DefaultDomain(@NonNull final Collection<? extends T> domain)
       throws IllegalArgumentException {
     this(domain.toArray((T[]) new Object[requireNonNull(domain, "domain").size()]));
   }
@@ -200,10 +207,10 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   /** This proxy class is used to serialize DefaultDomain instances. */
   private static class SerializationProxy<T> implements java.io.Serializable {
     private static final long serialVersionUID = -7898910202865145301L;
-    @Nonnull
+    @NonNull
     private final T[]         elements;
 
-    public SerializationProxy(@Nonnull final T[] elements) {
+    public SerializationProxy(@NonNull final T[] elements) {
       this.elements = elements;
     }
 
@@ -217,7 +224,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
     return new SerializationProxy<>(this.elements);
   }
 
-  @SuppressWarnings({ "static-method", "unused" })
+  @SuppressFBWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");

@@ -25,9 +25,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
+import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.Immutable;
+import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** An immutable, ordered pair (2-tuple) of two non-null elements. This can be used in a Cartesian
  * product.
@@ -47,7 +48,7 @@ import javax.annotation.concurrent.Immutable;
  *          The type of the second element. Extends &lt;T&gt;.
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
-@ParametersAreNonnullByDefault
+@DefaultAnnotationForParameters({ NonNull.class })
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
     Serializable, Map.Entry<X, Y>, Comparable<Pair<T, X, Y>> {
   private static final long serialVersionUID = -5888335755613555933L;
@@ -83,8 +84,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param f
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
-  @SuppressWarnings("all")
-  @Nonnull
+  @SuppressFBWarnings("all")
+  @NonNull
   public static//
   <TT, TX extends TT, TY extends TT, P extends Pair<TT, TX, TY>, R> //
   BiFunction<TX, TY, R> curry(final Function<P, R> f) {
@@ -113,7 +114,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  @Nonnull
+  @NonNull
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Class<TT> commonType,
       final TX first, final TY second) {
     requireNonNull(commonType, "commonType");
@@ -140,7 +141,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If any of the elements is <tt>null</tt>.
    * @return A new pair of the given elements. */
-  @Nonnull
+  @NonNull
   public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(//
       final TX first, final TY second) {
     return new Pair<>(requireNonNull(first, "first"), requireNonNull(second, "second"));
@@ -157,7 +158,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @throws NullPointerException
    *           If the entry or its key or value is <tt>null</tt>.
    * @return A new pair made of the key and value of the entry. */
-  @Nonnull
+  @NonNull
   public static <TX, TY> Pair<Object, TX, TY> of(final Map.Entry<TX, TY> entry) {
     requireNonNull(entry, "entry");
     return new Pair<>(//
@@ -178,7 +179,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param f
    *          A BiFunction that takes two elements.
    * @return A Function that takes a pair and applies both elements on the given Function. */
-  @Nonnull
+  @NonNull
   public static <TX, TY, R> Function<Pair<?, TX, TY>, R> uncurry(final BiFunction<TX, TY, R> f) {
     requireNonNull(f, "uncurry: function must not be null");
     return (p) -> f.apply(p.first, p.second);
@@ -188,14 +189,14 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * <p>
    * This is also known as the <i>first coordinate</i> or the <i>left projection</i> of the pair. */
-  @Nonnull
+  @NonNull
   public final X           first;
 
   /** The second value of this pair. Not null.
    * 
    * <p>
    * This is also known as the <i>second coordinate</i> or the <i>right projection</i> of the pair. */
-  @Nonnull
+  @NonNull
   public final Y           second;
 
   private Pair(final X first, final Y second) {
@@ -210,7 +211,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @see #first
    * @see #getKey()
    * @return the first element (not null). */
-  @Nonnull
+  @NonNull
   public X _1() {
     return this.first;
   }
@@ -220,7 +221,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @see #second
    * @see #getValue()
    * @return the second element (not null). */
-  @Nonnull
+  @NonNull
   public Y _2() {
     return this.second;
   }
@@ -244,7 +245,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * @return <code>this</code> */
   @Override
-  @Nonnull
+  @NonNull
   public Pair<T, X, Y> clone() {
     return this;
   }
@@ -270,7 +271,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     if (this == obj)
       return true;
     if (obj instanceof Map.Entry) {
-      @SuppressWarnings("unchecked")
+      @SuppressFBWarnings("unchecked")
       final Map.Entry<X, Y> e2 = (Map.Entry<X, Y>) obj;
       return this.first.equals(e2.getKey()) && this.second.equals(e2.getValue());
     }
@@ -323,7 +324,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     return Spliterators.spliterator(this.iterator(), 2, SIZED | IMMUTABLE | ORDERED | NONNULL);
   }
 
-  @Nonnull
+  @NonNull
   public Stream<T> stream() {
     return StreamSupport.stream(this.spliterator(), false);
   }
@@ -333,7 +334,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * <code>(a, b) &rarr; (b, a)</code>
    * 
    * @return <code>new Pair&lt;&gt;(this.second, this.first)</code> */
-  @Nonnull
+  @NonNull
   public Pair<T, Y, X> swap() {
     return new Pair<>(this.second, this.first);
   }
@@ -341,7 +342,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   /** This Pair as an array so that first is on index 0 and second is on index 1.
    * 
    * @return <code>new Object[] { this.first, this.second };</code> */
-  @Nonnull
+  @NonNull
   public Object[] toArray() {
     return new Object[] { this.first, this.second };
   }
@@ -352,7 +353,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @see BitSetUtilities#deepToString(Object, int)
    * @return "Pair(<i>first</i>, <i>second</i>)" */
   @Override
-  @Nonnull
+  @NonNull
   public String toString() {
     return this.toString("Pair(%s, %s)");
   }
@@ -363,7 +364,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @see BitSetUtilities#deepToString(Object, int)
    * 
    * @returns A string representation, based on the given format. */
-  @Nonnull
+  @NonNull
   public String toString(final String format) {
     requireNonNull(format, "format");
     return String.format(format, this.first.toString(), this.second.toString());
@@ -376,7 +377,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @see #first
    * @see #_1() */
   @Override
-  @Nonnull
+  @NonNull
   public X getKey() {
     return this.first;
   }
@@ -386,7 +387,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @see #second
    * @see #_2() */
   @Override
-  @Nonnull
+  @NonNull
   public Y getValue() {
     return this.second;
   }
@@ -406,7 +407,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param <S>
    *          the type of the second element
    * @return a comparator that compares Pair in natural order on key. */
-  @Nonnull
+  @NonNull
   public static <F extends Comparable<? super F>, S> Comparator<Map.Entry<F, S>> comparingByFirst() {
     return Map.Entry.comparingByKey();
   }
@@ -418,7 +419,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param <S>
    *          the {@link Comparable} type of the second element
    * @return a comparator that compares pair in natural order on the second element. */
-  @Nonnull
+  @NonNull
   public static <F, S extends Comparable<? super S>> Comparator<Map.Entry<F, S>> comparingBySecond() {
     return Map.Entry.comparingByValue();
   }
@@ -436,7 +437,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param cmp
    *          the {@link Comparator}
    * @return a comparator that compares Pair by the the first element. */
-  @Nonnull
+  @NonNull
   public static <F, S> Comparator<Map.Entry<F, S>> comparingByFirst(final Comparator<? super F> cmp) {
     requireNonNull(cmp, "cmp");
     return Map.Entry.comparingByKey(cmp);
@@ -455,13 +456,13 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param cmp
    *          the {@link Comparator}
    * @return a comparator that compares Pairs by the second element. */
-  @Nonnull
+  @NonNull
   public static <F, S> Comparator<Map.Entry<F, S>> comparingBySecond(final Comparator<? super S> cmp) {
     requireNonNull(cmp, "cmp");
     return Map.Entry.comparingByValue(cmp);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressFBWarnings({ "rawtypes", "unchecked" })
   private final static Comparator<Pair> comparator = (Comparator) getComparator();
 
   private static <A extends Comparable<A>, B extends Comparable<B>> Comparator<Pair<?, A, B>> getComparator() {
@@ -477,7 +478,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
 
   /** This pair as a {@link Map}. The <i>first</i> element is mapped to <code>false</code> and the
    * <i>second</i> to <code>true</code>, which is the natural order of the boolean values. */
-  @Nonnull
+  @NonNull
   public Map<Boolean, T> toMap() {
     final Pair<Map.Entry<Boolean, T>, Map.Entry<Boolean, T>, Map.Entry<Boolean, T>> entries;
     entries = of(of(false, Pair.this.first), of(true, Pair.this.second));

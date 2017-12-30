@@ -12,7 +12,11 @@ import static ch.claude_martin.enumbitset.SmallDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,8 +33,9 @@ import org.junit.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressWarnings("static-method")
+@SuppressFBWarnings("static-method")
 public class SmallDomainBitSetTest {
 
   private static SmallDomainBitSet<Alphabet> claude;
@@ -393,7 +398,7 @@ public class SmallDomainBitSetTest {
     }
   }
 
-  @SuppressWarnings({ "rawtypes" })
+  @SuppressFBWarnings({ "rawtypes" })
   @Test
   public void testSerialize() throws Exception {
 

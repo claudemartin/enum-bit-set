@@ -4,13 +4,18 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
+import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.Immutable;
+import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** A domain defines the elements that a {@link DomainBitSet} can contain. This is also known as the
  * <i>universe of discourse</i>. It is a set with the following characteristics:
@@ -34,7 +39,7 @@ import javax.annotation.concurrent.Immutable;
  * 
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
 @Immutable
-@ParametersAreNonnullByDefault
+@DefaultAnnotationForParameters({ NonNull.class })
 public interface Domain<T> extends List<T>, Set<T>, Serializable {
 
   /** Creates a Domain of the given elements.
@@ -43,7 +48,7 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
    *          Elements of the domain.
    * @return New domain containing all given elements. */
   @SafeVarargs
-  @Nonnull
+  @NonNull
   public static <T> Domain<T> of(final T... elements) {
     requireNonNull(elements, "elements");
     return DefaultDomain.of(asList(elements));
@@ -55,8 +60,8 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
    * @param elements
    *          Elements of the domain. The collection must be ordered.
    * @return Domain containing all given elements. */
-  @SuppressWarnings("unchecked")
-  public static <T> Domain<T> of(@Nonnull final Collection<? extends T> elements) {
+  @SuppressFBWarnings("unchecked")
+  public static <T> Domain<T> of(@NonNull final Collection<? extends T> elements) {
     requireNonNull(elements, "elements");
     if (elements instanceof Domain)
       return (Domain<T>) elements;
@@ -92,11 +97,11 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
 
   /** Domain is immutable and therefore does not support this method. */
   @Override
-  public boolean add(@Nonnull final T e);
+  public boolean add(@NonNull final T e);
 
   /** Domain is immutable and therefore does not support this method. */
   @Override
-  public boolean addAll(@Nonnull final Collection<? extends T> c);
+  public boolean addAll(@NonNull final Collection<? extends T> c);
 
   /** Domain is immutable and therefore does not support this method. */
   @Override

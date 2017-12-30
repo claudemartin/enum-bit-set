@@ -5,15 +5,22 @@ import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import javax.annotation.Nonnull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.Immutable;
+import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** BitSet with a domain of up to 64 elements. This is checked at creation, so that it is not thrown
  * later. However, a mask that has a larger domain causes an {@link IllegalArgumentException}
@@ -23,17 +30,17 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  *          The type of the domain. All elements in the domain must be of type T or of any subtype
  *          of T. */
 @Immutable
-@ParametersAreNonnullByDefault
+@DefaultAnnotationForParameters({ NonNull.class })
 public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   private static final long serialVersionUID = 671939884938912745L;
 
   private static final class Itr<T> implements Iterator<T> {
-    @Nonnull
+    @NonNull
     private final Domain<T> dom;
     private int             pos = 0;
     private long            next;
 
-    public Itr(@Nonnull final Domain<T> d, final long mask) {
+    public Itr(@NonNull final Domain<T> d, final long mask) {
       this.dom = d;
       this.next = mask;
       while (this.next != 0L && (this.next & 1L) == 0L) {
@@ -124,7 +131,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param set
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
-  @Nonnull
+  @NonNull
   private static <T> SmallDomainBitSet<T> of(final Domain<T> domain, final long set)
       throws MoreThan64ElementsException {
     return new SmallDomainBitSet<>(domain, set);
@@ -139,7 +146,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param set
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
-  @Nonnull
+  @NonNull
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final Collection<T> set) {
     requireNonNull(domain, "domain");
     requireNonNull(set, "set");
@@ -162,7 +169,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param mask
    *          The elements as a bit mask.
    * @return SmallDomainBitSet based on the given domain and bit mask. */
-  @Nonnull
+  @NonNull
   public static <T> SmallDomainBitSet<T> of(final List<T> domain, final long mask) {
     return SmallDomainBitSet.<T> of(DefaultDomain.of(domain), mask);
   }
@@ -177,8 +184,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
   @SafeVarargs
-  @Nonnull
-  public static <T> SmallDomainBitSet<T> of(@Nonnull final List<T> domain, @Nonnull final T... set) {
+  @NonNull
+  public static <T> SmallDomainBitSet<T> of(@NonNull final List<T> domain, @NonNull final T... set) {
     return of(domain, asList(set));
   }
 
@@ -205,7 +212,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     this.checkMask(set);
   }
 
-  private long arrayToLong(@Nonnull final T[] arr) {
+  private long arrayToLong(@NonNull final T[] arr) {
     return this.itrToLong(Arrays.asList(arr));
   }
 
@@ -232,7 +239,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     if (other == this)
       return true;
     if (other instanceof DomainBitSet) {
-      @SuppressWarnings("unchecked")
+      @SuppressFBWarnings("unchecked")
       final DomainBitSet<T> domBitSet = (DomainBitSet<T>) other;
       if (this.size() != domBitSet.size() || !this.ofEqualDomain(domBitSet))
         return false;
@@ -250,7 +257,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  @Nonnull
+  @NonNull
   public Domain<T> getDomain() {
     return this.domain;
   }
@@ -285,7 +292,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> intersectVarArgs(@SuppressWarnings("unchecked") final T... elements) {
+  public DomainBitSet<T> intersectVarArgs(@SuppressFBWarnings("unchecked") final T... elements) {
     requireNonNull(elements, "elements");
     return new SmallDomainBitSet<>(this.domain, this.set & this.arrayToLong(elements));
   }
@@ -333,7 +340,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> minusVarArgs(@SuppressWarnings("unchecked") final T... elements) {
+  public DomainBitSet<T> minusVarArgs(@SuppressFBWarnings("unchecked") final T... elements) {
     return new SmallDomainBitSet<>(this.domain, this.set & this.not(this.arrayToLong(elements)));
   }
 
@@ -362,7 +369,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @see #powerset(Consumer, boolean)
    * @return The powerset of this set. */
   @Override
-  @SuppressWarnings("unchecked")
+  @SuppressFBWarnings("unchecked")
   public Iterable<SmallDomainBitSet<T>> powerset() {
     return (Iterable<SmallDomainBitSet<T>>) DomainBitSet.super.powerset();
   }
@@ -426,8 +433,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  @Nonnull
-  public DomainBitSet<T> union(@Nonnull final BigInteger mask) {
+  @NonNull
+  public DomainBitSet<T> union(@NonNull final BigInteger mask) {
     return new SmallDomainBitSet<>(this.domain, this.set | this.checkMask(asLong(mask)));
   }
 
@@ -447,7 +454,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> unionVarArgs(@SuppressWarnings("unchecked") final T... elements) {
+  public DomainBitSet<T> unionVarArgs(@SuppressFBWarnings("unchecked") final T... elements) {
     return new SmallDomainBitSet<>(this.domain, this.set | this.arrayToLong(elements));
   }
 
@@ -463,7 +470,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     private final Domain<T>   domain;
     private final long        set;
 
-    public SerializationProxy(@Nonnull final Domain<T> domain, @Nonnull final long set) {
+    public SerializationProxy(@NonNull final Domain<T> domain, @NonNull final long set) {
       this.domain = domain;
       this.set = set;
     }
@@ -477,7 +484,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     return new SerializationProxy<>(this.domain, this.set);
   }
 
-  @SuppressWarnings({ "static-method", "unused" })
+  @SuppressFBWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");
