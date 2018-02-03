@@ -404,8 +404,8 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   @SuppressFBWarnings("unchecked")
-  public Iterable<GeneralDomainBitSet<T>> powerset() throws MoreThan64ElementsException {
-    return (Iterable<GeneralDomainBitSet<T>>) DomainBitSet.super.powerset();
+  public Iterable<? extends DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
+    return DomainBitSet.super.powerset();
   }
 
   @Override
