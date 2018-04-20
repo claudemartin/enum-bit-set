@@ -18,7 +18,9 @@
 All is documented and the ant build file contains a target "javadoc". Just run it, read the documentation directly in the source code, or read it [online](http://claude-martin.ch/enumbitset/doc/).
 
 # Java 8 and newer!!
-Note that you can only use this with Java 8 and newer releases of Java.
+Note that you can only use this with Java 8 and newer releases of Java.  
+
+Update to Java 10 coming soon(ish).
 
 # Multi Paradigm
 You can use the EnumBitSets like the EnumSets in Java. EnumBitSet is a mutable data structure with an interface you will recognize.
