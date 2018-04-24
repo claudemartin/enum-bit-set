@@ -5,12 +5,7 @@ import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Ba;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Pr;
 import static ch.claude_martin.enumbitset.EnumBitSetTest.Element.Zr;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -32,15 +27,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Rank;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("static-method")
+@SuppressWarnings("static-method")
 public class DomainBitSetTest {
 
   static final class TestBitSet<T> implements DomainBitSet<T> {
@@ -66,7 +60,7 @@ public class DomainBitSetTest {
       return (TestBitSet<T>) DomainBitSet.super.clone();
     }
 
-    @SuppressFBWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     @Override
     public boolean equals(final Object o) {
       return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
@@ -208,7 +202,7 @@ public class DomainBitSetTest {
   DomainBitSet<Integer>      oneTo4, none, twoThree, oneTwo, threeFour;
   Set<DomainBitSet<Integer>> all;
 
-  @Before
+  @BeforeEach
   public void before() {
     this.domain1234 = DefaultDomain.of(asList(1, 2, 3, 4));
     this.oneTo4 = TestBitSet.of(this.domain1234, asList(1, 2, 3, 4));

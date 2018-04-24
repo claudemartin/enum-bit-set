@@ -1,0 +1,2 @@
+ant clean mkjar
+pause

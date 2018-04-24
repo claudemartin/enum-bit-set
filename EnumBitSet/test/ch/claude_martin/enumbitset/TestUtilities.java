@@ -1,7 +1,8 @@
 package ch.claude_martin.enumbitset;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
+// The tests should simply be migrated to JUnit 5, so this class is not needed.
 public class TestUtilities {
   @FunctionalInterface
   public static interface Failable<E extends Throwable> {
@@ -29,7 +30,7 @@ public class TestUtilities {
   @SafeVarargs
   static <E extends Throwable> void expect(final Class<E> expected, final String msg,
       final Failable<E>... code) {
-    for (final Failable<E> failable : code) {
+    for (final Failable<E> failable : code)
       try {
         failable.run();
         fail(msg);
@@ -38,7 +39,6 @@ public class TestUtilities {
         if (!expected.isAssignableFrom(e.getClass()))
           throw new AssertionError("unexpected exception", e);
       }
-    }
   }
 
   /** NullPointerException */

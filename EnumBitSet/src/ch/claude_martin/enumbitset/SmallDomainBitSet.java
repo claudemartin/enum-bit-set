@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** BitSet with a domain of up to 64 elements. This is checked at creation, so that it is not thrown
  * later. However, a mask that has a larger domain causes an {@link IllegalArgumentException}
@@ -195,7 +194,6 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   private transient final long all;
 
-  @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private transient int        hash = 0; // defaults to 0, later it's set to a hash code.
 
   SmallDomainBitSet(final Domain<T> domain, final long set) throws MoreThan64ElementsException {
@@ -224,7 +222,6 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  @SuppressFBWarnings("CN_IDIOM_NO_SUPER_CALL")
   public SmallDomainBitSet<T> clone() {
     return this;
   }
@@ -239,8 +236,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     if (other == this)
       return true;
     if (other instanceof DomainBitSet) {
-      @SuppressFBWarnings("unchecked")
-      final DomainBitSet<T> domBitSet = (DomainBitSet<T>) other;
+      @SuppressWarnings("unchecked")
+      final var domBitSet = (DomainBitSet<T>) other;
       if (this.size() != domBitSet.size() || !this.ofEqualDomain(domBitSet))
         return false;
       if (other instanceof SmallDomainBitSet)
@@ -292,7 +289,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> intersectVarArgs(@SuppressFBWarnings("unchecked") final T... elements) {
+  public DomainBitSet<T> intersectVarArgs(@SuppressWarnings("unchecked") final T... elements) {
     requireNonNull(elements, "elements");
     return new SmallDomainBitSet<>(this.domain, this.set & this.arrayToLong(elements));
   }
@@ -340,7 +337,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> minusVarArgs(@SuppressFBWarnings("unchecked") final T... elements) {
+  public DomainBitSet<T> minusVarArgs(@SuppressWarnings("unchecked") final T... elements) {
     return new SmallDomainBitSet<>(this.domain, this.set & this.not(this.arrayToLong(elements)));
   }
 
@@ -369,7 +366,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @see #powerset(Consumer, boolean)
    * @return The powerset of this set. */
   @Override
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   public Iterable<SmallDomainBitSet<T>> powerset() {
     return (Iterable<SmallDomainBitSet<T>>) DomainBitSet.super.powerset();
   }
@@ -417,7 +414,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   @Override
   public String toString() {
-    final Iterator<T> it = this.iterator();
+    final var it = this.iterator();
     if (!it.hasNext())
       return "[]";
 
@@ -454,7 +451,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public DomainBitSet<T> unionVarArgs(@SuppressFBWarnings("unchecked") final T... elements) {
+  public DomainBitSet<T> unionVarArgs(@SuppressWarnings("unchecked") final T... elements) {
     return new SmallDomainBitSet<>(this.domain, this.set | this.arrayToLong(elements));
   }
 
@@ -484,7 +481,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     return new SerializationProxy<>(this.domain, this.set);
   }
 
-  @SuppressFBWarnings({ "static-method", "unused" })
+  @SuppressWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");

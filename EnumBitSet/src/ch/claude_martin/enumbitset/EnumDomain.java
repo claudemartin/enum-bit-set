@@ -12,12 +12,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.sun.istack.internal.Nullable;
-
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
+import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
-import jdk.nashorn.internal.ir.annotations.Immutable;
+import ch.claude_martin.enumbitset.annotations.Nullable;
 
 
 @Immutable
@@ -38,7 +36,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
       SoftReference<// Allows GC to collect unused Domains
       Domain<? extends Enum<?>>>> domainCache      = new IdentityHashMap<>();
 
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(final Class<X> enumType) {
     requireNonNull(enumType, "enumType");
     synchronized (domainCache) {
@@ -175,7 +173,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
     return new SerializationProxy<>(this.enumType);
   }
 
-  @SuppressFBWarnings({ "static-method", "unused" })
+  @SuppressWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");

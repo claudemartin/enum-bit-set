@@ -6,12 +6,7 @@ import static ch.claude_martin.enumbitset.GeneralDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -29,13 +24,12 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("static-method")
+@SuppressWarnings("static-method")
 public class GeneralDomainBitSetTest {
 
   final GeneralDomainBitSet<Integer> none      = noneOf(1, 2, 3, 4);
@@ -126,10 +120,10 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public <X extends Enum<X>> void testCreateMultiEnumBitSet() {
-    @SuppressFBWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     final GeneralDomainBitSet<X> set = (GeneralDomainBitSet<X>) DomainBitSet.createMultiEnumBitSet(
         Element.class, Planet.class);
-    @SuppressFBWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     final List<X> planets = (List<X>) asList(EnumBitSetTest.Planet.values());
     set.addAll(planets);
     assertEquals(set.size(), planets.size());
@@ -423,6 +417,7 @@ public class GeneralDomainBitSetTest {
     assertEquals(noneOf(1, 2, 3, 4), set3);
   }
 
+  @SuppressWarnings("unlikely-arg-type")
   @Test
   public void testOfListOfTSetOfT() {
     final GeneralDomainBitSet<Integer> set = of(asList(1, 2, 3, 4), singleton(3));
@@ -448,8 +443,8 @@ public class GeneralDomainBitSetTest {
     assertEquals(elements.toSet(), copy);
   }
 
+  @SuppressWarnings("unlikely-arg-type")
   @Test
-  @SuppressFBWarnings(value = "GC_UNRELATED_TYPES", justification = "it's not a bug, it's a test.")
   public void testRemove() {
     final GeneralDomainBitSet<Integer> clone = this.oneTo4.clone();
     clone.remove(1);
@@ -501,9 +496,7 @@ public class GeneralDomainBitSetTest {
   public void testStream() {
     assertEquals(Integer.valueOf(1), this.oneTo4.stream().findFirst().get());
     // [1,2,3,4] is already distinct and sorted, so let's test this:
-    // (note: Java 8 beta still needs a lot of type information for the collector.)
-    final Collector<Integer, ?, LinkedHashSet<Integer>> collector = Collectors
-        .<Integer, LinkedHashSet<Integer>> toCollection(LinkedHashSet<Integer>::new);
+    final var collector = Collectors.toCollection(LinkedHashSet<Integer>::new);
     assertEquals(this.oneTo4.toLinkedHashSet(),
         this.oneTo4.stream().distinct().sorted().collect(collector));
   }
@@ -531,7 +524,7 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testToBitSet() {
-    BitSet bitSet = this.oneTo4.toBitSet();
+    var bitSet = this.oneTo4.toBitSet();
     for (int i = 0; i < 4; i++)
       assertTrue(bitSet.get(i));
 
@@ -552,10 +545,10 @@ public class GeneralDomainBitSetTest {
 
     {
       // set with domain of 64 elements and then test "negative" long values.
-      EnumBitSet<Element> enum64 = EnumBitSet.allOf(EnumBitSetTest.Element.class);
+      var enum64 = EnumBitSet.allOf(EnumBitSetTest.Element.class);
       enum64 = enum64.intersect(BitSetUtilities.asBigInteger(-1));
-      final ArrayList<Element> domain = new ArrayList<>(enum64);
-      GeneralDomainBitSet<Element> set = of(domain, enum64);
+      final var domain = new ArrayList<>(enum64);
+      var set = of(domain, enum64);
       assertEquals(-1L, set.toLong());
       set = set.intersect(Long.MIN_VALUE);
       assertEquals(Long.MIN_VALUE, set.toLong());
@@ -564,7 +557,7 @@ public class GeneralDomainBitSetTest {
     }
 
     try {
-      final GeneralDomainBitSet<Element> elements = noneOf(asList(Element.values()));
+      final var elements = noneOf(asList(Element.values()));
       elements.toLong();
       fail("Even an empty set with a large domain should throw MoreThan64ElementsException");
     } catch (final MoreThan64ElementsException e) {
@@ -573,7 +566,7 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testToSet() {
-    final Set<Integer> set = this.oneTo4.toSet();
+    final var set = this.oneTo4.toSet();
     assertEquals(this.oneTo4.toSet(), set);
   }
 
@@ -625,7 +618,7 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testZipWithPosition() throws Exception {
-    for (final DomainBitSet<Integer> s : asList(this.oneTo4, this.none, this.oneTwo, this.twoThree,
+    for (final var s : asList(this.oneTo4, this.none, this.oneTwo, this.twoThree,
         this.threeFour)) {
       s.zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
       s.complement().zipWithPosition().forEach(p -> assertEquals((int) p.first, p.second - 1));
@@ -633,16 +626,16 @@ public class GeneralDomainBitSetTest {
     }
   }
 
-  @SuppressFBWarnings({ "rawtypes" })
+  @SuppressWarnings({ "rawtypes" })
   @Test
   public void testSerialize() throws Exception {
 
-    for (final DomainBitSet set : asList(this.none, this.oneTo4, this.oneTwo, this.twoThree,
+    for (final var set : asList(this.none, this.oneTo4, this.oneTwo, this.twoThree,
         this.threeFour)) {
 
       final byte[] data;
-      try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-        try (ObjectOutputStream obj = new ObjectOutputStream(out)) {
+      try (var out = new ByteArrayOutputStream()) {
+        try (var obj = new ObjectOutputStream(out)) {
           obj.writeObject(set);
           data = out.toByteArray();
         }
@@ -650,8 +643,8 @@ public class GeneralDomainBitSetTest {
 
       final DomainBitSet set2;
 
-      try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
-        try (ObjectInputStream obj = new ObjectInputStream(in)) {
+      try (var in = new ByteArrayInputStream(data)) {
+        try (var obj = new ObjectInputStream(in)) {
           set2 = (DomainBitSet) obj.readObject();
         }
       }

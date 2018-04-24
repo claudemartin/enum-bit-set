@@ -12,11 +12,12 @@ import static ch.claude_martin.enumbitset.SmallDomainBitSet.of;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,19 +29,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("static-method")
+@SuppressWarnings("static-method")
 public class SmallDomainBitSetTest {
 
   private static SmallDomainBitSet<Alphabet> claude;
 
-  @BeforeClass
+  @BeforeAll
   public static void setup() {
     SmallDomainBitSetTest.claude = SmallDomainBitSet
         .of(asList(Alphabet.values()), C, L, A, U, D, E);
@@ -280,12 +280,7 @@ public class SmallDomainBitSetTest {
     assertFalse(set.getBit(3));
     of(DefaultDomain.of(domain), 15L);
 
-    try {
-      of(DefaultDomain.of(domain), -1L);
-      fail();
-    } catch (final IllegalArgumentException e) {
-    }
-
+    assertThrows(IllegalArgumentException.class, () -> of(DefaultDomain.of(domain), -1L));
   }
 
   @Test
@@ -398,7 +393,7 @@ public class SmallDomainBitSetTest {
     }
   }
 
-  @SuppressFBWarnings({ "rawtypes" })
+  @SuppressWarnings({ "rawtypes" })
   @Test
   public void testSerialize() throws Exception {
 

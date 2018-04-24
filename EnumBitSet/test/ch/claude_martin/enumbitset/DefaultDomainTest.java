@@ -1,30 +1,24 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("static-method")
+@SuppressWarnings("static-method")
 public class DefaultDomainTest {
 
   static final DefaultDomain<Integer>   domain123 = DefaultDomain.of(asList(1, 2, 3));       ;
   static final DefaultDomain<Character> domainABC = DefaultDomain.of(asList('A', 'B', 'C')); ;
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public final void testAdd() {
-    domain123.add(666);
+    assertThrows(UnsupportedOperationException.class, () ->  domain123.add(666));
   }
 
   @Test
@@ -38,7 +32,7 @@ public class DefaultDomainTest {
     assertFalse(domainABC.contains('a'));
   }
 
-  @SuppressFBWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   @Test
   public final void testFactory() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
@@ -68,7 +62,7 @@ public class DefaultDomainTest {
 
   }
 
-  @SuppressFBWarnings({ "rawtypes" })
+  @SuppressWarnings({ "rawtypes" })
   @Test
   public final void testGetInt() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
@@ -97,8 +91,7 @@ public class DefaultDomainTest {
     assertNotEquals(domain123.hashCode(), domainABC.hashCode());
   }
 
-  @SuppressWarnings({ "rawtypes" })
-  @SuppressFBWarnings("GC_UNRELATED_TYPES")
+  @SuppressWarnings({ "rawtypes", "unlikely-arg-type" })
   @Test
   public final void testIndexOfObject() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {

@@ -1,13 +1,13 @@
 package ch.claude_martin.enumbitset;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,14 +24,12 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 @SuppressWarnings("static-method")
-@SuppressFBWarnings(value = { "DM_NUMBER_CTOR", "DM_STRING_CTOR" }, justification = "It's part of the test.")
 public class PairTest {
 
   @Test
@@ -43,17 +41,17 @@ public class PairTest {
   @Test
   public final void testCurry() {
     { // Basic test of curry and uncurry.
-      final Pair<Serializable, String, Integer> p = Pair.of("foo", 42);
-      final Integer snd1 = p.applyTo(Pair.curry(x -> x.second));
-      final Integer snd2 = Pair.uncurry((final String a, final Integer b) -> b).apply(p);
-      final Integer snd3 = p.applyTo(Pair.curry(Pair::_2));
+      final var p = Pair.of("foo", 42);
+      final var snd1 = p.applyTo(Pair.curry(x -> x.second));
+      final var snd2 = Pair.uncurry((final String a, final Integer b) -> b).apply(p);
+      final var snd3 = p.applyTo(Pair.curry(Pair::_2));
       assertEquals(snd1, snd2);
       assertEquals(snd1, snd3);
     }
     {
-      final Pair<Serializable, String, Integer> p = Pair.of("bla", 1);
-      final Set<Pair<Serializable, String, Integer>> set = new HashSet<>();
-      final BiFunction<String, Integer, Boolean> add = Pair.curry(set::add);
+      final var p = Pair.of("bla", 1);
+      final var set = new HashSet<Pair<?, String, Integer>>();
+      final var add = Pair.curry(set::add);
       p.applyTo(add);
       assertEquals(new HashSet<>(asList(p)), set);
 
@@ -64,12 +62,13 @@ public class PairTest {
       assertTrue(Pair.uncurry(contains).apply(p));
     }
     { // With more complex types:
-      final Domain<? extends Number> domain = DefaultDomain.of(asList(1,2,3));
-      final List<? super Integer> list = new ArrayList<>(asList(1,2,3));
+      final Domain<? extends Number> domain = DefaultDomain.of(asList(1, 2, 3));
+      final List<? super Integer> list = new ArrayList<>(asList(1, 2, 3));
       final Pair<Object, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
-      
+
       final Set<Pair<Object, Domain<? extends Number>, List<? super Integer>>> set = new HashSet<>();
-      final BiFunction<Domain<? extends Number>, List<? super Integer>, Boolean> add = Pair.curry(set::add);
+      final BiFunction<Domain<? extends Number>, List<? super Integer>, Boolean> add = Pair
+          .curry(set::add);
       p.applyTo(add);
       assertEquals(new HashSet<>(asList(p)), set);
     }
@@ -77,20 +76,22 @@ public class PairTest {
 
   @Test
   public final void testEqualsObject() {
-    final Pair<?, String, Integer> p1 = Pair.of("foo", 42);
-    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"), new Integer(42));
+    final Pair<?, String, Integer> p1 = Pair.of("foo", Integer.MAX_VALUE - 4321);
+    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"),
+        Integer.valueOf(Integer.MAX_VALUE - 4321));
     assertEquals(p1, p1);
     assertEquals(p1, p2);
     assertEquals(p2, p1);
     assertEquals(p2, p2);
     assertFalse(p1.equals(null));
-    assertFalse(p1.equals("X"));
+    assertFalse("X".equals(p1));
   }
 
   @Test
   public final void testHashCode() {
-    final Pair<?, String, Integer> p1 = Pair.of("foo", 42);
-    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"), new Integer(42));
+    final Pair<?, String, Integer> p1 = Pair.of("foo", Integer.MAX_VALUE - 1234);
+    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"),
+        Integer.valueOf(Integer.MAX_VALUE - 1234));
     assertEquals(p1.hashCode(), p1.hashCode());
     assertEquals(p1.hashCode(), p2.hashCode());
     assertEquals(p2.hashCode(), p2.hashCode());
@@ -170,7 +171,6 @@ public class PairTest {
     assertEquals(p.second, array[1]);
   }
 
-  @SuppressFBWarnings({ "rawtypes", "unchecked" })
   @Test
   public final void testToString() {
     final Pair<?, String, Integer> p = Pair.of("foo", 42);
@@ -202,7 +202,7 @@ public class PairTest {
     list.add(b);
     final Pair<Number, Integer, Double> c = Pair.of(0, Math.sqrt(2));
     list.add(c);
-    
+
     list.sort(Pair.comparingByFirst());
     assertArrayEquals(new Object[] { b, c, a }, list.toArray());
     list.sort(Pair.comparingBySecond());

@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.NonNull;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type. */
 @DefaultAnnotationForParameters({ NonNull.class })
@@ -176,7 +175,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    * <li>empty=true &rarr; Set is empty.</li>
    * <li>empty=false &rarr; Set if full.</li>
    * </ul> */
-  @SuppressFBWarnings("unused")
+  @SuppressWarnings("unused")
   private GeneralDomainBitSet(final GeneralDomainBitSet<T> bitset, final boolean empty) {
     requireNonNull(bitset, "bitset");
     requireNonNull(empty, "empty");
@@ -255,7 +254,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   public boolean equals(final Object o) {
     return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
         && this.ofEqualElements((DomainBitSet<T>) o);
@@ -326,7 +325,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   public GeneralDomainBitSet<T> intersectVarArgs(final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
@@ -382,7 +381,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  public GeneralDomainBitSet<T> minusVarArgs(@SuppressFBWarnings("unchecked") final T... other) {
+  public GeneralDomainBitSet<T> minusVarArgs(@SuppressWarnings("unchecked") final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     result.removeAll(asList(other));
@@ -403,7 +402,6 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  @SuppressFBWarnings("unchecked")
   public Iterable<? extends DomainBitSet<T>> powerset() throws MoreThan64ElementsException {
     return DomainBitSet.super.powerset();
   }
@@ -541,7 +539,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  public GeneralDomainBitSet<T> unionVarArgs(@SuppressFBWarnings("unchecked") final T... other) {
+  public GeneralDomainBitSet<T> unionVarArgs(@SuppressWarnings("unchecked") final T... other) {
     requireNonNull(other, "other");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(this);
     result.addAll(asList(other));
@@ -569,7 +567,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     return new SerializationProxy<>(this.domain, this.set);
   }
 
-  @SuppressFBWarnings({ "static-method", "unused" })
+  @SuppressWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");
