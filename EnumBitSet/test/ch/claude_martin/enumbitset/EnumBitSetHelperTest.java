@@ -3,44 +3,41 @@ package ch.claude_martin.enumbitset;
 import static ch.claude_martin.enumbitset.TestUtilities.expectIAE;
 import static ch.claude_martin.enumbitset.TestUtilities.expectMT64EE;
 import static ch.claude_martin.enumbitset.TestUtilities.expectNPE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigInteger;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
 import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("static-method")
+@SuppressWarnings("static-method")
 public class EnumBitSetHelperTest {
 
   @Test
   public final void testBitmask() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(1L << p.ordinal(), p.bitmask().longValue());
-    for (Element e : Element.class.getEnumConstants())
+    for (final Element e : Element.class.getEnumConstants())
       assertEquals(BigInteger.ONE, e.bitmask().shiftRight(e.ordinal()));
   }
 
   @Test
   public final void testBitmask64() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(1L << p.ordinal(), p.bitmask64());
     expectMT64EE("Elements>64", () -> Element.R.bitmask64());
   }
 
   @Test
   public final void testElementOf() {
-    EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
-    Planet[] empty = new Planet[0];
-    for (Planet p : planets) {
+    final EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
+    final Planet[] empty = new Planet[0];
+    for (final Planet p : planets) {
       assertTrue(p.elementOf(planets.toBigInteger()));
       assertFalse(p.elementOf(BigInteger.ZERO));
       assertTrue(p.elementOf(planets.toBitSet()));
@@ -58,9 +55,9 @@ public class EnumBitSetHelperTest {
 
   @Test
   public final void testIntersect() {
-    EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
-    EnumBitSet<Planet> none = EnumBitSet.noneOf(Planet.class);
-    for (Planet p : planets) {
+    final EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
+    final EnumBitSet<Planet> none = EnumBitSet.noneOf(Planet.class);
+    for (final Planet p : planets) {
       assertEquals(p.toBigInteger(), p.intersect(planets.toBigInteger()));
       assertEquals(none.toBigInteger(), p.intersect(none.toBigInteger()));
       assertEquals(p.toBitSet(), p.intersect(planets.toBitSet()));
@@ -76,16 +73,16 @@ public class EnumBitSetHelperTest {
 
   @Test
   public final void testOthers() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(p.others(), EnumBitSet.allOf(Planet.class).minusVarArgs(p));
-    for (Element e : Element.class.getEnumConstants())
+    for (final Element e : Element.class.getEnumConstants())
       assertEquals(e.others(), EnumBitSet.allOf(Element.class).minusVarArgs(e));
   }
 
   @Test
   public final void testRemovedFrom() {
     final EnumBitSet<Element> elements = EnumBitSet.allOf(Element.class);
-    for (Element e : elements) {
+    for (final Element e : elements) {
       final EnumBitSet<Element> expected = elements.minusVarArgs(e);
       assertEquals(expected.toBigInteger(), e.removedFrom(elements.toBigInteger()));
       assertEquals(expected.toBitSet(), e.removedFrom(elements.toBitSet()));
@@ -95,7 +92,7 @@ public class EnumBitSetHelperTest {
     }
 
     final EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
-    for (Planet p : planets) {
+    for (final Planet p : planets) {
       final EnumBitSet<Planet> expected = planets.minusVarArgs(p);
       assertEquals(expected.toLong(), p.removedFrom(planets.toLong()));
     }
@@ -113,39 +110,39 @@ public class EnumBitSetHelperTest {
 
   @Test
   public final void testToBigInteger() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(EnumBitSet.just(p).toBigInteger(), p.toBigInteger());
-    for (Element e : Element.class.getEnumConstants())
+    for (final Element e : Element.class.getEnumConstants())
       assertEquals(EnumBitSet.just(e).toBigInteger(), e.toBigInteger());
   }
 
   @Test
   public final void testToBitSet() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(EnumBitSet.just(p).toBitSet(), p.toBitSet());
-    for (Element e : Element.class.getEnumConstants())
+    for (final Element e : Element.class.getEnumConstants())
       assertEquals(EnumBitSet.just(e).toBitSet(), e.toBitSet());
   }
 
   @Test
   public final void testToEnumBitSet() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(EnumBitSet.just(p), p.toEnumBitSet());
-    for (Element e : Element.class.getEnumConstants())
+    for (final Element e : Element.class.getEnumConstants())
       assertEquals(EnumBitSet.just(e), e.toEnumBitSet());
   }
 
   @Test
   public final void testToEnumSet() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(EnumBitSet.just(p).toEnumSet(), p.toEnumSet());
-    for (Element e : Element.class.getEnumConstants())
+    for (final Element e : Element.class.getEnumConstants())
       assertEquals(EnumBitSet.just(e).toEnumSet(), e.toEnumSet());
   }
 
   @Test
   public final void testToLong() {
-    for (Planet p : Planet.class.getEnumConstants())
+    for (final Planet p : Planet.class.getEnumConstants())
       assertEquals(EnumBitSet.just(p).toLong(), p.toLong());
     expectMT64EE("R>64", () -> Element.R.toLong());
   }
@@ -153,10 +150,10 @@ public class EnumBitSetHelperTest {
   @Test
   public final void testUnion() {
 
-    EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
-    EnumBitSet<Planet> none = EnumBitSet.noneOf(Planet.class);
-    for (Planet p : planets) {
-      EnumBitSet<Planet> just = EnumBitSet.just(p);
+    final EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
+    final EnumBitSet<Planet> none = EnumBitSet.noneOf(Planet.class);
+    for (final Planet p : planets) {
+      final EnumBitSet<Planet> just = EnumBitSet.just(p);
       assertEquals(planets.toBigInteger(), p.union(planets.toBigInteger()));
       assertEquals(just.toBigInteger(), p.union(none.toBigInteger()));
       assertEquals(planets.toBitSet(), p.union(planets.toBitSet()));
@@ -174,11 +171,11 @@ public class EnumBitSetHelperTest {
   @Test
   public final void testXor() {
 
-    EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
-    BigInteger bi = planets.toBigInteger();
-    EnumBitSet<Planet> none = EnumBitSet.noneOf(Planet.class);
-    for (Planet p : planets) {
-      EnumBitSet<Planet> just = EnumBitSet.just(p);
+    final EnumBitSet<Planet> planets = EnumBitSet.allOf(Planet.class);
+    final BigInteger bi = planets.toBigInteger();
+    final EnumBitSet<Planet> none = EnumBitSet.noneOf(Planet.class);
+    for (final Planet p : planets) {
+      final EnumBitSet<Planet> just = EnumBitSet.just(p);
       assertEquals(p.removedFrom(bi), p.xor(bi));
       assertEquals(just.toBigInteger(), p.xor(none.toBigInteger()));
       assertEquals(p.removedFrom(planets), p.xor(planets));

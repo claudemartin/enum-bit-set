@@ -28,7 +28,6 @@ import java.util.stream.StreamSupport;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** An immutable, ordered pair (2-tuple) of two non-null elements. This can be used in a Cartesian
  * product.
@@ -84,7 +83,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * @param f
    *          A function that takes a Pair.
    * @return A BiFunction that takes two elements and applies a created Pair on the given Function. */
-  @SuppressFBWarnings("all")
+  @SuppressWarnings("all")
   @NonNull
   public static//
   <TT, TX extends TT, TY extends TT, P extends Pair<TT, TX, TY>, R> //
@@ -148,7 +147,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   }
 
   /** Creates a new pair from an {@link Map.Entry}.
-   * 
+   * @param <TT>
+   *          Common type
    * @param <TX>
    *          Type of first element.
    * @param <TY>
@@ -159,7 +159,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *           If the entry or its key or value is <tt>null</tt>.
    * @return A new pair made of the key and value of the entry. */
   @NonNull
-  public static <TX, TY> Pair<Object, TX, TY> of(final Map.Entry<TX, TY> entry) {
+  public static <TT, TX extends TT, TY extends TT> Pair<TT, TX, TY> of(final Map.Entry<TX, TY> entry) {
     requireNonNull(entry, "entry");
     return new Pair<>(//
         requireNonNull(entry.getKey(), "key"), //
@@ -170,6 +170,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * 
    * @see #curry(Function)
    * @see #applyTo(BiFunction)
+   * @param <TT>
+   *          Common type
    * @param <TX>
    *          Type of first element.
    * @param <TY>
@@ -180,7 +182,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    *          A BiFunction that takes two elements.
    * @return A Function that takes a pair and applies both elements on the given Function. */
   @NonNull
-  public static <TX, TY, R> Function<Pair<?, TX, TY>, R> uncurry(final BiFunction<TX, TY, R> f) {
+  public static <TT, TX extends TT, TY extends TT, R> Function<Pair<TT, TX, TY>, R> uncurry(final BiFunction<TX, TY, R> f) {
     requireNonNull(f, "uncurry: function must not be null");
     return (p) -> f.apply(p.first, p.second);
   }
@@ -271,7 +273,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     if (this == obj)
       return true;
     if (obj instanceof Map.Entry) {
-      @SuppressFBWarnings("unchecked")
+      @SuppressWarnings("unchecked")
       final Map.Entry<X, Y> e2 = (Map.Entry<X, Y>) obj;
       return this.first.equals(e2.getKey()) && this.second.equals(e2.getValue());
     }
@@ -295,7 +297,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
    * created. */
   @Override
   public Iterator<T> iterator() {
-    return new Iterator<T>() {
+    return new Iterator<>() {
       byte pos = 0;
 
       @Override
@@ -462,13 +464,13 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
     return Map.Entry.comparingByValue(cmp);
   }
 
-  @SuppressFBWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   private final static Comparator<Pair> comparator = (Comparator) getComparator();
 
-  private static <A extends Comparable<A>, B extends Comparable<B>> Comparator<Pair<?, A, B>> getComparator() {
+  private static <A extends Comparable<A>, B extends Comparable<B>> Comparator<Pair<Object, A, B>> getComparator() {
     return Comparator
-        .<Pair<?, A, B>, A> comparing(Pair::_1, Comparator.naturalOrder())
-        .thenComparing(Comparator.<Pair<?, A, B>, B> comparing(Pair::_2, Comparator.naturalOrder()));
+        .<Pair<Object, A, B>, A> comparing(Pair::_1, Comparator.naturalOrder())
+        .thenComparing(Comparator.<Pair<Object, A, B>, B> comparing(Pair::_2, Comparator.naturalOrder()));
   }
 
   @Override
@@ -482,7 +484,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   public Map<Boolean, T> toMap() {
     final Pair<Map.Entry<Boolean, T>, Map.Entry<Boolean, T>, Map.Entry<Boolean, T>> entries;
     entries = of(of(false, Pair.this.first), of(true, Pair.this.second));
-    return new AbstractMap<Boolean, T>() {
+    return new AbstractMap<>() {
       @Override
       public T get(final Object key) {
         if (Boolean.FALSE.equals(key))
@@ -494,7 +496,7 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
 
       @Override
       public Set<Map.Entry<Boolean, T>> entrySet() {
-        return new AbstractSet<Map.Entry<Boolean, T>>() {
+        return new AbstractSet<>() {
           @Override
           public Iterator<java.util.Map.Entry<Boolean, T>> iterator() {
             return entries.iterator();

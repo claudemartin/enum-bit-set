@@ -35,7 +35,6 @@ import ch.claude_martin.enumbitset.annotations.CheckReturnValue;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.NonNull;
 import ch.claude_martin.enumbitset.annotations.Nonnegative;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** A bit set with a defined domain (universe). The domain is an ordered set of all elements that are
  * allowed in this bit set. Null is not allowed as an element of any DomainBitSet.
@@ -102,7 +101,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *          All enum types that define the domain. The ordering is relevant.
    * @return A new DomainBitSet that can contain enums from different enum types. */
   @SafeVarargs
-  @SuppressFBWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public static DomainBitSet<Enum<?>> createMultiEnumBitSet(
       final Class<? extends Enum<?>>... enumTypes) {
     final List<Enum<?>> dom = new LinkedList<>();
@@ -199,7 +198,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *           collection is null.
    * @see #contains(Object) */
   public default boolean containsAll(final Collection<?> c) {
-    for (final Object e : requireNonNull(c))
+    for (final var e : requireNonNull(c))
       if (!this.contains(e))
         return false;
     return true;
@@ -221,9 +220,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @see BitSetUtilities#cross(DomainBitSet, DomainBitSet, Class) */
   @NonNull
   @CheckReturnValue
-  public default <Y> Set<Pair<?, T, Y>> cross(final DomainBitSet<Y> set) {
+  public default <Y> Set<Pair<Object, T, Y>> cross(final DomainBitSet<Y> set) {
     requireNonNull(set, "set");
-    final HashSet<Pair<?, T, Y>> result = new HashSet<>(this.size() * set.size());
+    final var result = new HashSet<Pair<Object, T, Y>>(this.size() * set.size());
     // this.cross(set, Pair.curry(result::add)::apply);
     this.cross(set, (x, y) -> result.add(Pair.of(x, y)));
     return result;
@@ -397,7 +396,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @NonNull
   @CheckReturnValue
   public default DomainBitSet<T> intersectVarArgs(
-      @NonNull @SuppressFBWarnings("unchecked") final T... set) {
+      @NonNull @SuppressWarnings("unchecked") final T... set) {
     return this.intersect(Arrays.asList(requireNonNull(set)));
   }
 
@@ -437,7 +436,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @see #zipWithPosition()
    * @see #map(Domain, Function)
    * @return new set, using the given domain. */
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   @NonNull
   @CheckReturnValue
   public default <S> DomainBitSet<S> map(final Domain<S> domain) {
@@ -526,7 +525,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @NonNull
   @CheckReturnValue
   public default DomainBitSet<T> minusVarArgs(
-      @NonNull @SuppressFBWarnings("unchecked") final T... set) {
+      @NonNull @SuppressWarnings("unchecked") final T... set) {
     return this.minus(Arrays.asList(requireNonNull(set)));
   }
 
@@ -588,49 +587,44 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
 
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
-    @SuppressFBWarnings("unchecked")
+    @SuppressWarnings("unchecked")
     final T[] array = (T[]) this.toSet().toArray(new Object[this.size()]);
 
-    return new Iterable<DomainBitSet<T>>() {
+    return () -> new Iterator<>() {
+      /** Size of the returned Iterator. Max value: 2<sup>64</sup> ~ 1.8E19 */
+      BigInteger         size    = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+      // long size = 1L << DomainBitSet.this.size();
+      /** Current state. The domain can hold more than 64 elements, therefore we need a
+       * BigInteger. */
+      BigInteger         i       = BigInteger.ZERO;
+      // long i = 0L;
+      /** List for items of next result. Used instead of a Set. */
+      final ArrayList<T> tmp     = new ArrayList<>();
+      /** Size of the domain. */
+      final int          domSize = DomainBitSet.this.getDomain().size();
+
       @Override
-      public Iterator<DomainBitSet<T>> iterator() {
-        return new Iterator<DomainBitSet<T>>() {
-          /** Size of the returned Iterator. Max value: 2<sup>64</sup> ~ 1.8E19 */
-          BigInteger         size    = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
-          // long size = 1L << DomainBitSet.this.size();
-          /** Current state. The domain can hold more than 64 elements, therefore we need a
-           * BigInteger. */
-          BigInteger         i       = BigInteger.ZERO;
-          // long i = 0L;
-          /** List for items of next result. Used instead of a Set. */
-          final ArrayList<T> tmp     = new ArrayList<>();
-          /** Size of the domain. */
-          final int          domSize = DomainBitSet.this.getDomain().size();
+      public boolean hasNext() {
+        return this.i.compareTo(this.size) < 0;
+        // return this.i < this.size;
+      }
 
-          @Override
-          public boolean hasNext() {
-            return this.i.compareTo(this.size) < 0;
-            // return this.i < this.size;
-          }
+      @Override
+      public DomainBitSet<T> next() {
+        if (!hasNext())
+          throw new NoSuchElementException();
 
-          @Override
-          public DomainBitSet<T> next() {
-            if (!hasNext())
-              throw new NoSuchElementException();
+        // All bits set to 1 in i indicate that array[x] is in the result.
+        this.tmp.clear();
 
-            // All bits set to 1 in i indicate that array[x] is in the result.
-            this.tmp.clear();
-
-            for (int x = 0; x < this.domSize; x++)
-              if (this.i.testBit(x))
-                // if (((this.i & (1L << x)) != 0))
-                this.tmp.add(array[x]);
-            final DomainBitSet<T> result = empty.union(this.tmp);
-            this.i = this.i.add(BigInteger.ONE);
-            // this.i++;
-            return result;
-          }
-        };
+        for (int x = 0; x < this.domSize; x++)
+          if (this.i.testBit(x))
+            // if (((this.i & (1L << x)) != 0))
+            this.tmp.add(array[x]);
+        final var result = empty.union(this.tmp);
+        this.i = this.i.add(BigInteger.ONE);
+        // this.i++;
+        return result;
       }
     };
   }
@@ -655,12 +649,12 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
     requireNonNull(consumer, "consumer");
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
-    final ExecutorService pool = Executors.newWorkStealingPool();
-    final Domain<T> domain = getDomain();
-    final Pair<?, Integer, T>[] pairs = this.zipWithPosition().toArray(Pair[]::new);
+    final var pool = Executors.newWorkStealingPool();
+    final var domain = getDomain();
+    final Pair<Object, Integer, T>[] pairs = this.zipWithPosition().toArray(Pair[]::new);
     final int domSize = DomainBitSet.this.getDomain().size();
-    final BigInteger size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
-    BigInteger i = BigInteger.ZERO;
+    final var size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+    var i = BigInteger.ZERO;
     while (i.compareTo(size) < 0) {
       final BigInteger _i = i;
       pool.execute(() -> {
@@ -856,7 +850,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @NonNull
   @CheckReturnValue
   public default DomainBitSet<T> unionVarArgs(
-      @NonNull @SuppressFBWarnings("unchecked") final T... set) {
+      @NonNull @SuppressWarnings("unchecked") final T... set) {
     return this.union(Arrays.asList(requireNonNull(set)));
   }
 

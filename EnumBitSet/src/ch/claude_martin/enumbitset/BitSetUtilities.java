@@ -27,7 +27,6 @@ import ch.claude_martin.enumbitset.annotations.CheckReturnValue;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.NonNull;
 import ch.claude_martin.enumbitset.annotations.Nonnegative;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 
 /** A collection of utility methods for {@link DomainBitSet}s.
@@ -62,7 +61,7 @@ public final class BitSetUtilities {
     if (mask >= 0)// Positive already:
       return BigInteger.valueOf(mask);
     // Negative value as "unsigned" BigInteger:
-    final BigInteger result = new BigInteger(1, longToBytes(mask));
+    final var result = new BigInteger(1, longToBytes(mask));
     assert result.equals(BigInteger.valueOf(mask & Long.MAX_VALUE).add(
         BigInteger.valueOf(2).pow(63)));
     assert asLong(result) == mask;
@@ -143,7 +142,7 @@ public final class BitSetUtilities {
    * @see #cross(DomainBitSet, DomainBitSet, Class)
    * @see DomainBitSet#cross(DomainBitSet)
    * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
-  @SuppressFBWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @NonNull
   @CheckReturnValue
   public static <T> Set<Pair<T, T, T>> cross(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
@@ -174,7 +173,7 @@ public final class BitSetUtilities {
    * @return the Cartesian Product.
    * @see DomainBitSet#cross(DomainBitSet)
    * @see DomainBitSet#cross(DomainBitSet, BiConsumer) */
-  @SuppressFBWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @NonNull
   @CheckReturnValue
   public static <C, T1 extends C, T2 extends C> Set<Pair<C, T1, T2>> cross(
@@ -277,7 +276,7 @@ public final class BitSetUtilities {
   public static <T, D extends DomainBitSet<T>> Collector<T, Set<T>, D> toDomainBitSet(
       final Function<Collection<T>, D> bitsetFactory) {
     requireNonNull(bitsetFactory, "bitsetFactory");
-    return new Collector<T, Set<T>, D>() {
+    return new Collector<>() {
 
       @Override
       public BiConsumer<Set<T>, T> accumulator() {
@@ -354,15 +353,15 @@ public final class BitSetUtilities {
    * @param timeout
    *          timeout in milliseconds
    * @return A character sequence that represents the given object. */
-  @SuppressFBWarnings("deprecation")
+  @SuppressWarnings("deprecation")
   @NonNull
   public static CharSequence deepToString(final Object object, @Nonnegative final int timeout) {
     if (timeout < 0)
       throw new IllegalArgumentException("timeout");
     if (timeout == 0)
       return deepToString(object);
-    final StringBuilder buffer = new StringBuilder();
-    final Set<Object> dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
+    final var buffer = new StringBuilder();
+    final var dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
     final Thread thread = new Thread(() -> deepToString(object, buffer, dejavu), "deepToString");
     thread.setDaemon(true);
     // Ingore everything! This includes interrupted, stack overflow and out of memory.
@@ -389,9 +388,9 @@ public final class BitSetUtilities {
    *          the object to be converted to string.
    * @return A character sequence that represents the given object. */
   public static CharSequence deepToString(final Object object) {
-    final StringBuilder buffer = new StringBuilder();
+    final var buffer = new StringBuilder();
     {
-      final Set<Object> dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
+      final var dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
       try {
         deepToString(object, buffer, dejavu);
       } catch (OutOfMemoryError | StackOverflowError e) {
@@ -417,7 +416,7 @@ public final class BitSetUtilities {
       buffer.append("...");
       return;
     }
-    final Class<? extends Object> oClass = o.getClass();
+    final var oClass = o.getClass();
     final String simpleName = oClass.isSynthetic() && oClass.getSimpleName().contains("$$Lambda$")
         && Arrays.stream(oClass.getDeclaredMethods())
             .filter(m -> Modifier.isPublic(m.getModifiers())).count() == 1

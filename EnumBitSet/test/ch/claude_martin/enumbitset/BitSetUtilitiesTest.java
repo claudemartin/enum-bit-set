@@ -1,8 +1,11 @@
 package ch.claude_martin.enumbitset;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static java.time.Duration.ofSeconds;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -15,12 +18,11 @@ import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import ch.claude_martin.enumbitset.EnumBitSetTest.Element;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
-@SuppressFBWarnings("static-method")
+@SuppressWarnings("static-method")
 public class BitSetUtilitiesTest {
 
   @Test
@@ -32,11 +34,8 @@ public class BitSetUtilitiesTest {
       bitset.set(i);
       bi = bi.setBit(i);
     }
-    try {
-      BitSetUtilities.asBigInteger(null);
-      fail();
-    } catch (final NullPointerException e) {
-    }
+    assertThrows(NullPointerException.class, () -> BitSetUtilities.asBigInteger(null),
+        "null is now allowed");
   }
 
   @Test
@@ -64,11 +63,9 @@ public class BitSetUtilitiesTest {
       bitset.set(i);
       bi = bi.setBit(i);
     }
-    try {
-      BitSetUtilities.asBitSet(BigInteger.valueOf(-1));
-      fail();
-    } catch (final IllegalArgumentException e) {
-    }
+    assertThrows(IllegalArgumentException.class,
+        () -> BitSetUtilities.asBitSet(BigInteger.valueOf(-1)),
+        "negative number is not a legal bitset");
   }
 
   @Test
@@ -96,25 +93,19 @@ public class BitSetUtilitiesTest {
       assertEquals(l, BitSetUtilities.asLong(BigInteger.valueOf(l)));
 
     // 1000000000000000000000000000000000000000000000000000000000000000
-    final long maxPlus1 = BitSetUtilities.asLong(BigInteger.valueOf(Long.MAX_VALUE).add(
-        BigInteger.ONE));
+    final long maxPlus1 = BitSetUtilities
+        .asLong(BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE));
     assertEquals(Long.MAX_VALUE + 1L, maxPlus1);
 
     // 1111111111111111111111111111111111111111111111111111111111111111
-    final long allOnes = BitSetUtilities.asLong(BigInteger.valueOf(2L).pow(64)
-        .subtract(BigInteger.ONE));
+    final long allOnes = BitSetUtilities
+        .asLong(BigInteger.valueOf(2L).pow(64).subtract(BigInteger.ONE));
     assertEquals(-1L, allOnes);
 
-    try {
-      BitSetUtilities.asBitSet(BigInteger.valueOf(-1));
-      fail();
-    } catch (final IllegalArgumentException e) {
-    }
-    try {
-      BitSetUtilities.asBitSet(null);
-      fail();
-    } catch (final NullPointerException e) {
-    }
+    assertThrows(IllegalArgumentException.class,
+        () -> BitSetUtilities.asBitSet(BigInteger.valueOf(-1)), "-1 is not a set");
+    assertThrows(NullPointerException.class, () -> BitSetUtilities.asBitSet(null),
+        "null is not a set");
   }
 
   @Test
@@ -132,20 +123,17 @@ public class BitSetUtilitiesTest {
       l |= 1L << i;
       i++;
     } while (i < 64);
+    assertThrows(NullPointerException.class, () -> BitSetUtilities.asLong((BitSet) null),
+        "null is not a set");
 
-    try {
-      BitSetUtilities.asLong((BitSet) null);
-      fail();
-    } catch (final NullPointerException e) {
-    }
   }
 
   @Test
   public void testToTreeMap() throws Exception {
     {
       final GeneralDomainBitSet<String> set = GeneralDomainBitSet.allOf("0", "1", "2");
-      final TreeMap<Integer, String> map = set.zipWithPosition().collect(
-          BitSetUtilities.toTreeMap());
+      final TreeMap<Integer, String> map = set.zipWithPosition()
+          .collect(BitSetUtilities.toTreeMap());
       map.forEach((p, e) -> {
         assertEquals(set.getElement(p).get(), e);
         assertTrue(Objects.toString(p).equals(e));
@@ -158,8 +146,8 @@ public class BitSetUtilitiesTest {
     }
     {
       final EnumBitSet<Element> elements = EnumBitSet.allOf(Element.class);
-      final TreeMap<Integer, Element> map = elements.zipWithPosition().collect(
-          BitSetUtilities.toTreeMap());
+      final TreeMap<Integer, Element> map = elements.zipWithPosition()
+          .collect(BitSetUtilities.toTreeMap());
       assertEquals(elements.size(), map.size());
       map.forEach((p, e) -> {
         assertEquals((int) p, e.ordinal());
@@ -175,7 +163,7 @@ public class BitSetUtilitiesTest {
     return BitSetUtilities.deepToString(o, timeout).toString();
   }
 
-  @Test(timeout = 1000)
+  @Test
   public void testDeepToString1() throws Exception {
     assertEquals("null", deepToString(null).toString());
     assertEquals("foo", deepToString("foo").toString());
@@ -189,7 +177,7 @@ public class BitSetUtilitiesTest {
         deepToString(Pair.of(new int[] { 1, 2, 3 }, new char[] { 'x', 'y', 'z' })).toString());
   }
 
-  @Test(timeout = 1000)
+  @Test
   public void testDeepToString2() throws Exception {
     final Pair<List<?>, List<Object>, List<Object>> pair;
     pair = Pair.of(new ArrayList<>(), new ArrayList<>());
@@ -205,68 +193,72 @@ public class BitSetUtilitiesTest {
     }
   }
 
-  @Test(timeout = 1000)
+  @Test
   public void testDeepToString3() throws Exception {
-    final Pair<List<?>, List<Object>, List<Object>> pair;
-    pair = Pair.of(new ArrayList<>(), new ArrayList<>());
+    assertTimeoutPreemptively(ofSeconds(2), () -> {
+      final Pair<List<?>, List<Object>, List<Object>> pair;
+      pair = Pair.of(new ArrayList<>(), new ArrayList<>());
 
-    for (int i = 0; i < 100; i++) {
-      pair.first.add("abcd" + i);
-      pair.first.add(GeneralDomainBitSet.allOf(pair.second));
-      pair.first.add(IntStream.range(i, i + 10).toArray());
-      pair.second.add(DoubleStream.of(i / 3d, 2d * i / 7d).toArray());
-      pair.second.add(new Object[] { GeneralDomainBitSet.allOf(pair.first),
-          Pair.of(pair, new char[] { 'x' }) });
-      pair.second.add(new Object() {
-        @Override
-        public String toString() {
-          try {
-            Thread.sleep(100);
-          } catch (final Exception e) {
+      for (int i = 0; i < 100; i++) {
+        pair.first.add("abcd" + i);
+        pair.first.add(GeneralDomainBitSet.allOf(pair.second));
+        pair.first.add(IntStream.range(i, i + 10).toArray());
+        pair.second.add(DoubleStream.of(i / 3d, 2d * i / 7d).toArray());
+        pair.second.add(new Object[] { GeneralDomainBitSet.allOf(pair.first),
+            Pair.of(pair, new char[] { 'x' }) });
+        pair.second.add(new Object() {
+          @Override
+          public String toString() {
+            try {
+              Thread.sleep(100);
+            } catch (final Exception e) {
+            }
+            return "sleepy";
           }
-          return "sleepy";
-        }
-      });
-    }
+        });
+      }
 
-    try {
-      final String string = deepToString(pair, 200);
-      assertTrue(string.contains("abcd0"));
-      assertTrue(string.contains("GeneralDomainBitSet"));
-    } catch (final AssertionError e) {
-      throw e;
-    } catch (final Throwable e) {
-      fail("Pair.toString failed: " + e);
-    }
+      try {
+        final String string = deepToString(pair, 200);
+        assertTrue(string.contains("abcd0"));
+        assertTrue(string.contains("GeneralDomainBitSet"));
+      } catch (final AssertionError e) {
+        throw e;
+      } catch (final Throwable e) {
+        fail("Pair.toString failed: " + e);
+      }
+    }, () -> "The deepToString method took more than 2 seconds and was aborted.");
   }
 
-  @Test(timeout = 1000)
+  @Test
   public void testDeepToString4() throws Exception {
-    @SuppressFBWarnings("unchecked")
-    final Supplier<Iterable<Object>>[] createItr = new Supplier[1];
-    createItr[0] = () -> {
-      return () -> new Iterator<Object>() {
+    assertTimeoutPreemptively(ofSeconds(2), () -> {
+      @SuppressWarnings("unchecked")
+      final Supplier<Iterable<Object>>[] createItr = new Supplier[1];
+      createItr[0] = () -> {
+        return () -> new Iterator<>() {
 
-        @Override
-        public Object next() {
-          return createItr[0].get();
-        }
+          @Override
+          public Object next() {
+            return createItr[0].get();
+          }
 
-        @Override
-        public boolean hasNext() {
-          return true;
-        }
+          @Override
+          public boolean hasNext() {
+            return true;
+          }
+        };
       };
-    };
-    final Iterable<Object> iterable = createItr[0].get();
-    try {
-      final String string = deepToString(iterable, 200);
-      assertTrue(string.contains("λ["));
-      assertTrue(string.contains(","));
-    } catch (final AssertionError e) {
-      throw e;
-    } catch (final Throwable e) {
-      fail("Pair.toString failed: " + e);
-    }
+      final Iterable<Object> iterable = createItr[0].get();
+      try {
+        final String string = deepToString(iterable, 200);
+        assertTrue(string.contains("λ["));
+        assertTrue(string.contains(","));
+      } catch (final AssertionError e) {
+        throw e;
+      } catch (final Throwable e) {
+        fail("Pair.toString failed: " + e);
+      }
+    }, () -> "The deepToString method took more than 2 seconds and was aborted.");
   }
 }

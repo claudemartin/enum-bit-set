@@ -15,7 +15,6 @@ import java.util.function.Predicate;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 
 /** A domain defines the elements that a {@link DomainBitSet} can contain. This is also known as the
  * <i>universe of discourse</i>. It is a set with the following characteristics:
@@ -60,7 +59,7 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
    * @param elements
    *          Elements of the domain. The collection must be ordered.
    * @return Domain containing all given elements. */
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   public static <T> Domain<T> of(@NonNull final Collection<? extends T> elements) {
     requireNonNull(elements, "elements");
     if (elements instanceof Domain)

@@ -13,12 +13,10 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.function.Function;
 
-import com.sun.istack.internal.Nullable;
-
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
-import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
+import ch.claude_martin.enumbitset.annotations.Nullable;
 
 /** Default implementation of {@link Domain}.
  * <p>
@@ -34,7 +32,7 @@ import ch.claude_martin.enumbitset.annotations.SuppressFBWarnings;
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   private static final long          serialVersionUID = -1159105301120332006L;
 
-  @SuppressFBWarnings({ "unchecked", "rawtypes" })
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   private static final DefaultDomain EMPTY_DOMAIN     = new DefaultDomain(Collections.EMPTY_LIST);
 
   /** Returns a Domain of the given elements.
@@ -49,7 +47,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates.
    * @return Domain of the given elements. */
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   @NonNull
   public static <T> DefaultDomain<T> of(final Collection<? extends T> domain) {
     requireNonNull(domain, "domain");
@@ -61,7 +59,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
       return EMPTY_DOMAIN;
 
     if (domain instanceof DomainBitSet) {
-      final Domain<T> domain2 = ((DomainBitSet<T>) domain).getDomain();
+      final var domain2 = ((DomainBitSet<T>) domain).getDomain();
       if (domain2 instanceof DefaultDomain && domain.size() == domain2.size())
         return (DefaultDomain<T>) domain2;
     }
@@ -92,7 +90,6 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   @NonNull
   private final HashMap<T, Integer> map;
 
-  @SuppressFBWarnings(value = "JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS", justification = "It's lazy.")
   private int                       hash;    // defaults to 0, later it's set to a hash code.
 
   /** The caller must make sure that the domain is a distinct collection with a well defined
@@ -100,7 +97,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * 
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates. */
-  @SuppressFBWarnings("unchecked")
+  @SuppressWarnings("unchecked")
   private DefaultDomain(@NonNull final Collection<? extends T> domain)
       throws IllegalArgumentException {
     this(domain.toArray((T[]) new Object[requireNonNull(domain, "domain").size()]));
@@ -224,7 +221,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
     return new SerializationProxy<>(this.elements);
   }
 
-  @SuppressFBWarnings({ "static-method", "unused" })
+  @SuppressWarnings({ "static-method", "unused" })
   private void readObject(final java.io.ObjectInputStream stream)
       throws java.io.InvalidObjectException {
     throw new java.io.InvalidObjectException("Proxy required");
