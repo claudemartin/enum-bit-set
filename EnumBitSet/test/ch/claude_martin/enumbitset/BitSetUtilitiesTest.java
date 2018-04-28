@@ -196,8 +196,7 @@ public class BitSetUtilitiesTest {
   @Test
   public void testDeepToString3() throws Exception {
     assertTimeoutPreemptively(ofSeconds(2), () -> {
-      final Pair<List<?>, List<Object>, List<Object>> pair;
-      pair = Pair.of(new ArrayList<>(), new ArrayList<>());
+      final var pair = Pair.of(new ArrayList<>(), new ArrayList<>());
 
       for (int i = 0; i < 100; i++) {
         pair.first.add("abcd" + i);

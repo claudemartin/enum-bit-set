@@ -10,7 +10,6 @@
 	<property name="bin" location="bin" />
 	<property name="doc" location="doc" />
 	<property name="lib" location="lib" />
-	<property name="reports" location="reports" />
 	<tstamp>
 		<format property="TIME" pattern="yyyy-MM-dd-HH-mm-ss" locale="en,GB" />
 	</tstamp>
@@ -37,34 +36,10 @@
 		</jar>
 	</target>
 
-	<target name="tests"  description="compile and run junit tests" depends="compile">
-		<echo>Sadly, this doesn't work yet. Run junit tests in Eclipse.</echo>
-		<javac srcdir="${test}" destdir="${bin}" debug="off" modulepathref="base.path" includeantruntime="false">
-		</javac>
-
-		<path id="base.path">
-			<fileset dir="${lib}">
-				<include name="*.jar"/>
-			</fileset>
-		</path>
-		<mkdir dir="${reports}"/>
-		
-		<junitlauncher haltOnFailure="true">
-			<classpath refid="base.path"/>
-			<testclasses outputdir="${reports}">
-				<fileset dir="${test}">
-					<include name="**/*Test*.java"/>
-				</fileset>
-			</testclasses>
-		</junitlauncher>
-	</target>
-
 	<target name="clean" description="clean up" >
 		<!-- Delete the ${build} and ${dist} directory trees -->
 		<delete dir="${bin}" />
 		<mkdir dir="${bin}" />
-		<delete dir="${reports}" />
-		<mkdir dir="${reports}" />
 		<delete dir="${build}" includes="${projectName}*.jar" />
 	</target>
 
