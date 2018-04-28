@@ -9,16 +9,15 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-
 @SuppressWarnings("static-method")
 public class DefaultDomainTest {
 
-  static final DefaultDomain<Integer>   domain123 = DefaultDomain.of(asList(1, 2, 3));       ;
-  static final DefaultDomain<Character> domainABC = DefaultDomain.of(asList('A', 'B', 'C')); ;
+  static final DefaultDomain<Integer>   domain123 = DefaultDomain.of(asList(1, 2, 3));;
+  static final DefaultDomain<Character> domainABC = DefaultDomain.of(asList('A', 'B', 'C'));;
 
   @Test
   public final void testAdd() {
-    assertThrows(UnsupportedOperationException.class, () ->  domain123.add(666));
+    assertThrows(UnsupportedOperationException.class, () -> domain123.add(666));
   }
 
   @Test
@@ -26,7 +25,7 @@ public class DefaultDomainTest {
     assertTrue(domain123.contains(1));
     assertTrue(domain123.contains(2));
     assertTrue(domain123.contains(3));
-    for (final Character c : domainABC)
+    for (final var c : domainABC)
       assertTrue(domainABC.contains(c));
     assertFalse(domain123.contains(4));
     assertFalse(domainABC.contains('a'));
@@ -36,8 +35,8 @@ public class DefaultDomainTest {
   @Test
   public final void testFactory() {
     for (final DefaultDomain d : asList(domain123, domainABC)) {
-      final DomainBitSet clone = (DomainBitSet) d.factory().apply(
-          d.stream().collect(Collectors.toList()));
+      final DomainBitSet clone = (DomainBitSet) d.factory()
+          .apply(d.stream().collect(Collectors.toList()));
       assertSame(d, clone.getDomain());
       assertEquals(SmallDomainBitSet.allOf(d), clone);
 
@@ -45,19 +44,11 @@ public class DefaultDomainTest {
       assertSame(d, empty.getDomain());
       assertTrue(empty.isEmpty());
 
-      try {
-        d.factory().apply(null);
-        fail("d.factory().apply(null) should fail");
-      } catch (final Exception e) {
-        // expected
-      }
+      assertThrows(Exception.class, () -> d.factory().apply(null),
+          "d.factory().apply(null) should fail");
+      assertThrows(Exception.class, () -> d.factory().apply("foo"),
+          "d.factory().apply(\"foo\") should fail");
 
-      try {
-        d.factory().apply("foo");
-        fail("d.factory().apply(\"foo\") should fail");
-      } catch (final Exception e) {
-        // expected
-      }
     }
 
   }
@@ -70,23 +61,15 @@ public class DefaultDomainTest {
       for (int i = 0; i < d.size(); i++)
         assertEquals(array[i], d.get(i));
     }
-    try {
-      domain123.get(-1);
-      fail("domain123.get(-1) should fail");
-    } catch (final IndexOutOfBoundsException e) {
-      // expected
-    }
-    try {
-      domain123.get(domain123.size());
-      fail("domain123.get(domain123.size()) should fail");
-    } catch (final IndexOutOfBoundsException e) {
-      // expected
-    }
+    assertThrows(IndexOutOfBoundsException.class, () -> domain123.get(-1),
+        "domain123.get(-1) should fail");
+    assertThrows(IndexOutOfBoundsException.class, () -> domain123.get(domain123.size()),
+        "domain123.get(domain123.size())  should fail");
   }
 
   @Test
   public final void testHashCode() {
-    final DefaultDomain<Integer> d123 = DefaultDomain.of(asList(1, 2, 3));
+    final var d123 = DefaultDomain.of(asList(1, 2, 3));
     assertEquals(domain123.hashCode(), d123.hashCode());
     assertNotEquals(domain123.hashCode(), domainABC.hashCode());
   }
@@ -107,23 +90,13 @@ public class DefaultDomainTest {
   @Test
   public final void testOf() {
     assertSame(domainABC, DefaultDomain.of(GeneralDomainBitSet.of(domainABC, domainABC)));
-    final DomainBitSet<Character> ac = domainABC.factory().apply(asList('A', 'C'));
+    final var ac = domainABC.factory().apply(asList('A', 'C'));
     assertSame(domainABC, ac.getDomain());
     assertSame(ac.getDomain(), DefaultDomain.of(ac.getDomain()));
-
-    try {
-      DefaultDomain.of((Collection<?>) null);
-      fail("DefaultDomain.of(null) should fail");
-    } catch (final NullPointerException e) {
-      // expected
-    }
-
-    try {
-      DefaultDomain.of(asList(1, 1, 1));
-      fail("DefaultDomain.of([1,1,1]) should fail");
-    } catch (final IllegalArgumentException e) {
-      // expected
-    }
+    assertThrows(NullPointerException.class, () -> DefaultDomain.of((Collection<?>) null),
+        "DefaultDomain.of(null) should fail");
+    assertThrows(IllegalArgumentException.class, () -> DefaultDomain.of(asList(1, 1, 1)),
+        "DefaultDomain.of([1,1,1]) should fail");
   }
 
   @Test

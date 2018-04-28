@@ -1,0 +1,96 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ch.claude_martin.enumbitset</groupId>
+	<artifactId>enumbitset</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>EnumBitSet</name>
+	<description>Use enums as bit sets.
+
+Do you know this situation: You have created some enum types in Java and now you want to use them but you don't know how to store them in a database? Hibernate and JPA can help you but ORM isn't always the best approach. Maybe you just want to have more control on how the data is stored to the database. 
+EnumBitSet can help you working with sets of enum constants and storing those sets in one single database field. Just use the method toLong() if you are sure that there are not more than 64 elements in the enum type. Or use toBigInteger() for enum types of any size. 
+This library also offers a more general interface to bit sets that are restricted by a domain (universe). </description>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<testSourceDirectory>test</testSourceDirectory>
+		<resources>
+			<resource>
+				<directory>src</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.7.0</version>
+				<configuration>
+					<fork>true</fork>
+					<release>10</release>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.ow2.asm</groupId>
+						<artifactId>asm</artifactId>
+						<version>6.1.1</version> <!-- Use newer version of ASM -->
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<artifactId>maven-toolchains-plugin</artifactId>
+				<configuration>
+					<toolchains>
+						<jdk>
+							<version>10</version>
+							<vendor>oracle</vendor>
+						</jdk>
+					</toolchains>
+				</configuration>
+				<executions>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.junit.platform</groupId>
+						<artifactId>junit-platform-surefire-provider</artifactId>
+						<version>1.1.1</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+		</plugins>
+	</build>
+	<url>http://claude-martin.ch/enumbitset/</url>
+	<organization>
+		<name>Claude Martin</name>
+		<url>http://claude-martin.ch/</url>
+	</organization>
+	<ciManagement>
+		<system>GitHub</system>
+		<url>https://github.com/claudemartin/enum-bit-set</url>
+	</ciManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.1.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.1.1</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>1.0.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>

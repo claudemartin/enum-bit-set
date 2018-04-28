@@ -281,17 +281,17 @@ public class DomainBitSetTest {
 
   @Test
   public final void testDomainContains() {
-    for (final DomainBitSet<Integer> s : this.all)
-      for (final Integer i : s.getDomain())
+    for (final var s : this.all)
+      for (final var i : s.getDomain())
         assertTrue(s.domainContains(i));
     assertFalse(this.oneTo4.domainContains(7));
   }
 
   @Test
   public final void testGetElement() {
-    for (final DomainBitSet<Integer> s : this.all) {
-      final Domain<Integer> d = s.getDomain();
-      for (final Integer i : d) {
+    for (final var s : this.all) {
+      final var d = s.getDomain();
+      for (final var i : d) {
         final Optional<Integer> element = s.getElement(d.indexOf(i));
         assertTrue(element.isPresent() == s.contains(i));
         if (element.isPresent())
@@ -320,7 +320,7 @@ public class DomainBitSetTest {
 
   @Test
   public final void testMap() {
-    final DefaultDomain<Character> domainABCD = DefaultDomain.of(asList('A', 'B', 'C', 'D'));
+    final var domainABCD = DefaultDomain.of(asList('A', 'B', 'C', 'D'));
     DomainBitSet<Character> set;
 
     set = this.none.map(domainABCD);
@@ -350,8 +350,8 @@ public class DomainBitSetTest {
 
   @Test
   public final void testOfEqualDomain() {
-    for (final DomainBitSet<Integer> s1 : this.all)
-      for (final DomainBitSet<Integer> s2 : this.all)
+    for (final var s1 : this.all)
+      for (final var s2 : this.all)
         assertTrue(s1.ofEqualDomain(s2));
     assertTrue(this.none.ofEqualDomain(TestBitSet.of(
         DefaultDomain.of(asList(this.domain1234.toArray(new Integer[4]))), Collections.emptySet())));
@@ -361,7 +361,7 @@ public class DomainBitSetTest {
 
   @Test
   public final void testOfEqualElements() {
-    final DefaultDomain<Integer> domain12345 = DefaultDomain.of(asList(1, 2, 3, 4, 5));
+    final var domain12345 = DefaultDomain.of(asList(1, 2, 3, 4, 5));
     assertTrue(this.none.ofEqualElements(TestBitSet.of(domain12345, Collections.emptySet())));
     assertTrue(this.oneTo4.ofEqualElements(TestBitSet.of(domain12345, asList(1, 2, 3, 4))));
     for (final DomainBitSet<Integer> s : this.all)
@@ -370,7 +370,7 @@ public class DomainBitSetTest {
 
   @Test
   public final void testSemijoin() {
-    for (final DomainBitSet<Integer> s : this.all) {
+    for (final var s : this.all) {
       DomainBitSet<Integer> s2;
       s2 = s.semijoin(this.oneTo4, (a, b) -> this.oneTo4.contains(a));
       assertEquals(s, s2);
@@ -383,7 +383,7 @@ public class DomainBitSetTest {
 
   @Test
   public final void testUnionVarArgs() {
-    for (final DomainBitSet<Integer> s : this.all) {
+    for (final var s : this.all) {
       assertEquals(this.oneTo4, s.unionVarArgs(1, 2, 3, 4));
       assertEquals(s, s.unionVarArgs());
     }
@@ -391,8 +391,8 @@ public class DomainBitSetTest {
 
   @Test
   public final void testZipWithPosition() {
-    for (final DomainBitSet<Integer> s : this.all) {
-      final Collector<Integer, ?, Set<Integer>> toSet = Collectors.toSet();
+    for (final var s : this.all) {
+      final var toSet = Collectors.toSet();
       assertEquals(s.toSet(), s.zipWithPosition().map(Pair::_2).collect(toSet));
       assertEquals(s.stream().map(s.getDomain()::indexOf).collect(toSet),
           s.zipWithPosition().map(Pair::_1).collect(toSet));
@@ -435,20 +435,10 @@ public class DomainBitSetTest {
       final Object[] zeroTo64 = IntStream.rangeClosed(0, 64).mapToObj(Integer::valueOf).toArray();
       final DomainBitSet<?> large = GeneralDomainBitSet.allOf(zeroTo64);
 
-      try {
-        large.powerset();
-        fail("powerset of [0..64] is too large!");
-      } catch (final MoreThan64ElementsException e) {
-        // expected
-      }
-
-      try {
-        large.powerset(s -> {
-        }, true);
-        fail("powerset of [0..64] is too large!");
-      } catch (final MoreThan64ElementsException e) {
-        // expected
-      }
+      assertThrows(MoreThan64ElementsException.class, () -> large.powerset(),
+          "powerset of [0..64] is too large!");
+      assertThrows(MoreThan64ElementsException.class, () -> large.powerset(s -> {  }, true), 
+          "powerset of [0..64] is too large!");
     }
 
     {

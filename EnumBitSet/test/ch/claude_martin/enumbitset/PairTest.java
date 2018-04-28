@@ -4,17 +4,17 @@ import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,15 +26,12 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import ch.claude_martin.enumbitset.EnumBitSetTest.Alphabet;
-import ch.claude_martin.enumbitset.EnumBitSetTest.Planet;
-
 @SuppressWarnings("static-method")
 public class PairTest {
 
   @Test
   public final void testClone() {
-    final Pair<?, String, Integer> p = Pair.of("foo", 42);
+    final var p = Pair.of("foo", 42);
     assertTrue(p == p.clone());
   }
 
@@ -50,7 +47,7 @@ public class PairTest {
     }
     {
       final var p = Pair.of("bla", 1);
-      final var set = new HashSet<Pair<?, String, Integer>>();
+      final var set = new HashSet<Pair<Object, String, Integer>>();
       final var add = Pair.curry(set::add);
       p.applyTo(add);
       assertEquals(new HashSet<>(asList(p)), set);
@@ -64,11 +61,10 @@ public class PairTest {
     { // With more complex types:
       final Domain<? extends Number> domain = DefaultDomain.of(asList(1, 2, 3));
       final List<? super Integer> list = new ArrayList<>(asList(1, 2, 3));
-      final Pair<Object, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
+      final Pair<?, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
 
       final Set<Pair<Object, Domain<? extends Number>, List<? super Integer>>> set = new HashSet<>();
-      final BiFunction<Domain<? extends Number>, List<? super Integer>, Boolean> add = Pair
-          .curry(set::add);
+      final var add = Pair .curry(set::add);
       p.applyTo(add);
       assertEquals(new HashSet<>(asList(p)), set);
     }
@@ -76,9 +72,8 @@ public class PairTest {
 
   @Test
   public final void testEqualsObject() {
-    final Pair<?, String, Integer> p1 = Pair.of("foo", Integer.MAX_VALUE - 4321);
-    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"),
-        Integer.valueOf(Integer.MAX_VALUE - 4321));
+    final var p1 = Pair.of("foo", Integer.MAX_VALUE - 4321);
+    final var p2 = Pair.of(new String("foo"), Integer.valueOf(Integer.MAX_VALUE - 4321));
     assertEquals(p1, p1);
     assertEquals(p1, p2);
     assertEquals(p2, p1);
@@ -89,9 +84,8 @@ public class PairTest {
 
   @Test
   public final void testHashCode() {
-    final Pair<?, String, Integer> p1 = Pair.of("foo", Integer.MAX_VALUE - 1234);
-    final Pair<?, String, Integer> p2 = Pair.of(new String("foo"),
-        Integer.valueOf(Integer.MAX_VALUE - 1234));
+    final var p1 = Pair.of("foo", Integer.MAX_VALUE - 1234);
+    final var p2 = Pair.of(new String("foo"), Integer.valueOf(Integer.MAX_VALUE - 1234));
     assertEquals(p1.hashCode(), p1.hashCode());
     assertEquals(p1.hashCode(), p2.hashCode());
     assertEquals(p2.hashCode(), p2.hashCode());
@@ -99,18 +93,16 @@ public class PairTest {
 
   @Test
   public void testIterator() throws Exception {
-    final Pair<Number, Double, Integer> p = Pair.of(Math.PI, 42);
-    final List<?> list = Arrays.asList(p.toArray());
+    final var p = Pair.of(Math.PI, 42);
+    final var list = Arrays.asList(p.toArray());
     for (final Number num : p)
       assertTrue(list.contains(num));
 
-    try {
-      final Iterator<Number> itr = p.iterator();
+    assertThrows(NoSuchElementException.class, () -> {
+      final var itr = p.iterator();
       for (int i = 0; i < 19; i++)
         itr.next();
-      fail("expected: NoSuchElementException ");
-    } catch (final NoSuchElementException e) {
-    }
+    });
 
     final Object[] array = p.stream().distinct().toArray();
     assertArrayEquals(p.toArray(), array);
@@ -119,11 +111,11 @@ public class PairTest {
   @Test
   public void testOf() throws Exception {
     {
-      final Pair<Number, Integer, Double> p1 = Pair.of(1, 0.5);
-      final Pair<Number, Integer, Double> p2 = Pair.of(Number.class, 1, 0.5);
+      final var p1 = Pair.of(1, 0.5);
+      final var p2 = Pair.of(Number.class, 1, 0.5);
       assertEquals(p1, p2);
-      final Pair<?, ?, ?> p3 = Pair.of(Pair.of(1, 2), Pair.of(3, 4));
-      final Pair<?, ?, ?> p4 = Pair.of(Pair.class, Pair.of(Integer.class, 1, 2),
+      final var p3 = Pair.of(Pair.of(1, 2), Pair.of(3, 4));
+      final var p4 = Pair.of(Pair.class, Pair.of(Integer.class, 1, 2),
           Pair.of(Integer.class, 3, 4));
       assertEquals(p3, p4);
     }
@@ -133,38 +125,30 @@ public class PairTest {
   public final void testPair() {
     Pair.of("foo", "bar");
 
-    final Pair<Enum<?>, Alphabet, Planet> p2 = Pair.of(EnumBitSetTest.Alphabet.A,
+    final var p2 = Pair.of(EnumBitSetTest.Alphabet.A,
         EnumBitSetTest.Planet.EARTH);
-    for (final Enum<?> e : p2)
+    for (final var e : p2)
       assertNotNull(e);
 
-    try {
-      Pair.of("foo", null);
-      fail("null");
-    } catch (final NullPointerException e) {
-
-    }
-    try {
-      Pair.of(null, "foo");
-      fail("null");
-    } catch (final NullPointerException e) {
-
-    }
+    assertThrows(NullPointerException.class, () -> Pair.of("foo", null));
+    assertThrows(NullPointerException.class, () -> Pair.of(null, "foo"));
   }
 
   @Test
   public final void testSwap() {
-    final Pair<?, String, Integer> p = Pair.of("foo", 42);
+    final var p = Pair.of("foo", 42);
+    assertNotEquals(p, p.swap());
     assertEquals(p, p.swap().swap());
+    assertEquals(p, p.swap().swap().swap().swap());
     assertEquals(p.swap(), p.swap());
-    final Pair<?, Integer, String> swap = p.swap();
+    final var swap = p.swap();
     assertEquals(p.first, swap.second);
     assertEquals(p.second, swap.first);
   }
 
   @Test
   public final void testToArray() {
-    final Pair<?, String, Integer> p = Pair.of("foo", 42);
+    final var p = Pair.of("foo", 42);
     final Object[] array = p.toArray();
     assertEquals(2, array.length);
     assertEquals(p.first, array[0]);
@@ -173,7 +157,7 @@ public class PairTest {
 
   @Test
   public final void testToString() {
-    final Pair<?, String, Integer> p = Pair.of("foo", 42);
+    final var p = Pair.of("foo", 42);
     final String string = p.toString();
     assertTrue(string.startsWith(Pair.class.getSimpleName()));
     assertTrue(string.contains(p.first));
@@ -182,9 +166,9 @@ public class PairTest {
 
   @Test
   public final void testCompareTo() throws Exception {
-    final Pair<Comparable<?>, Integer, String> a = Pair.of(5, "A");
-    final Pair<Comparable<?>, Integer, String> b = Pair.of(-7, "B");
-    final Pair<Comparable<?>, Integer, String> c = Pair.of(5, "C");
+    final var a = Pair.of(5, "A");
+    final var b = Pair.of(-7, "B");
+    final var c = Pair.of(5, "C");
 
     final Object[] array = asList(a, b, c).stream().sorted().toArray();
     // b, a, c
@@ -195,14 +179,11 @@ public class PairTest {
 
   @Test
   public final void testComparing() throws Exception {
-    final List<Pair<Number, Integer, Double>> list = new ArrayList<>();
-    final Pair<Number, Integer, Double> a = Pair.of(42, Math.PI);
-    list.add(a);
-    final Pair<Number, Integer, Double> b = Pair.of(-7, Math.E);
-    list.add(b);
-    final Pair<Number, Integer, Double> c = Pair.of(0, Math.sqrt(2));
-    list.add(c);
-
+    final var a = Pair.of(42, Math.PI);
+    final var b = Pair.of(-7, Math.E);
+    final var c = Pair.of(0, Math.sqrt(2));
+    final var list = asList(a,b,c);
+    
     list.sort(Pair.comparingByFirst());
     assertArrayEquals(new Object[] { b, c, a }, list.toArray());
     list.sort(Pair.comparingBySecond());
@@ -220,18 +201,16 @@ public class PairTest {
     assertEquals("a", map.get(false));
     assertEquals("b", map.get(true));
     assertEquals(2, map.size());
-    try {
-      map.put(true, "x");
-      fail("toMap");
-    } catch (final UnsupportedOperationException e) {
-    }
-    for (final Boolean b : map.keySet()) {
+    assertThrows(UnsupportedOperationException.class, () -> map.put(true, "x"),
+        "Pair.toMap must return immutable map");
+
+    for (final var b : map.keySet()) {
       assertNotNull(b);
       assertNotNull(map.get(b));
     }
-    for (final String s : map.values())
+    for (final var s : map.values())
       assertNotNull(s);
-    for (final Entry<Boolean, String> e : map.entrySet())
+    for (final var e : map.entrySet())
       assertEquals(map.get(e.getKey()), e.getValue());
   }
 
@@ -242,19 +221,10 @@ public class PairTest {
       p1 = Pair.of("a", "b");
       p2 = Pair.ofMap(p1.toMap());
       assertEquals(p1, p2);
-
-      try {
-        Pair.ofMap(null);
-        fail("ofMap(null)");
-      } catch (final NullPointerException e) {
-      }
+      assertThrows(NullPointerException.class, () ->Pair.ofMap(null));
 
       final Map<Boolean, String> map = new HashMap<>();
-      try {
-        Pair.ofMap(map);
-        fail("ofMap(null)");
-      } catch (final NullPointerException e) {
-      }
+      assertThrows(NullPointerException.class, () ->Pair.ofMap(map));
 
       map.put(false, "a");
       map.put(true, "b");
@@ -266,7 +236,7 @@ public class PairTest {
     {
       Pair<List<String>, List<String>, List<String>> p1, p2;
       p1 = Pair.of(asList("a"), asList("b"));
-      final Map<Boolean, List<String>> map = Stream.of("a", "b")
+      final var map = Stream.of("a", "b")
           .collect(Collectors.partitioningBy(e -> "b".equals(e)));
       p2 = Pair.ofMap(map);
       assertEquals(p1, p2);
