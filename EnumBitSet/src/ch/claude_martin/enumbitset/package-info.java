@@ -139,7 +139,7 @@
  * Invoking a method that uses 64 bit on a set with a domain of more than 64 elements 
  * will throw a {@link ch.claude_martin.enumbitset.MoreThan64ElementsException}.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a>
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a>
  */
 package ch.claude_martin.enumbitset;
 

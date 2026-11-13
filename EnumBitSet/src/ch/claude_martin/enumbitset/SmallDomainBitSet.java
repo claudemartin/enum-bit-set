@@ -231,13 +231,12 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
     return new SmallDomainBitSet<>(this.domain, this.not(this.set));
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public boolean equals(final Object other) {
     if (other == this)
       return true;
-    if (other instanceof DomainBitSet) {
-      @SuppressWarnings("unchecked")
-      final var domBitSet = (DomainBitSet<T>) other;
+    if (other instanceof DomainBitSet domBitSet) {
       if (this.size() != domBitSet.size() || !this.ofEqualDomain(domBitSet))
         return false;
       if (other instanceof SmallDomainBitSet)

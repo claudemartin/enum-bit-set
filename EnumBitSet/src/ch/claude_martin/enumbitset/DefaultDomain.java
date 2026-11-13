@@ -26,7 +26,7 @@ import ch.claude_martin.enumbitset.annotations.Nullable;
  * @param <T>
  *          A type that all elements in the domain share.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
 final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
@@ -52,16 +52,16 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   public static <T> DefaultDomain<T> of(final Collection<? extends T> domain) {
     requireNonNull(domain, "domain");
 
-    if (domain instanceof DefaultDomain)
-      return (DefaultDomain<T>) domain;
+    if (domain instanceof DefaultDomain def)
+      return def;
 
     if (domain.isEmpty())
       return EMPTY_DOMAIN;
 
-    if (domain instanceof DomainBitSet) {
-      final var domain2 = ((DomainBitSet<T>) domain).getDomain();
-      if (domain2 instanceof DefaultDomain && domain.size() == domain2.size())
-        return (DefaultDomain<T>) domain2;
+    if (domain instanceof DomainBitSet domainBitSet) {
+      final var domain2 = domainBitSet.getDomain();
+      if (domain2 instanceof DefaultDomain defaultDomain && domainBitSet.size() == domain2.size())
+        return defaultDomain;
     }
 
     return new DefaultDomain<>(domain);
@@ -138,8 +138,8 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
       return true;
     if (obj == null || !(obj instanceof Domain) || this.hashCode() != obj.hashCode())
       return false;
-    if (obj instanceof DefaultDomain)
-      return Arrays.equals(this.elements, ((DefaultDomain<?>) obj).elements);
+    if (obj instanceof DefaultDomain defDomain)
+      return Arrays.equals(this.elements, defDomain.elements);
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
   }
 

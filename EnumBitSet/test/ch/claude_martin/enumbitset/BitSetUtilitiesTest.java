@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -159,8 +160,9 @@ public class BitSetUtilitiesTest {
     return BitSetUtilities.deepToString(o).toString();
   }
 
-  private static String deepToString(final Object o, final int timeout) {
-    return BitSetUtilities.deepToString(o, timeout).toString();
+  private static String deepToString(final Object o, final int timeout)
+      throws InterruptedException, ExecutionException {
+    return BitSetUtilities.deepToString(o, timeout, false).get().toString();
   }
 
   @Test
@@ -218,13 +220,12 @@ public class BitSetUtilitiesTest {
       }
 
       try {
-        final String string = deepToString(pair, 200);
+        final var future = BitSetUtilities.deepToString(pair, 200, true);
+        final String string = future.get().toString();
         assertTrue(string.contains("abcd0"));
         assertTrue(string.contains("GeneralDomainBitSet"));
       } catch (final AssertionError e) {
         throw e;
-      } catch (final Throwable e) {
-        fail("Pair.toString failed: " + e);
       }
     }, () -> "The deepToString method took more than 2 seconds and was aborted.");
   }
@@ -250,12 +251,14 @@ public class BitSetUtilitiesTest {
       };
       final Iterable<Object> iterable = createItr[0].get();
       try {
-        final String string = deepToString(iterable, 200);
-        assertTrue(string.contains("λ["));
-        assertTrue(string.contains(","));
+        final var future = BitSetUtilities.deepToString(iterable, 200, true);
+        final var string = future.get().toString();
+        assertTrue(string.contains("λ["), "String doesn't contain λ[");
+        assertTrue(string.contains(","), "String doesn't contain ,");
       } catch (final AssertionError e) {
         throw e;
       } catch (final Throwable e) {
+        e.printStackTrace();
         fail("Pair.toString failed: " + e);
       }
     }, () -> "The deepToString method took more than 2 seconds and was aborted.");

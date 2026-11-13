@@ -36,7 +36,7 @@ import ch.claude_martin.enumbitset.annotations.NonNull;
  * @param <T>
  *          A type that all elements in the domain share.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
 public interface Domain<T> extends List<T>, Set<T>, Serializable {
@@ -54,7 +54,7 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
   }
 
   /** Creates a Domain of the given elements. if the given collection is a Domain then the same
-   * reference is refurned.
+   * object is returned.
    * 
    * @param elements
    *          Elements of the domain. The collection must be ordered.
@@ -62,8 +62,8 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
   @SuppressWarnings("unchecked")
   public static <T> Domain<T> of(@NonNull final Collection<? extends T> elements) {
     requireNonNull(elements, "elements");
-    if (elements instanceof Domain)
-      return (Domain<T>) elements;
+    if (elements instanceof Domain domain)
+      return domain;
     return DefaultDomain.of(elements);
   }
 

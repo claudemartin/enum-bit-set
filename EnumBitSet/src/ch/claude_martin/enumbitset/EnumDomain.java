@@ -46,7 +46,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
         domain = (Domain<X>) ref.get();
       if (null == domain) {
         domain = new EnumDomain<>(enumType);
-        domainCache.put(enumType, new SoftReference<Domain<? extends Enum<?>>>(domain));
+        domainCache.put(enumType, new SoftReference<>(domain));
       }
       return domain;
     }
@@ -74,9 +74,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
 
   @Override
   public boolean contains(@Nullable final Object o) {
-    if (o instanceof Enum)
-      return ((Enum<?>) o).getDeclaringClass() == this.enumType;
-    return false;
+    return o instanceof Enum e && e.getDeclaringClass() == this.enumType;
   }
 
   @Override
@@ -85,8 +83,8 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
       return true;
     if (obj == null || !(obj instanceof Domain) || this.hashCode() != obj.hashCode())
       return false;
-    if (obj instanceof EnumDomain)
-      return this.getEnumType() == ((EnumDomain<?>) obj).getEnumType();
+    if (obj instanceof EnumDomain enumDomain)
+      return this.getEnumType() == enumDomain.getEnumType();
     return Arrays.equals(this.elements, ((Domain<?>) obj).toArray());
   }
 
@@ -118,9 +116,7 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
 
   @Override
   public int indexOf(@Nullable final Object o) {
-    if (o instanceof Enum)
-      return ((Enum<?>) o).ordinal();
-    return -1;
+    return o instanceof Enum e ? e.ordinal() : -1;
   }
 
   @Override

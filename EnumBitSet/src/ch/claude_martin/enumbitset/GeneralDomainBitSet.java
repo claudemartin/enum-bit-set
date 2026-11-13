@@ -256,8 +256,8 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   @Override
   @SuppressWarnings("unchecked")
   public boolean equals(final Object o) {
-    return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
-        && this.ofEqualElements((DomainBitSet<T>) o);
+    return this == o || o instanceof DomainBitSet domainBitSet
+        && this.ofEqualDomain(domainBitSet) && this.ofEqualElements(domainBitSet);
   }
 
   @Override
@@ -391,8 +391,8 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   @Override
   public boolean ofEqualElements(final DomainBitSet<T> other) {
     requireNonNull(other, "other");
-    if (other instanceof GeneralDomainBitSet)
-      return this.set.equals(((GeneralDomainBitSet<T>) other).set);
+    if (other instanceof GeneralDomainBitSet generalDomainBitSet)
+      return this.set.equals(generalDomainBitSet.set);
     return this.set.equals(other.toSet());
   }
 

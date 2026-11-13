@@ -45,7 +45,7 @@ import ch.claude_martin.enumbitset.annotations.NonNull;
  *          The type of the first element. Extends &lt;T&gt;.
  * @param <Y>
  *          The type of the second element. Extends &lt;T&gt;.
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
 public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
@@ -272,10 +272,8 @@ public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Clo
   public boolean equals(final Object obj) {
     if (this == obj)
       return true;
-    if (obj instanceof Map.Entry) {
-      @SuppressWarnings("unchecked")
-      final Map.Entry<X, Y> e2 = (Map.Entry<X, Y>) obj;
-      return this.first.equals(e2.getKey()) && this.second.equals(e2.getValue());
+    if (obj instanceof Map.Entry entry) {
+      return this.first.equals(entry.getKey()) && this.second.equals(entry.getValue());
     }
     return false;
   }

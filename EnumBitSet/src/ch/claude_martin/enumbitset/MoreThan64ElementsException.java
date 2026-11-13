@@ -18,7 +18,7 @@ package ch.claude_martin.enumbitset;
  * </code>
  * </pre>
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 public class MoreThan64ElementsException extends RuntimeException {
   private static final long serialVersionUID = -3153017224720289309L;
   private final Class<?>    type;

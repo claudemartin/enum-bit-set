@@ -63,8 +63,8 @@ public class DomainBitSetTest {
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(final Object o) {
-      return this == o || o instanceof DomainBitSet && this.ofEqualDomain((DomainBitSet<T>) o)
-          && this.ofEqualElements((DomainBitSet<T>) o);
+      return this == o || o instanceof DomainBitSet domainBitSet && this.ofEqualDomain(domainBitSet)
+          && this.ofEqualElements(domainBitSet);
     }
 
     @Override

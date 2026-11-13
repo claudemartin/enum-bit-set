@@ -55,7 +55,7 @@ import ch.claude_martin.enumbitset.annotations.Nullable;
  * <p>
  * See the <a href="./package-info.html">package-info</a> for naming conventions.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a>
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a>
  * 
  * @param <E>
  *          Enum type that implements <code>{@link EnumBitSetHelper}&lt;E&gt; </code>. */
@@ -526,12 +526,12 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public boolean equals(final Object other) {
     if (this == other)
       return true;
-    if (other instanceof EnumBitSet)
-      return this.enumType == ((EnumBitSet<E>) other).enumType
-          && this.bitset.equals(((EnumBitSet<E>) other).bitset);
-    if (other instanceof DomainBitSet)
-      return this.ofEqualDomain((DomainBitSet<E>) other)
-          && this.ofEqualElements((DomainBitSet<E>) other);
+    if (other instanceof EnumBitSet enumBitSet)
+      return this.enumType == enumBitSet.enumType
+          && this.bitset.equals(enumBitSet.bitset);
+    if (other instanceof DomainBitSet domainBitSet)
+      return this.ofEqualDomain(domainBitSet)
+          && this.ofEqualElements(domainBitSet);
     return false;
   }
 
@@ -664,8 +664,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code> this &#x2229; set</code> */
   @Override
   public EnumBitSet<E> intersect(final Iterable<E> set) {
-    if (requireNonNull(set, "set") instanceof EnumBitSet)
-      return this.intersect(((EnumBitSet<E>) set).bitset);
+    if (requireNonNull(set, "set") instanceof EnumBitSet<E> enumBitSet)
+      return this.intersect(enumBitSet.bitset);
     final var result = EnumSet.noneOf(this.enumType);
     for (final E e : set)
       if (this.contains(e))
@@ -781,9 +781,9 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   public <S> DomainBitSet<S> map(final Domain<S> newDomain, final Function<E, S> mapper) {
     requireNonNull(newDomain, "newDomain");
     requireNonNull(mapper, "mapper");
-    if (newDomain instanceof EnumDomain) {
+    if (newDomain instanceof EnumDomain enumDomain) {
       // fact: S extends Enum & EnumBitSetHelper
-      final var result = new EnumBitSet(((EnumDomain) newDomain).getEnumType());
+      final var result = new EnumBitSet(enumDomain.getEnumType());
       final var bs = result.bitset;
       this.forEach(e -> bs.add(mapper.apply(e)));
       return result;
@@ -883,8 +883,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code>this &#x2216; mask</code> */
   @Override
   public EnumBitSet<E> minus(final Iterable<E> set) {
-    if (requireNonNull(set, "set") instanceof EnumBitSet)
-      return this.intersect(((EnumBitSet<E>) set).bitset);
+    if (requireNonNull(set, "set") instanceof EnumBitSet<E> enumBitSet) 
+      return this.intersect(enumBitSet.bitset);
     final var result = this.clone();
     set.forEach(result.bitset::remove);
     return result;
@@ -927,8 +927,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   @Override
   public boolean ofEqualDomain(final DomainBitSet<E> set) {
-    if (requireNonNull(set, "set") instanceof EnumBitSet)
-      return this.enumType == ((EnumBitSet<?>) set).enumType;
+    if (requireNonNull(set, "set") instanceof EnumBitSet<E> enumBitSet)
+      return this.enumType == enumBitSet.enumType;
     // unlikely but possible:
     return this.getDomain().equals(set.getDomain());
   }
@@ -1140,8 +1140,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
 
   @Override
   public EnumBitSet<E> union(final Iterable<E> set) {
-    if (requireNonNull(set, "set") instanceof EnumBitSet)
-      return this.union(((EnumBitSet<E>) set).bitset);
+    if (requireNonNull(set, "set") instanceof EnumBitSet<E> enumBitSet)
+      return this.union(enumBitSet.bitset);
     final var clone = this.bitset.clone();
     set.forEach(clone::add);
     return new EnumBitSet<>(this.enumType, clone);

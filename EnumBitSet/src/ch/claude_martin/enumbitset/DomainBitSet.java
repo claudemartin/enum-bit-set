@@ -60,7 +60,7 @@ import ch.claude_martin.enumbitset.annotations.Nonnegative;
  * @param <T>
  *          A type that all elements in the domain share.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @DefaultAnnotationForParameters({ NonNull.class })
 public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
 
@@ -649,30 +649,31 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
     requireNonNull(consumer, "consumer");
     if (DomainBitSet.this.size() > 64)
       throw new MoreThan64ElementsException();
-    final var pool = Executors.newWorkStealingPool();
-    final var domain = getDomain();
-    final Pair<Object, Integer, T>[] pairs = this.zipWithPosition().toArray(Pair[]::new);
-    final int domSize = DomainBitSet.this.getDomain().size();
-    final var size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
-    var i = BigInteger.ZERO;
-    while (i.compareTo(size) < 0) {
-      final BigInteger _i = i;
-      pool.execute(() -> {
-        long mask = 0L;
-        for (int x = 0; x < domSize; x++)
-          if (_i.testBit(x))
-            mask |= 1L << pairs[x]._1();
-        consumer.accept(SmallDomainBitSet.of(domain, mask));
-      });
-      i = i.add(BigInteger.ONE);
-    }
-    pool.shutdown();
-    if (blocking)
-      try {
-        pool.awaitTermination(1, TimeUnit.DAYS);
-      } catch (final InterruptedException e) {
-        Thread.currentThread().interrupt();
+    try (var pool = Executors.newWorkStealingPool()) {
+      final var domain = getDomain();
+      final Pair<Object, Integer, T>[] pairs = this.zipWithPosition().toArray(Pair[]::new);
+      final int domSize = DomainBitSet.this.getDomain().size();
+      final var size = BigInteger.ONE.shiftLeft(DomainBitSet.this.size());
+      var i = BigInteger.ZERO;
+      while (i.compareTo(size) < 0) {
+        final BigInteger _i = i;
+        pool.execute(() -> {
+          long mask = 0L;
+          for (int x = 0; x < domSize; x++)
+            if (_i.testBit(x))
+              mask |= 1L << pairs[x]._1();
+          consumer.accept(SmallDomainBitSet.of(domain, mask));
+        });
+        i = i.add(BigInteger.ONE);
       }
+      pool.shutdown();
+      if (blocking)
+        try {
+          pool.awaitTermination(1, TimeUnit.DAYS);
+        } catch (final InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+    }
   }
 
   /** Returns a new set with all elements in this set, that have a matching element in the other set.

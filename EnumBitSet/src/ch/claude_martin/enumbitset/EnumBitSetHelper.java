@@ -57,7 +57,7 @@ import ch.claude_martin.enumbitset.annotations.Nonnegative;
  * <p>
  * 
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a>
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a>
  * 
  * @param <E>
  *          The Enum-Type. */

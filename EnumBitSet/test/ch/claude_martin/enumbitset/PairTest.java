@@ -61,7 +61,7 @@ public class PairTest {
     { // With more complex types:
       final Domain<? extends Number> domain = DefaultDomain.of(asList(1, 2, 3));
       final List<? super Integer> list = new ArrayList<>(asList(1, 2, 3));
-      final Pair<?, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
+      final Pair<Object, Domain<? extends Number>, List<? super Integer>> p = Pair.of(domain, list);
 
       final Set<Pair<Object, Domain<? extends Number>, List<? super Integer>>> set = new HashSet<>();
       final var add = Pair .curry(set::add);

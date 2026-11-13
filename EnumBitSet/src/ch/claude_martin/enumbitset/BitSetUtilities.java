@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
@@ -11,9 +12,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -28,15 +33,14 @@ import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.NonNull;
 import ch.claude_martin.enumbitset.annotations.Nonnegative;
 
-
 /** A collection of utility methods for {@link DomainBitSet}s.
  * 
- * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2014 Claude Martin</a> */
+ * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @DefaultAnnotationForParameters({ NonNull.class })
 public final class BitSetUtilities {
 
-  /** Creates a BigInteger of a given bit set. The value is a positive value with the same "value" as
-   * the bit set.
+  /** Creates a BigInteger of a given bit set. The value is a positive value with the same "value"
+   * as the bit set.
    * 
    * @param bitset
    *          A bit set.
@@ -62,8 +66,8 @@ public final class BitSetUtilities {
       return BigInteger.valueOf(mask);
     // Negative value as "unsigned" BigInteger:
     final var result = new BigInteger(1, longToBytes(mask));
-    assert result.equals(BigInteger.valueOf(mask & Long.MAX_VALUE).add(
-        BigInteger.valueOf(2).pow(63)));
+    assert result
+        .equals(BigInteger.valueOf(mask & Long.MAX_VALUE).add(BigInteger.valueOf(2).pow(63)));
     assert asLong(result) == mask;
     return result;
   }
@@ -145,7 +149,8 @@ public final class BitSetUtilities {
   @SuppressWarnings({ "rawtypes", "unchecked" })
   @NonNull
   @CheckReturnValue
-  public static <T> Set<Pair<T, T, T>> cross(final DomainBitSet<T> set1, final DomainBitSet<T> set2) {
+  public static <T> Set<Pair<T, T, T>> cross(final DomainBitSet<T> set1,
+      final DomainBitSet<T> set2) {
     requireNonNull(set1, "set1");
     requireNonNull(set2, "set2");
     return (Set) set1.cross(set2);
@@ -311,7 +316,8 @@ public final class BitSetUtilities {
 
   /** Collector to convert a {@link Stream} of {@link Pair}s to a {@link TreeMap}.
    * <p>
-   * A stream with multiple entries for the same position will cause a {@link IllegalStateException}.
+   * A stream with multiple entries for the same position will cause a
+   * {@link IllegalStateException}.
    * 
    * @param <T>
    *          the type of the elements.
@@ -322,8 +328,8 @@ public final class BitSetUtilities {
   @NonNull
   public static <T> Collector<Pair<Object, Integer, T>, ?, TreeMap<Integer, T>> toTreeMap() {
     // Note: A collision should not occur, unless this is applied to an invalid stream.
-    return Collectors.toMap(Pair::_1, Pair::_2, (u, v) -> {
-      throw new IllegalStateException();
+    return Collectors.toMap(Pair::_1, Pair::_2, (key, _) -> {
+      throw new IllegalStateException("Collision for key: " + key);
     }, TreeMap::new);
   }
 
@@ -352,31 +358,25 @@ public final class BitSetUtilities {
    *          the object to be converted to string.
    * @param timeout
    *          timeout in milliseconds
+   * @param returnIncompleteResult
+   *          If set to true, this will return the string created so far.
    * @return A character sequence that represents the given object. */
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings("resource")
   @NonNull
-  public static CharSequence deepToString(final Object object, @Nonnegative final int timeout) {
+  @Deprecated
+  public static ForkJoinTask<CharSequence> deepToString(final Object object,
+      @Nonnegative final int timeout, boolean returnIncompleteResult) {
     if (timeout < 0)
       throw new IllegalArgumentException("timeout");
-    if (timeout == 0)
-      return deepToString(object);
     final var buffer = new StringBuilder();
+    final var pool = ForkJoinPool.commonPool();
     final var dejavu = Collections.<Object> newSetFromMap(new IdentityHashMap<>());
-    final Thread thread = new Thread(() -> deepToString(object, buffer, dejavu), "deepToString");
-    thread.setDaemon(true);
-    // Ingore everything! This includes interrupted, stack overflow and out of memory.
-    thread.setUncaughtExceptionHandler((t, e) -> { });
-    thread.start();
-    try {
-      thread.join(timeout);
-    } catch (final InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
-    thread.interrupt();
-    if(!thread.isAlive())
+    ForkJoinTask<CharSequence> future = pool.<CharSequence> submitWithTimeout(() -> {
+      deepToString(object, buffer, dejavu);
       return buffer;
-    thread.stop();
-    return buffer.toString();
+    }, timeout, TimeUnit.MILLISECONDS,
+        returnIncompleteResult ? t -> t.complete(buffer.toString()) : null);
+    return future;
   }
 
   /** Returns a string representation of the object. All arrays and iterables are processed as such.
@@ -417,10 +417,10 @@ public final class BitSetUtilities {
       return;
     }
     final var oClass = o.getClass();
-    final String simpleName = oClass.isSynthetic() && oClass.getSimpleName().contains("$$Lambda$")
+    final String simpleName = oClass.isSynthetic() && oClass.getSimpleName().contains("$$Lambda")
         && Arrays.stream(oClass.getDeclaredMethods())
-            .filter(m -> Modifier.isPublic(m.getModifiers())).count() == 1
-        ? "λ" : oClass.getSimpleName();
+            .filter(m -> Modifier.isPublic(m.getModifiers())).count() == 1 ? "λ"
+                : oClass.getSimpleName();
     if (dejavu.contains(o)) {
       buffer.append(simpleName);
       buffer.append('@');
@@ -429,46 +429,49 @@ public final class BitSetUtilities {
     }
     dejavu.add(o);
     if (oClass.isArray()) {
-      if (o instanceof Object[]) {
+      if (o instanceof Object[] array) {
         buffer.append('[');
-        for (final Object e : (Object[]) o) {
+        for (int i = 0; i < array.length; i++) {
+          final Object e = array[i];
           deepToString(e, buffer, dejavu);
-          buffer.append(", ");
+          if (i < array.length - 1) {
+            buffer.append(", ");
+          }
         }
-        buffer.setLength(buffer.length() - 2);
         buffer.append(']');
       } else
         try {
           buffer.append(
               Arrays.class.getDeclaredMethod("toString", oClass).invoke(null, o).toString());
         } catch (final Exception e) {
-          throw new RuntimeException("Can't invoke Arrays.toString(" + simpleName + ")",
-              e);
+          throw new RuntimeException("Can't invoke Arrays.toString(" + simpleName + ")", e);
         }
-    } else if (o instanceof Pair) {
+    } else if (o instanceof Pair pair) {
       buffer.append("Pair(");
-      deepToString(((Pair<?, ?, ?>) o).first, buffer, dejavu);
+      deepToString(pair.first, buffer, dejavu);
       buffer.append(", ");
-      deepToString(((Pair<?, ?, ?>) o).second, buffer, dejavu);
+      deepToString(pair.second, buffer, dejavu);
       buffer.append(')');
-    } else if (o instanceof Iterable) {
+    } else if (o instanceof Iterable iterable) {
       buffer.append(simpleName);
       buffer.append('[');
-      for (final Object e : (Iterable<?>) o) {
+      for (Iterator<?> iterator = iterable.iterator(); iterator.hasNext();) {
+        final Object e = iterator.next();
         deepToString(e, buffer, dejavu);
-        buffer.append(", ");
+        if (iterator.hasNext()) {
+          buffer.append(", ");
+        }
       }
-      buffer.setLength(buffer.length() - 2);
       buffer.append(']');
-    } else if (o instanceof AtomicReference) {
+    } else if (o instanceof AtomicReference ref) {
       buffer.append(simpleName);
       buffer.append('(');
-      deepToString(((AtomicReference<?>) o).get(), buffer, dejavu);
+      deepToString(ref.get(), buffer, dejavu);
       buffer.append(')');
-    } else if (o instanceof Optional) {
+    } else if (o instanceof Optional optional) {
       buffer.append(simpleName);
       buffer.append('[');
-      deepToString(((Optional<?>) o).get(), buffer, dejavu);
+      deepToString(optional.get(), buffer, dejavu);
       buffer.append(']');
     } else
       buffer.append(o.toString());
