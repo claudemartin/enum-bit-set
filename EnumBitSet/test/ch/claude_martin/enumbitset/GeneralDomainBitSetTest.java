@@ -155,7 +155,7 @@ public class GeneralDomainBitSetTest {
   public void testHashCode() throws Exception {
     for (final DomainBitSet<Integer> set : asList(this.oneTwo, this.twoThree, this.oneTo4)) {
       assertEquals(set.hashCode(), set.hashCode());
-      assertEquals(set.hashCode(), SmallDomainBitSet.of(set.getDomain(), set.toLong()).hashCode());
+      assertEquals(set.hashCode(), GeneralDomainBitSet.of(set.getDomain(), set.toSet()).hashCode());
     }
   }
 
@@ -187,15 +187,11 @@ public class GeneralDomainBitSetTest {
 
   @Test
   public void testGetDomain() {
-    final Set<Integer> domain = this.oneTo4.getDomain();
+    final var domain = this.oneTo4.getDomain();
     assertEquals(4, domain.size());
     for (int i = 1; i <= 4; i++)
       assertTrue(domain.contains(i));
-    try {
-      domain.add(123);
-      fail("The domain must be unmodifiable.");
-    } catch (final Exception e) {
-    }
+    assertThrows(UnsupportedOperationException.class, () -> domain.add(123));
   }
 
   @Test
@@ -275,7 +271,20 @@ public class GeneralDomainBitSetTest {
     assertEquals(this.oneTo4.size(), this.oneTo4.stream().count());
     assertEquals(expected, (int) this.oneTo4.stream().reduce(0, Integer::sum));
   }
+  
+  @Test
+  public void testSortedIterator() {
+    assertFalse(this.none.sortedIterator().hasNext(), "should not have next");
+    int sum = 0;
 
+    for (var set : List.of(none, oneTo4, oneTwo, twoThree, threeFour)) {
+      final List<Integer> list = new ArrayList<>();
+      set.forEach(list::add);
+      assertEquals(set.stream().sorted().toList(), list, set.toString());
+    }
+  }
+
+  
   @Test
   public void testMap() throws Exception {
     final Domain<Integer> domain = allOf(1, 2, 3, 4, 5).getDomain();
@@ -497,7 +506,7 @@ public class GeneralDomainBitSetTest {
     assertEquals(Integer.valueOf(1), this.oneTo4.stream().findFirst().get());
     // [1,2,3,4] is already distinct and sorted, so let's test this:
     final var collector = Collectors.toCollection(LinkedHashSet<Integer>::new);
-    assertEquals(this.oneTo4.toLinkedHashSet(),
+    assertEquals(this.oneTo4.toSet(),
         this.oneTo4.stream().distinct().sorted().collect(collector));
   }
 
@@ -534,12 +543,6 @@ public class GeneralDomainBitSetTest {
   }
 
   @Test
-  public void testToLinkedHashSet() {
-    final LinkedHashSet<Integer> set = this.oneTo4.toLinkedHashSet();
-    assertEquals(this.oneTo4.toSet(), set);
-  }
-
-  @Test
   public void testToLong() {
     assertEquals(0b1111L, this.oneTo4.toLong());
 
@@ -568,6 +571,7 @@ public class GeneralDomainBitSetTest {
   public void testToSet() {
     final var set = this.oneTo4.toSet();
     assertEquals(this.oneTo4.toSet(), set);
+    assertEquals(Set.of(1, 2, 3, 4), set);
   }
 
   @Test

@@ -219,14 +219,10 @@ public class SmallDomainBitSetTest {
     assertEquals(this.threeFour, this.oneTo4.minus(this.oneTwo.toLong()));
     assertEquals(this.none, this.oneTwo.minus(this.oneTo4.toLong()));
 
-    try {
-      assertEquals(this.none, this.oneTwo.minus(-1L));
-      fail("minus should not accept bit mask with too many ones.");
-    } catch (final Exception e) {
-    }
+    assertThrows(IllegalArgumentException.class, () -> assertEquals(this.none, this.oneTwo.minus(-1L)), "minus should not accept bit mask with too many ones.");
 
     final DomainBitSet<Element> set = of(asList(Element.values()).subList(0, 64));
-    assertTrue(set.minus(-1).isEmpty());
+    assertTrue(set.minus(-1L).isEmpty());
   }
 
   @Test

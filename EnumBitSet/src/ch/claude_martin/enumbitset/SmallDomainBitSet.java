@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.SequencedCollection;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -23,14 +25,15 @@ import ch.claude_martin.enumbitset.annotations.NonNull;
 
 /** BitSet with a domain of up to 64 elements. This is checked at creation, so that it is not thrown
  * later. However, a mask that has a larger domain causes an {@link IllegalArgumentException}
- * instead.
+ * instead. This type has no identity (it's a value type) and the {@link #hashCode()} is fast, but
+ * not compatible with other implementations of {@link DomainBitSet}. 
  * 
  * @param <T>
  *          The type of the domain. All elements in the domain must be of type T or of any subtype
  *          of T. */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
-public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
+public value class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   private static final long serialVersionUID = 671939884938912745L;
 
   private static final class Itr<T> implements Iterator<T> {
@@ -71,7 +74,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param domain
    *          The type of the domain.
    * @return A SmallDomainBitSet containing all elements of the given domain. */
-  public static <T> SmallDomainBitSet<T> allOf(final List<T> domain)
+  public static <T> SmallDomainBitSet<T> allOf(final Collection<T> domain)
       throws MoreThan64ElementsException {
     requireNonNull(domain, "domain");
     final int size = domain.size();
@@ -104,7 +107,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @param domain
    *          The elements of the domain.
    * @return Empty SmallDomainBitSet based on the given domain. */
-  public static <T> SmallDomainBitSet<T> noneOf(final List<T> domain)
+  public static <T> SmallDomainBitSet<T> noneOf(final Collection<T> domain)
       throws MoreThan64ElementsException {
     return SmallDomainBitSet.of(DefaultDomain.of(domain), 0L);
   }
@@ -146,7 +149,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements.
    * @return SmallDomainBitSet based on the given domain and set. */
   @NonNull
-  public static <T> SmallDomainBitSet<T> of(final List<T> domain, final Collection<T> set) {
+  public static <T> SmallDomainBitSet<T> of(final Collection<T> domain, final Collection<T> set) {
     requireNonNull(domain, "domain");
     requireNonNull(set, "set");
     int i = 0;
@@ -169,7 +172,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    *          The elements as a bit mask.
    * @return SmallDomainBitSet based on the given domain and bit mask. */
   @NonNull
-  public static <T> SmallDomainBitSet<T> of(final List<T> domain, final long mask) {
+  public static <T> SmallDomainBitSet<T> of(final Collection<T> domain, final long mask) {
     return SmallDomainBitSet.<T> of(DefaultDomain.of(domain), mask);
   }
 
@@ -184,7 +187,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
    * @return SmallDomainBitSet based on the given domain and set. */
   @SafeVarargs
   @NonNull
-  public static <T> SmallDomainBitSet<T> of(@NonNull final List<T> domain, @NonNull final T... set) {
+  public static <T> SmallDomainBitSet<T> of(@NonNull final Collection<T> domain, @NonNull final T... set) {
     return of(domain, asList(set));
   }
 
@@ -192,22 +195,21 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   private final long           set;
 
-  private transient final long all;
-
-  private transient int        hash = 0; // defaults to 0, later it's set to a hash code.
 
   SmallDomainBitSet(final Domain<T> domain, final long set) throws MoreThan64ElementsException {
     this.domain = domain;
     this.set = set;
-    final int size = this.domain.size();
-    // all = Mask for a complete set
+    final int size = domain.size();
     if (size > 64)
       throw new MoreThan64ElementsException();
-    else if (size == 64)
-      this.all = -1;
-    else
-      this.all = (1L << size) - 1L;
-    this.checkMask(set);
+    if (size > 0 && (set & -1L >>> 64 - size) != set)
+      throw new IllegalArgumentException(
+          "The parameter contains more elements than the domain allows.");
+  }
+  
+  private long all() {
+    final var size = this.domain.size();
+    return (size == 64) ? -1L : (1L << size) - 1L;
   }
 
   private long arrayToLong(@NonNull final T[] arr) {
@@ -215,7 +217,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   private long checkMask(final long mask) throws IllegalArgumentException {
-    if ((mask & this.all) != mask)
+    if ((mask & this.all()) != mask)
       throw new IllegalArgumentException(
           "The parameter contains more elements than the domain allows.");
     return mask;
@@ -260,9 +262,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   @Override
   public int hashCode() {
-    if (this.hash == 0)
-      this.hash = this.domain.hashCode() ^ this.stream().mapToInt(Object::hashCode).sum();
-    return this.hash;
+    return this.domain.hashCode() ^ Long.hashCode(this.set);
   }
 
   @Override
@@ -301,6 +301,11 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   @Override
   public Iterator<T> iterator() {
     return new Itr<>(this.domain, this.set);
+  }
+  
+  @Override
+  public Iterator<T> sortedIterator() {
+    return iterator();
   }
 
   private long itrToLong(final Iterable<T> itr) {
@@ -342,7 +347,7 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
 
   private long not(final long mask) throws IllegalArgumentException {
     this.checkMask(mask);
-    return ~mask & this.all;
+    return ~mask & this.all();
   }
 
   @Override
@@ -405,8 +410,8 @@ public class SmallDomainBitSet<T> implements DomainBitSet<T>, Cloneable {
   }
 
   @Override
-  public Set<T> toSet() {
-    final Set<T> result = new LinkedHashSet<>(this.size());
+  public SequencedSet<T> toSet() {
+    final SequencedSet<T> result = new LinkedHashSet<>(this.size());
     this.forEach(result::add);
     return result;
   }

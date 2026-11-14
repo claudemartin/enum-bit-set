@@ -48,7 +48,7 @@ import ch.claude_martin.enumbitset.annotations.NonNull;
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
-public final class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
+public final value class Pair<T, X extends T, Y extends T> implements Iterable<T>, Cloneable,
     Serializable, Map.Entry<X, Y>, Comparable<Pair<T, X, Y>> {
   private static final long serialVersionUID = -5888335755613555933L;
 

@@ -10,6 +10,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.SequencedCollection;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
@@ -19,25 +21,15 @@ import java.util.stream.Stream;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.NonNull;
 
-/** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type. */
+/** Provides a mutable implementation of {@link DomainBitSet}, that can be used with any type.
+ * However, the domain must be sequenced. I.e. it should be a {@link SequencedSet}, but a
+ * {@link List} with no duplicates is also acceptable. This still accepts any {@link Collection}.
+ * It's up to the caller to make sure the given collection guarantees a defined encounter order and
+ * contains only unique values. */
 @DefaultAnnotationForParameters({ NonNull.class })
 public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection<T> {
   private static final long serialVersionUID = -1901507799664143152L;
 
-  /** Creates a set with the given domain, that contains all elements.
-   * 
-   * @param <X>
-   *          The type of the set and its domain.
-   * @param domain
-   *          The domain.
-   * @return New GeneralDomainBitSet of given domain, containing all elements. */
-  @NonNull
-  public static <X> GeneralDomainBitSet<X> allOf(final LinkedHashSet<X> domain) {
-    requireNonNull(domain, "domain");
-    final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
-    result.addAll(domain);
-    return result;
-  }
 
   /** Creates a set with the given domain, that contains all elements.
    * 
@@ -47,7 +39,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return New GeneralDomainBitSet of given domain, containing all elements. */
   @NonNull
-  public static <X> GeneralDomainBitSet<X> allOf(final List<X> domain) {
+  public static <X> GeneralDomainBitSet<X> allOf(final Collection<X> domain) {
     requireNonNull(domain, "domain");
     final GeneralDomainBitSet<X> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
     result.addAll(domain);
@@ -76,20 +68,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The domain.
    * @return Empty GeneralDomainBitSet of given domain. */
   @NonNull
-  public static <X> GeneralDomainBitSet<X> noneOf(final LinkedHashSet<X> domain) {
-    requireNonNull(domain, "domain");
-    return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
-  }
-
-  /** Creates an empty set with the given domain.
-   * 
-   * @param <X>
-   *          The type of the set and its domain.
-   * @param domain
-   *          The domain.
-   * @return Empty GeneralDomainBitSet of given domain. */
-  @NonNull
-  public static <X> GeneralDomainBitSet<X> noneOf(final List<X> domain) {
+  public static <X> GeneralDomainBitSet<X> noneOf(final Collection<X> domain) {
     requireNonNull(domain, "domain");
     return new GeneralDomainBitSet<>(DefaultDomain.of(domain));
   }
@@ -108,25 +87,6 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     return noneOf(asList(domain));
   }
 
-  /** Creates an empty set with the given domain, containing the given elements.
-   * 
-   * @param <T>
-   *          The type of the set and its domain.
-   * @param domain
-   *          The domain.
-   * @param initialSet
-   *          The elements to be contained.
-   * @return New GeneralDomainBitSet of given domain and elements. */
-  @NonNull
-  public static <T> GeneralDomainBitSet<T> of(final LinkedHashSet<T> domain,
-      @NonNull final Collection<T> initialSet) {
-    requireNonNull(domain, "domain");
-    requireNonNull(initialSet, "initialSet");
-    final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
-    result.addAll(initialSet);
-    return result;
-  }
-
   /** Creates a set with the given domain, containing the given elements.
    * 
    * @param <T>
@@ -137,7 +97,7 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
    *          The elements to be contained.
    * @return New GeneralDomainBitSet of given domain and elements. */
   @NonNull
-  public static <T> GeneralDomainBitSet<T> of(final List<T> domain, final Collection<T> initialSet) {
+  public static <T> GeneralDomainBitSet<T> of(final Collection<T> domain, final Collection<T> initialSet) {
     requireNonNull(domain, "domain");
     requireNonNull(initialSet, "initialSet");
     final GeneralDomainBitSet<T> result = new GeneralDomainBitSet<>(DefaultDomain.of(domain));
@@ -467,17 +427,6 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
     return result;
   }
 
-  /** Returns a new LinkedHashSet with the same elements, ordered as they appear in the domain.
-   * 
-   * @return A {@link LinkedHashSet} containing all elements of this set. */
-  public LinkedHashSet<T> toLinkedHashSet() {
-    final LinkedHashSet<T> result = new LinkedHashSet<>();
-    for (final T t : this.domain)
-      if (this.set.contains(t))
-        result.add(t);
-    return result;
-  }
-
   @Override
   public long toLong() throws MoreThan64ElementsException {
     long result = 0L;
@@ -489,13 +438,13 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
   }
 
   @Override
-  public Set<T> toSet() {
-    return new HashSet<>(this.set);
+  public SequencedSet<T> toSet() {
+    return new LinkedHashSet<>(this.set);
   }
 
   @Override
   public String toString() {
-    // Note: This could theoretically lead to recursion, but then the domain contains references to
+    // Note: This could lead to recursion. The domain could contain references to
     // mutable objects, which is invalid.
     return this.set.toString();
   }

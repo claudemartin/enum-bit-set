@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.SequencedCollection;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -36,8 +38,8 @@ import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.NonNull;
 import ch.claude_martin.enumbitset.annotations.Nonnegative;
 
-/** A bit set with a defined domain (universe). The domain is an ordered set of all elements that are
- * allowed in this bit set. Null is not allowed as an element of any DomainBitSet.
+/** A bit set with a defined domain (universe). The domain is an ordered set of all elements that
+ * are allowed in this bit set. Null is not allowed as an element of any DomainBitSet.
  * 
  * <p>
  * The methods that return a {@code DomainBitSet<T>} are expected to create a new object and not
@@ -71,7 +73,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @param elements
    *          The elements of the domain and the set.
    * @return A new DomainBitSet containing all given elements. */
-  public static <T> DomainBitSet<T> allOf(final List<T> elements) {
+  public static <T> DomainBitSet<T> allOf(final Collection<T> elements) {
     if (elements.size() > 64)
       return GeneralDomainBitSet.allOf(elements);
     else
@@ -121,7 +123,7 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    * @param elements
    *          The elements of the domain.
    * @return A new DomainBitSet containing none of the given elements. */
-  public static <T> DomainBitSet<T> noneOf(final List<T> elements) {
+  public static <T> DomainBitSet<T> noneOf(final Collection<T> elements) {
     if (elements.size() > 64)
       return GeneralDomainBitSet.noneOf(elements);
     else
@@ -171,8 +173,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *          element whose presence in this collection is to be tested
    * @return <tt>true</tt> if this set contains the specified element
    * @throws ClassCastException
-   *           if the type of the specified element is incompatible with this collection (<a
-   *           href="#optional-restrictions">optional</a>)
+   *           if the type of the specified element is incompatible with this collection
+   *           (<a href="#optional-restrictions">optional</a>)
    * @throws NullPointerException
    *           if the specified element is null. */
   public default boolean contains(final Object o) {
@@ -186,8 +188,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   /** Returns <tt>true</tt> if this set contains all of the elements in the specified collection.
    *
    * @see Collection#containsAll(Collection)
-   * @param c
-   *          collection to be checked for containment in this collection
+   * @param itr
+   *          iterable to be checked for containment in this collection
    * @return <tt>true</tt> if this collection contains all of the elements in the specified
    *         collection
    * @throws ClassCastException
@@ -197,8 +199,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
    *           if the specified collection contains one or more null elements, or if the specified
    *           collection is null.
    * @see #contains(Object) */
-  public default boolean containsAll(final Collection<?> c) {
-    for (final var e : requireNonNull(c))
+  public default boolean containsAll(final Iterable<?> itr) {
+    for (final var e : requireNonNull(itr))
       if (!this.contains(e))
         return false;
     return true;
@@ -268,9 +270,9 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
     return this.getDomain().contains(requireNonNull(object));
   }
 
-  /** Compares the specified object with this domain bit set for equality. Returns <tt>true</tt>, iff
-   * the given object is also a {@link DomainBitSet}, the two sets have the same domain, and every
-   * member of the given set is contained in this set.
+  /** Compares the specified object with this domain bit set for equality. Returns <tt>true</tt>,
+   * iff the given object is also a {@link DomainBitSet}, the two sets have the same domain, and
+   * every member of the given set is contained in this set.
    * 
    * <p>
    * Comparison of elements only: <br>
@@ -336,9 +338,11 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
       return Optional.empty();
   }
 
-  /** Hash code of domain and elements. The hash code of the domain must be xored with the sum of the
-   * hash codes of all elements:<br>
-   * {@code this.getDomain().hashCode() ^ this.stream().mapToInt(Object::hashCode).sum()} */
+  /** Hash code of domain and elements. Note that for performance reasons the hashCode does not have
+   * to be compatible over different implementations of {@link DomainBitSet}, as it does not extend
+   * {@link Set} or any other collection with a contract on this method. This allows implementations
+   * without identity and fast hashCode generation. As a consequence, {@link HashSet hash based
+   * collections} containing them should not mix implementations. */
   @Override
   public int hashCode();
 
@@ -386,8 +390,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @CheckReturnValue
   public DomainBitSet<T> intersect(final long mask) throws MoreThan64ElementsException;
 
-  /** The intersection of this set and a set represented by an array (varargs). The name is different
-   * so that it is unambiguous.
+  /** The intersection of this set and a set represented by an array (varargs). The name is
+   * different so that it is unambiguous.
    * 
    * @see #intersect(Iterable)
    * @param set
@@ -411,12 +415,20 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   /** Returns an iterator over elements of type T.
    * 
    * <p>
-   * The order is not defined as this could be backed by a set. Iteration in the same order as the
-   * domain can be done like this: <br>
-   * <code>domainBitSet.getDomain().stream().filter(domainBitSet::contains).forEach(...)</code> */
+   * The order is not defined as this could be backed by a set.
+   * 
+   * @see #sortedIterator() */
   @Override
   @NonNull
   public Iterator<T> iterator();
+
+  /** Iteration in the same order as the elements appear in the domain. */
+  public default Iterator<T> sortedIterator() {
+    if (this.size() < 2) {
+      return this.iterator();
+    }
+    return this.getDomain().stream().filter(this::contains).iterator();
+  }
 
   /** Returns a new set with elements of a given domain, containing all mapped elements. Mapping is
    * done by index in the domain. Therefore the new domains must not be smaller than the domain of
@@ -676,7 +688,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
     }
   }
 
-  /** Returns a new set with all elements in this set, that have a matching element in the other set.
+  /** Returns a new set with all elements in this set, that have a matching element in the other
+   * set.
    * <p>
    * This is basically the same as {@link #cross(DomainBitSet)}, but filtered by a predicate. All
    * <code>this.size() &times; set.size()</code> combinations are tested! The term "semijoin" is
@@ -718,8 +731,8 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @Override
   @NonNull
   default Spliterator<T> spliterator() {
-    return Spliterators.spliterator(iterator(), size(), Spliterator.SIZED | Spliterator.DISTINCT
-        | Spliterator.NONNULL);
+    return Spliterators.spliterator(iterator(), size(),
+        Spliterator.SIZED | Spliterator.DISTINCT | Spliterator.NONNULL);
   }
 
   /** Returns a sequential {@code Stream} with this collection as its source.
@@ -788,13 +801,14 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
   @CheckReturnValue
   public long toLong() throws MoreThan64ElementsException;
 
-  /** A regular set, with no defined domain. Note that the returned set can be compared to other
-   * regular sets, which this always returns <code>false</code> for other sets without a domain.
+  /** A sequenced set, with no defined domain. Note that {@link DomainBitSet} doesn't implement
+   * {@link Set} and therefore can't be equal to one containing the same elements. The returned set
+   * can be compared to other {@link Set sets}.
    * 
    * @return A set, without the domain. */
   @NonNull
   @CheckReturnValue
-  public Set<T> toSet();
+  public SequencedSet<T> toSet();
 
   /** The union of this set and a set represented by a {@link BitSet}.
    * <p>

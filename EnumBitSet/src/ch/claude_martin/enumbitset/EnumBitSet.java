@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.BiConsumer;
@@ -413,15 +415,19 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   }
 
   @NonNull
-  private final EnumSet<E>   bitset;
+  private final EnumSet<E>              bitset;
 
   @NonNull
-  private final Class<E>     enumType;
+  private final Class<E>                enumType;
 
-  private int                enumTypeSize = -1;
+  private int                           enumTypeSize = -1;
 
   @Nullable
-  private volatile Domain<E> domain       = null;
+  private final LazyConstant<Domain<E>> domain       = LazyConstant.of(() -> generateDomain());
+
+  private Domain<E> generateDomain() {
+    return EnumDomain.of(this.enumType);
+  }
 
   private EnumBitSet(final Class<E> type) {
     this(type, EnumSet.noneOf(getActualEnumType(type)));
@@ -563,9 +569,7 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * @return <code>Domain</code> with all enum elements. */
   @Override
   public Domain<E> getDomain() {
-    if (null == this.domain)
-      return this.domain = EnumDomain.of(this.enumType);
-    return this.domain;
+    return this.domain.get();
   }
 
   /** The declaring enum type that defines the available enum elements.
@@ -715,6 +719,11 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   @Override
   public Iterator<E> iterator() {
     return this.bitset.iterator();
+  }
+  
+  @Override
+  public Iterator<E> sortedIterator() {
+    return iterator();
   }
 
   /** Returns a new set with elements of a given enum type, containing all elements of the other enum
@@ -1053,8 +1062,8 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
    * 
    * @return <code>bitset.clone()</code> */
   @Override
-  public Set<E> toSet() {
-    return this.bitset.clone();
+  public SequencedSet<E> toSet() {
+    return new LinkedHashSet<>(this.bitset);
   }
 
   /** Returns a string representation of this set.

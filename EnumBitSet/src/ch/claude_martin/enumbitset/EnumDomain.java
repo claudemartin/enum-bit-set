@@ -1,15 +1,20 @@
 package ch.claude_martin.enumbitset;
 
+import java.lang.reflect.Method;
+
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
 import java.lang.ref.SoftReference;
-import java.util.AbstractList;
+import java.util.AbstractCollection;
+import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.SequencedSet;
+import java.util.Spliterator;
 import java.util.function.Function;
 
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
@@ -17,11 +22,10 @@ import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
 import ch.claude_martin.enumbitset.annotations.Nullable;
 
-
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
-final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractList<E> implements
-    Domain<E> {
+final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends AbstractCollection<E>
+    implements Domain<E> {
   private static final long   serialVersionUID = 3225868883383217275L;
 
   // Array of all elements in the domain:
@@ -32,9 +36,10 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   private final Class<E>      enumType;
 
   private static final// domainCache:
-  Map<Class<? extends Enum<?>>, // Maps Enum-Type to Domain
-      SoftReference<// Allows GC to collect unused Domains
-      Domain<? extends Enum<?>>>> domainCache      = new IdentityHashMap<>();
+  Map<Class<? extends Enum<?>>,                                          // Maps Enum-Type to Domain
+      SoftReference<                                                     // Allows GC to collect
+                                                                         // unused Domains
+          Domain<? extends Enum<?>>>> domainCache = new IdentityHashMap<>();
 
   @SuppressWarnings("unchecked")
   static <X extends Enum<X> & EnumBitSetHelper<X>> Domain<X> of(final Class<X> enumType) {
@@ -59,11 +64,6 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
 
   @Override
   public boolean add(final E e) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void add(final int index, final E element) {
     throw new UnsupportedOperationException();
   }
 
@@ -130,17 +130,17 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   @Override
-  public int lastIndexOf(@Nullable final Object o) {
-    return this.indexOf(o);
-  }
-
-  @Override
   public int size() {
     return this.elements.length;
   }
 
   @Override
-  public Object[] toArray() {
+  public Spliterator<E> spliterator() {
+    return Domain.super.spliterator();
+  }
+
+  @Override
+  public E[] toArray() {
     return this.elements.clone();
   }
 
@@ -150,8 +150,8 @@ final class EnumDomain<E extends Enum<E> & EnumBitSetHelper<E>> extends Abstract
   }
 
   /** This proxy class is used to serialize EnumDomain instances. */
-  private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>> implements
-      java.io.Serializable {
+  private static class SerializationProxy<E extends Enum<E> & EnumBitSetHelper<E>>
+      implements java.io.Serializable {
     private static final long serialVersionUID = 6062818650132433646L;
     @NonNull
     private final Class<E>    enumType;

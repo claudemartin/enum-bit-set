@@ -1,16 +1,17 @@
 package ch.claude_martin.enumbitset;
 
-import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-import java.util.AbstractList;
+import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SequencedSet;
 import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.Function;
 
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
@@ -29,7 +30,7 @@ import ch.claude_martin.enumbitset.annotations.Nullable;
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
-final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
+final class DefaultDomain<T> extends AbstractCollection<T> implements Domain<T> {
   private static final long          serialVersionUID = -1159105301120332006L;
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -42,7 +43,7 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
    * new instance is created.
    * <p>
    * The caller must make sure that the domain is a distinct collection with a well defined
-   * iteration order (e.g. List, LinkedHashSet etc.).
+   * iteration order (e.g. {@link List}, {@link SequencedSet} etc.).
    * 
    * @throws IllegalArgumentException
    *           if the given collections contains duplicates.
@@ -55,16 +56,13 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
     if (domain instanceof DefaultDomain def)
       return def;
 
-    if (domain.isEmpty())
-      return EMPTY_DOMAIN;
-
     if (domain instanceof DomainBitSet domainBitSet) {
       final var domain2 = domainBitSet.getDomain();
       if (domain2 instanceof DefaultDomain defaultDomain && domainBitSet.size() == domain2.size())
         return defaultDomain;
     }
 
-    return new DefaultDomain<>(domain);
+    return of((T[]) domain.toArray());
   }
 
   /** Internal use only! */
@@ -82,26 +80,12 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   // Array of all elements in the domain:
   @NonNull
   private final T[]                 elements;
-  // View of the array as a List:
-  @NonNull
-  private final List<T>             list;
 
   // Lookup table: element->index
   @NonNull
   private final HashMap<T, Integer> map;
 
   private int                       hash;    // defaults to 0, later it's set to a hash code.
-
-  /** The caller must make sure that the domain is a distinct collection with a well defined
-   * iteration order (e.g. List, LinkedHashSet etc.).
-   * 
-   * @throws IllegalArgumentException
-   *           if the given collections contains duplicates. */
-  @SuppressWarnings("unchecked")
-  private DefaultDomain(@NonNull final Collection<? extends T> domain)
-      throws IllegalArgumentException {
-    this(domain.toArray((T[]) new Object[requireNonNull(domain, "domain").size()]));
-  }
 
   /** Internal use only!
    * 
@@ -111,7 +95,6 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
   private DefaultDomain(final T... domain) {
     this.elements = requireNonNull(domain, "domain");
     this.map = new HashMap<>((int) (1.5 * domain.length));
-    this.list = asList(domain);
     int i = 0;
     for (final T t : domain) {
       this.elements[i] = requireNonNull(t);
@@ -178,9 +161,9 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
 
   @Override
   public Iterator<T> iterator() {
-    return this.list.iterator();
+    return Spliterators.iterator(Arrays.spliterator(this.elements));
   }
-
+  
   @Override
   public int size() {
     return this.elements.length;
@@ -188,11 +171,11 @@ final class DefaultDomain<T> extends AbstractList<T> implements Domain<T> {
 
   @Override
   public Spliterator<T> spliterator() {
-    return Domain.super.spliterator();
+    return Arrays.spliterator(this.elements);
   }
 
   @Override
-  public Object[] toArray() {
+  public T[] toArray() {
     return this.elements.clone();
   }
 

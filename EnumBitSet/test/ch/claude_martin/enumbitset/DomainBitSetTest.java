@@ -15,9 +15,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicReference;
@@ -161,8 +163,8 @@ public class DomainBitSetTest {
     }
 
     @Override
-    public Set<T> toSet() {
-      return new HashSet<>(this.map.values());
+    public SequencedSet<T> toSet() {
+      return new LinkedHashSet<>(this.map.values());
     }
 
     @Override

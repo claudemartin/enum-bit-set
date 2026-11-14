@@ -5,7 +5,7 @@ import static java.util.Arrays.asList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Main {
+class Main {
 
   enum Bla implements EnumBitSetHelper<Bla> {
     A(-1), B(42), C(108);

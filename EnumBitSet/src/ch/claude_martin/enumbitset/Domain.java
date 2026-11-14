@@ -6,6 +6,7 @@ import static java.util.Objects.requireNonNull;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.SequencedSet;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -15,6 +16,7 @@ import java.util.function.Predicate;
 import ch.claude_martin.enumbitset.annotations.DefaultAnnotationForParameters;
 import ch.claude_martin.enumbitset.annotations.Immutable;
 import ch.claude_martin.enumbitset.annotations.NonNull;
+import ch.claude_martin.enumbitset.annotations.Nullable;
 
 /** A domain defines the elements that a {@link DomainBitSet} can contain. This is also known as the
  * <i>universe of discourse</i>. It is a set with the following characteristics:
@@ -39,7 +41,7 @@ import ch.claude_martin.enumbitset.annotations.NonNull;
  * @author <a href="http://claude-martin.ch/enumbitset/">Copyright &copy; 2026 Claude Martin</a> */
 @Immutable
 @DefaultAnnotationForParameters({ NonNull.class })
-public interface Domain<T> extends List<T>, Set<T>, Serializable {
+public interface Domain<T> extends Collection<T>, Serializable {
 
   /** Creates a Domain of the given elements.
    * 
@@ -67,6 +69,16 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
     return DefaultDomain.of(elements);
   }
 
+  /** Returns the element at that index.
+   * 
+   * @see List#get(int) */
+  public T get(final int i);
+
+  /** Returns the index of the given element.
+   * 
+   * @see List#indexOf(Object) */
+  public int indexOf(@Nullable final Object o);
+
   /** Two domains are defined to be equal if they contain the same elements in the same order.
    * 
    * @param other
@@ -90,43 +102,16 @@ public interface Domain<T> extends List<T>, Set<T>, Serializable {
 
   @Override
   public default Spliterator<T> spliterator() {
-    return Spliterators.spliterator(this, Spliterator.ORDERED | Spliterator.DISTINCT
-        | Spliterator.SIZED | Spliterator.NONNULL | Spliterator.IMMUTABLE);
+    return Spliterators.spliterator(this.iterator(), Spliterator.ORDERED | Spliterator.DISTINCT
+        | Spliterator.SIZED | Spliterator.NONNULL | Spliterator.IMMUTABLE, this.size());
   }
 
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  public boolean add(@NonNull final T e);
+  /** The size of this domain.
+   * 
+   * @return Size of domain. */
+  public int size();
 
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  public boolean addAll(@NonNull final Collection<? extends T> c);
-
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  public void clear();
-
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  default public boolean remove(final Object o) {
-    throw new UnsupportedOperationException();
-  }
-
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  default public boolean removeAll(final Collection<?> c) {
-    throw new UnsupportedOperationException();
-  }
-
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  default public boolean retainAll(final Collection<?> c) {
-    throw new UnsupportedOperationException();
-  }
-
-  /** Domain is immutable and therefore does not support this method. */
-  @Override
-  default boolean removeIf(final Predicate<? super T> filter) {
-    throw new UnsupportedOperationException();
-  }
+  
+  /** This domain as an array. */
+  public T[] toArray(); 
 }

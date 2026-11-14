@@ -52,10 +52,11 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-toolchains-plugin</artifactId>
+				<version>3.2.0</version>
 				<configuration>
 					<toolchains>
 						<jdk>
-							<version>10</version>
+							<version>28</version>
 							<vendor>oracle</vendor>
 						</jdk>
 					</toolchains>
