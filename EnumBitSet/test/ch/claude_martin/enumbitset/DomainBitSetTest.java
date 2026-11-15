@@ -71,7 +71,7 @@ public class DomainBitSetTest {
 
     @Override
     public int hashCode() {
-      return this.getDomain().hashCode() ^ this.stream().mapToInt(Object::hashCode).sum();
+      return BitSetUtilities.hashCode(this);
     }
 
     @Override
@@ -400,7 +400,50 @@ public class DomainBitSetTest {
           s.zipWithPosition().map(Pair::_1).collect(toSet));
     }
   }
-
+  
+  @Test
+  public void testHashCode() {
+    final var constants = EnumBitSetTest.Suit.class.getEnumConstants();
+    {
+      final GeneralDomainBitSet<?> gnr = GeneralDomainBitSet.allOf(constants);
+      final EnumBitSet<?> enm = EnumBitSet.allOf(EnumBitSetTest.Suit.class);
+      final SmallDomainBitSet<?> sml = SmallDomainBitSet.allOf(constants);
+      assertEquals(gnr, enm);
+      assertEquals(gnr, sml);
+      assertEquals(gnr.hashCode(), enm.hashCode());
+      assertEquals(gnr.hashCode(), sml.hashCode());
+    }
+    {
+      final GeneralDomainBitSet<?> gnr = GeneralDomainBitSet.noneOf(constants);
+      final EnumBitSet<?> enm = EnumBitSet.noneOf(EnumBitSetTest.Suit.class);
+      final SmallDomainBitSet<?> sml = SmallDomainBitSet.noneOf(constants);
+      final int expected = enm.getDomain().hashCode();
+      assertEquals(expected, enm.hashCode());
+      assertEquals(expected, gnr.hashCode());
+      assertEquals(expected, sml.hashCode());
+    }
+    {
+      final GeneralDomainBitSet<?> gnr = GeneralDomainBitSet
+          .allOf(EnumBitSetTest.Element.class.getEnumConstants());
+      final EnumBitSet<?> enm = EnumBitSet.allOf(EnumBitSetTest.Element.class);
+      assertEquals(gnr, enm);
+      assertEquals(gnr.hashCode(), enm.hashCode());
+    }
+    {
+      final var hearts = List.<EnumBitSetTest.Suit>of(EnumBitSetTest.Suit.HEARTS);
+      final GeneralDomainBitSet<?> gnr = GeneralDomainBitSet.of(List.of(constants), hearts);
+      final EnumBitSet<?> enm = EnumBitSet.of(EnumBitSetTest.Suit.class, hearts);
+      final SmallDomainBitSet<?> sml = SmallDomainBitSet.of(List.of(constants), hearts);
+      assertEquals(EnumBitSetTest.Suit.HEARTS.ordinal(), enm.getDomain().indexOf(EnumBitSetTest.Suit.HEARTS));
+      final int expected = enm.getDomain().hashCode() ^ 1 << EnumBitSetTest.Suit.HEARTS.ordinal();
+      assertEquals(expected, enm.hashCode());
+      assertEquals(expected, gnr.hashCode());
+      assertEquals(expected, sml.hashCode());
+    }
+  }
+  
+  
+  
   @Test
   public void testPowerset() throws Exception {
 

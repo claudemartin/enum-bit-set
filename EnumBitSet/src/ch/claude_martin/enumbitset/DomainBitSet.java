@@ -338,11 +338,12 @@ public interface DomainBitSet<T> extends Iterable<T>, Cloneable, Serializable {
       return Optional.empty();
   }
 
-  /** Hash code of domain and elements. Note that for performance reasons the hashCode does not have
-   * to be compatible over different implementations of {@link DomainBitSet}, as it does not extend
-   * {@link Set} or any other collection with a contract on this method. This allows implementations
-   * without identity and fast hashCode generation. As a consequence, {@link HashSet hash based
-   * collections} containing them should not mix implementations. */
+  /** Hash code of domain and elements. Note that for performance reasons the hashCode is made to be
+   * fast for {@link SmallDomainBitSet} and not compatible with {@link Set} or any other collection
+   * with a contract on this method. This allows implementations without identity and fast hashCode
+   * generation. The hash code contains the domain, so two with the same elements but different
+   * domain will use different hash codes. Unless it can be optimized, this should return
+   * {@link BitSetUtilities#hashCode(DomainBitSet)}. */
   @Override
   public int hashCode();
 

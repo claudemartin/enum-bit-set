@@ -518,9 +518,10 @@ public class EnumBitSetTest {
     assertEquals(ab.hashCode(), ab.hashCode());
     assertEquals(ab.hashCode(), ab.clone().hashCode());
 
-    // GeneralDomainBitSet is compatible, SmallDomainBitSet is not.
     final GeneralDomainBitSet<Alphabet> general = GeneralDomainBitSet.of(a.getDomain(), a);
     assertEquals(a.hashCode(), general.hashCode());
+    final SmallDomainBitSet<Alphabet> small = SmallDomainBitSet.of(a.getDomain(), a);
+    assertEquals(a.hashCode(), small.hashCode());
 
     assertNotEquals(a.hashCode(), a.union(15L));
     assertNotEquals(a.hashCode(), a.map(Element.class).hashCode());

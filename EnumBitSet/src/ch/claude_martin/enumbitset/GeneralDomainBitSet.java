@@ -237,8 +237,9 @@ public final class GeneralDomainBitSet<T> implements DomainBitSet<T>, Collection
 
   @Override
   public int hashCode() {
-    return this.domain.hashCode() ^ this.set.hashCode();
+    return BitSetUtilities.hashCode(this);
   }
+
 
   @Override
   public GeneralDomainBitSet<T> intersect(final BigInteger mask) {

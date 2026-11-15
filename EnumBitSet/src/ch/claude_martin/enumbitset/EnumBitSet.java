@@ -390,6 +390,27 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
       result.add(x);
     return result;
   }
+  
+  /** Creates a new EnumBitSet containing the given elements..
+   * 
+   * @param <X>
+   *          The enum type of all elements.
+   * @param type
+   *          Enum type.
+   * @param elements
+   *          Elements to add.
+   * @return New EnumBitSet containing all given elements.
+   * @see #allOf(Class) */
+  @NonNull
+  public static <X extends Enum<X> & EnumBitSetHelper<X>> EnumBitSet<X> of(final Class<X> type,
+      final Collection<X> elements) {
+    requireNonNull(type, "type");
+    requireNonNull(elements, "elements");
+
+    final var result = noneOf(type);
+    result.addAll(elements);
+    return result;
+  }
 
   /** Creates an enum set initially containing all of the elements in the range defined by the two
    * specified endpoints. The returned set will contain the endpoints themselves, which may be
@@ -598,7 +619,10 @@ public final class EnumBitSet<E extends Enum<E> & EnumBitSetHelper<E>> implement
   /** {@inheritDoc} */
   @Override
   public int hashCode() {
-    return this.getDomain().hashCode() ^ this.bitset.hashCode();
+    int hash = 0;
+    for (final E e : this.bitset)
+      hash ^= 1 << (e.ordinal() % 32);
+    return this.getDomain().hashCode() ^ hash;
   }
 
   /** Returns a new EnumBitSet containing all elements that are in <code>this</code> and the given

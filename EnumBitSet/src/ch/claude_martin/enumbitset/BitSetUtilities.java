@@ -378,6 +378,15 @@ public final class BitSetUtilities {
         returnIncompleteResult ? t -> t.complete(buffer.toString()) : null);
     return future;
   }
+  
+  /** Reference implementation of {@link DomainBitSet#hashCode()}. */
+  public static <T> int hashCode(DomainBitSet<T> set) {
+    int hash = 0;
+    final var _domain = set.getDomain();
+    for (final T element : set)
+      hash ^= 1 << (_domain.indexOf(element) % 32);
+    return _domain.hashCode() ^ hash;
+  }
 
   /** Returns a string representation of the object. All arrays and iterables are processed as such.
    * In case of loops in the object graph this will return a partial result, but will not throw a
